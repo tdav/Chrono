@@ -39,7 +39,7 @@
 - Повторяющиеся будильники, «Отложить», очередь одновременных сигналов.
 - AlarmKit (iOS 26) — биндинга в `Microsoft.iOS.Ref.net11.0_26.5` нет, нужна Swift-обёртка и Mac.
 - Direct Boot на Android (срабатывание после перезагрузки до первой разблокировки).
-- Сборка и приёмка iOS.
+- Запуск и приёмка iOS (компиляция `net11.0-ios` на Windows работает и входит в проверки).
 - Пользовательские рингтоны и системные рингтоны Android.
 - Светлая тема, виджеты, синхронизация между устройствами.
 
@@ -62,18 +62,20 @@ src/Chrono/
                                 SoundEnabled, SoundId, VibrationEnabled, IsEnabled
   Models/Sounds.cs            — каталог мелодий: id → имя файла и ключ строки resx
   Services/AlarmStore.cs      — чтение и атомарная запись alarms.json; путь приходит в конструктор
-  Services/IAlarmScheduler.cs — Schedule(Alarm), Cancel(Guid), RescheduleAll(IReadOnlyList<Alarm>)
-  Services/AlarmService.cs    — API для UI: GetAll / Save / Toggle / Delete; время из TimeProvider
+  Services/PlatformContracts.cs — IAlarmScheduler: Sync(IReadOnlyList<Alarm>), Cancel(Guid), StopRinging(Guid);
+                                ISoundPlayer: Play(soundId, loop), Stop(); IReliabilityChecks
+  Services/AlarmService.cs    — API для UI: GetAll / Save / Toggle / Delete / RescheduleAll; время из TimeProvider
   Services/IosNotificationPlan.cs — чистый расчёт цепочки уведомлений iOS и лимита 16
+  Services/RingLauncher.cs    — открытие RingPage по запросу платформы (в т.ч. при холодном старте)
   ViewModels/                 — AlarmListViewModel, AlarmEditViewModel, RingViewModel,
                                 ReliabilityViewModel (CommunityToolkit.Mvvm)
   Views/                      — SplashPage, AlarmListPage, AlarmEditPage, RingPage, ReliabilityPage
   Platforms/Android/          — AlarmScheduler, AlarmReceiver, BootReceiver, AlarmRingService,
                                 правки MainActivity, ReliabilityChecks
   Platforms/iOS/              — AlarmScheduler, NotificationDelegate, ReliabilityChecks
-  Resources/                  — AppIcon, Splash, Fonts (Manrope), Raw/sounds/*.wav,
-                                Strings/AppResources.resx и AppResources.ru.resx
-tools/gen-sounds/             — скрипт синтеза мелодий
+  Resources/                  — AppIcon, Splash, Images/bell.svg, Fonts (Manrope), Raw/*.wav (корень, без
+                                подпапок), Strings/AppResources.resx и AppResources.ru.resx
+tools/gen_sounds.py           — скрипт синтеза мелодий (Python stdlib)
 tests/Chrono.Tests/           — xUnit, net11.0
 ```
 
@@ -83,8 +85,12 @@ tests/Chrono.Tests/           — xUnit, net11.0
 - `Models/*`, `AlarmStore`, `AlarmService`, `IAlarmScheduler`, `IosNotificationPlan` не используют API MAUI
   (`FileSystem.AppDataDirectory` передаётся из `MauiProgram`), поэтому подключаются в тестовый проект ссылкой
   на файлы. Отдельный проект `Core` не создаётся.
-- Время хранится как локальное «настенное» и переводится в абсолютное в момент планирования. Смена часового
-  пояса или системного времени приводит к переустановке всех будильников.
+- Время хранится как локальное «настенное» (`DateTimeKind.Unspecified`, в JSON без смещения — `Save` приводит
+  Kind принудительно) и переводится в абсолютное в момент планирования. Смена часового пояса или системного
+  времени приводит к переустановке всех будильников (с `TimeZoneInfo.ClearCachedData()`).
+- `IAlarmScheduler.Sync(список)` приводит расписание ОС к списку целиком: так iOS соблюдает лимит 16, а Android
+  снимает выключенные. Удалённый будильник снимается отдельно через `Cancel(id)`.
+- Сохранение из редактора всегда включает будильник (как в системных «Часах») и требует время в будущем.
 - Стиль кода — по глобальным правилам: приватные поля без `_`, обращение через `this.`, без private-методов-
   помощников без необходимости, комментарии на русском.
 
@@ -166,7 +172,8 @@ tests/Chrono.Tests/           — xUnit, net11.0
 ## 8. iOS
 
 **Планирование.** `UNUserNotificationCenter` + `UNCalendarNotificationTrigger` (без повтора),
-`InterruptionLevel = TimeSensitive`. Entitlement `com.apple.developer.usernotifications.time-sensitive`
+`InterruptionLevel = UNNotificationInterruptionLevel.TimeSensitive2` — **не** `TimeSensitive`: устаревший член
+биндинга имеет значение 3, что на стороне iOS означает Critical (проверено рефлексией по `Microsoft.iOS.dll`). Entitlement `com.apple.developer.usernotifications.time-sensitive`
 в `Entitlements.plist`; включается в App ID и provisioning profile, одобрения Apple не требует.
 
 **Цепочка.** На один будильник — 4 уведомления: `At`, `At+30 с`, `At+60 с`, `At+90 с`, идентификаторы
@@ -242,7 +249,8 @@ time-sensitive разрешены (`UNNotificationSettings.TimeSensitiveSetting`
 
 ## 11. Тестирование и приёмка
 
-**Unit-тесты** (`tests/Chrono.Tests`, xUnit, net11.0; файлы логики подключены ссылкой, планировщик —
+**Unit-тесты** (`tests/Chrono.Tests`, xunit.v3 4.0.1 на Microsoft.Testing.Platform — `global.json` с
+`"test": {"runner": "Microsoft.Testing.Platform"}`, без VSTest-пакетов; net11.0; файлы логики подключены ссылкой, планировщик —
 ручной фейк, время — собственный наследник `TimeProvider` с фиксированным `GetUtcNow()`, без пакета
 `Microsoft.Extensions.TimeProvider.Testing`):
 - `AlarmService`: отказ сохранить прошедшее время; `Save` включённого вызывает `Schedule`, выключенного — нет;
@@ -289,4 +297,7 @@ time-sensitive разрешены (`UNNotificationSettings.TimeSensitiveSetting`
   (основная функция — будильник). Entitlement time-sensitive — в App ID.
 - **OEM-прошивки** (Xiaomi, Huawei) могут убивать приложение вопреки `setAlarmClock`; смягчение — экран
   «Надёжность» и подсказка про автозапуск.
-- **iOS без Mac** — iOS-код не компилируется и не проверяется в этой итерации; ошибки в нём всплывут позже.
+- **iOS без Mac** — iOS-код компилируется на Windows, но не запускается; ошибки поведения всплывут позже.
+- **Android 16 AudioHardening** — система пишет `background playback would be muted` для звука сервиса, пока
+  активити не на экране (сейчас только предупреждение, `mutedState:none`). Если ограничение станет действующим —
+  добавить сервису тип `mediaPlayback`. Проверяется при приёмке по `dumpsys audio`.
