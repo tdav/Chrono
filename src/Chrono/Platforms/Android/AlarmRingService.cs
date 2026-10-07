@@ -97,16 +97,27 @@ public sealed class AlarmRingService : Service
             return StartCommandResult.NotSticky;
         }
 
-        if (this.wakeLock is null)
+        // Повторный старт (второй будильник) продлевает удержание CPU на полный срок нового сигнала.
+        if (this.wakeLock?.IsHeld == true)
         {
-            var power = (PowerManager)this.GetSystemService(PowerService)!;
-            this.wakeLock = power.NewWakeLock(WakeLockFlags.Partial, "chrono:ring")!;
-            this.wakeLock.Acquire((long)(RingTimeout + TimeSpan.FromSeconds(10)).TotalMilliseconds);
+            this.wakeLock.Release();
         }
+
+        var power = (PowerManager)this.GetSystemService(PowerService)!;
+        this.wakeLock = power.NewWakeLock(WakeLockFlags.Partial, "chrono:ring")!;
+        this.wakeLock.Acquire((long)(RingTimeout + TimeSpan.FromSeconds(10)).TotalMilliseconds);
 
         if (alarm.SoundEnabled)
         {
-            this.soundPlayer.Play(alarm.SoundId, loop: true);
+            try
+            {
+                this.soundPlayer.Play(alarm.SoundId, loop: true);
+            }
+            catch (Exception ex)
+            {
+                // Звук не запустился даже запасным путём — вибрация и уведомление продолжают работу.
+                global::Android.Util.Log.Error("Chrono", $"Мелодия не запустилась: {ex}");
+            }
         }
 
         if (alarm.VibrationEnabled)

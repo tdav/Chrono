@@ -48,7 +48,15 @@ public sealed class SoundPlayer : ISoundPlayer
             return;
         }
 
-        this.player.Stop();
+        try
+        {
+            this.player.Stop();
+        }
+        catch (Java.Lang.IllegalStateException)
+        {
+            // Плеер в состоянии Error: Stop недопустим, но Release освобождает его в любом состоянии.
+        }
+
         this.player.Release();
         this.player = null;
     }

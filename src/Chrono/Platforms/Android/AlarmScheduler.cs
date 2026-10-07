@@ -21,8 +21,10 @@ public sealed class AlarmScheduler : IAlarmScheduler
             {
                 // Локальное «настенное» время → абсолютное по текущему поясу.
                 var triggerAtMs = new DateTimeOffset(DateTime.SpecifyKind(alarm.At, DateTimeKind.Local)).ToUnixTimeMilliseconds();
+                // requestCode 3: при 0 этот PendingIntent совпал бы с full-screen intent сервиса
+                // (extras в ключ PendingIntent не входят) и открывал бы экран сигнала чужого будильника.
                 var showIntent = PendingIntent.GetActivity(
-                    context, 0, new Intent(context, typeof(MainActivity)), PendingIntentFlags.Immutable);
+                    context, 3, new Intent(context, typeof(MainActivity)), PendingIntentFlags.Immutable);
                 manager.SetAlarmClock(new AlarmManager.AlarmClockInfo(triggerAtMs, showIntent), operation);
             }
             else
