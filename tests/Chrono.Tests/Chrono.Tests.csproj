@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Логика без зависимостей от MAUI подключается ссылками на файлы приложения. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Chrono\Models\Alarm.cs" Link="Linked\Alarm.cs" />
+    <Compile Include="..\..\src\Chrono\Models\Sounds.cs" Link="Linked\Sounds.cs" />
+    <Compile Include="..\..\src\Chrono\Services\PlatformContracts.cs" Link="Linked\PlatformContracts.cs" />
+    <Compile Include="..\..\src\Chrono\Services\AlarmStore.cs" Link="Linked\AlarmStore.cs" />
+    <Compile Include="..\..\src\Chrono\Services\AlarmService.cs" Link="Linked\AlarmService.cs" />
+    <Compile Include="..\..\src\Chrono\Services\IosNotificationPlan.cs" Link="Linked\IosNotificationPlan.cs" />
+  </ItemGroup>
+
+</Project>
