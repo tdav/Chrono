@@ -22,6 +22,11 @@
 		<AndroidStoreUncompressedFileExtensions>.wav</AndroidStoreUncompressedFileExtensions>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(Configuration)' == 'Release'">
+		<!-- Release по умолчанию собирает .aab (для Google Play); publish должен давать устанавливаемый .apk. -->
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
 		<!-- Time-sensitive уведомления; capability включается и в App ID на developer.apple.com. -->
 		<CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
