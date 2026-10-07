@@ -24,7 +24,7 @@
             <Label Text="{x:Static res:AppResources.WarningBanner}" TextColor="{StaticResource Danger}" FontFamily="ManropeSemiBold" />
         </Border>
 
-        <CollectionView Grid.Row="3" ItemsSource="{Binding Alarms}" SelectionMode="None">
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Alarms}" SelectionMode="None" VerticalScrollBarVisibility="Never">
             <CollectionView.EmptyView>
                 <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource Muted}" FontSize="14"
                        HorizontalTextAlignment="Center" Margin="24,48" />

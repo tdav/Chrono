@@ -49,7 +49,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IReliabilityChecks, ReliabilityChecks>();
         builder.Services.AddSingleton<AlarmService>();
 
-        builder.Services.AddSingleton<AppShell>();
+        // Transient: новый Shell для каждого окна (см. AppShell).
+        builder.Services.AddTransient<AppShell>();
         builder.Services.AddTransient<AlarmListViewModel>();
         builder.Services.AddTransient<AlarmListPage>();
         builder.Services.AddTransient<AlarmEditViewModel>();

@@ -13,10 +13,18 @@ public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnCreate(Bundle? savedInstanceState)
     {
+        // Запуск из full-screen intent сигнала. Id передаётся RingLauncher до base.OnCreate: там MAUI
+        // создаёт окно (App.CreateWindow), и оно должно знать о сигнале, чтобы пропустить splash.
+        var startedByAlarm = Guid.TryParse(this.Intent?.GetStringExtra(AlarmReceiver.ExtraAlarmId), out var alarmId);
+        if (startedByAlarm)
+        {
+            RingLauncher.Request(alarmId);
+        }
+
         base.OnCreate(savedInstanceState);
 
-        // Запуск из full-screen intent сигнала: показываемся поверх блокировки и открываем RingPage.
-        if (Guid.TryParse(this.Intent?.GetStringExtra(AlarmReceiver.ExtraAlarmId), out var alarmId))
+        // Показываемся поверх блокировки.
+        if (startedByAlarm)
         {
             if (OperatingSystem.IsAndroidVersionAtLeast(27))
             {
@@ -27,8 +35,6 @@ public class MainActivity : MauiAppCompatActivity
             {
                 this.Window!.AddFlags(WindowManagerFlags.ShowWhenLocked | WindowManagerFlags.TurnScreenOn);
             }
-
-            RingLauncher.Request(alarmId);
         }
     }
 
