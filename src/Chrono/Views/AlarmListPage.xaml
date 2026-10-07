@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.AlarmListPage"
+             x:DataType="vm:AlarmListViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" SafeAreaEdges="Container">
+
+        <!-- Шапка: название и шестерёнка «Надёжность». -->
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeSemiBold" FontSize="28" />
+            <Button Grid.Column="1" Text="⚙" FontSize="22" BackgroundColor="Transparent" TextColor="{StaticResource TextMuted}"
+                    Padding="8,0" Command="{Binding OpenReliabilityCommand}"
+                    SemanticProperties.Description="{x:Static res:AppResources.ReliabilityTitle}" />
+        </Grid>
+
+        <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource Accent}" FontSize="13" Margin="0,2,0,12" />
+
+        <Border Grid.Row="2" IsVisible="{Binding IsWarningVisible}" Background="#33FF8F7A" Stroke="{StaticResource Danger}"
+                StrokeShape="RoundRectangle 14" Padding="14,10" Margin="0,0,0,12">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
+            </Border.GestureRecognizers>
+            <Label Text="{x:Static res:AppResources.WarningBanner}" TextColor="{StaticResource Danger}" FontFamily="ManropeSemiBold" />
+        </Border>
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Alarms}" SelectionMode="None">
+            <CollectionView.EmptyView>
+                <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource Muted}" FontSize="14"
+                       HorizontalTextAlignment="Center" Margin="24,48" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:AlarmItem">
+                    <SwipeView Margin="0,0,0,10">
+                        <SwipeView.RightItems>
+                            <SwipeItems Mode="Execute">
+                                <SwipeItem Text="{x:Static res:AppResources.Delete}" BackgroundColor="{StaticResource Danger}"
+                                           Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
+                                           CommandParameter="{Binding .}" />
+                            </SwipeItems>
+                        </SwipeView.RightItems>
+                        <Border Style="{StaticResource Card}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsEnabled}" Value="False">
+                                    <Setter Property="Opacity" Value="0.45" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding TimeText}" FontFamily="ManropeLight" FontSize="38" />
+                                    <Label Text="{Binding Details}" Style="{StaticResource Muted}" />
+                                </VerticalStackLayout>
+                                <Switch Grid.Column="1" IsToggled="{Binding IsEnabled}" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </SwipeView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <BoxView HeightRequest="96" Color="Transparent" />
+            </CollectionView.Footer>
+        </CollectionView>
+
+        <!-- Плавающая кнопка «+». -->
+        <Button Grid.Row="3" Text="+" FontSize="30" FontFamily="ManropeLight" Padding="0"
+                WidthRequest="60" HeightRequest="60" CornerRadius="20"
+                Background="{StaticResource AccentBrush}" TextColor="{StaticResource OnAccent}"
+                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,4,24"
+                Command="{Binding AddCommand}" SemanticProperties.Description="{x:Static res:AppResources.NewAlarm}" />
+    </Grid>
+</ContentPage>
