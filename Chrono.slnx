@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Chrono/Chrono.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Chrono.Tests/Chrono.Tests.csproj" />
+  </Folder>
 </Solution>
