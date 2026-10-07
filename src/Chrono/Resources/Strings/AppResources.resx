@@ -65,4 +65,11 @@
   <data name="MathChallengeDescription" xml:space="preserve"><value>To stop the alarm, solve an addition or subtraction problem with two-digit numbers. Pick the right answer out of four; a wrong one gives a new problem and the alarm keeps ringing.</value></data>
   <data name="SolveToStop" xml:space="preserve"><value>Solve to stop the alarm</value></data>
   <data name="WrongAnswer" xml:space="preserve"><value>Wrong. The alarm keeps ringing — try this one</value></data>
+  <data name="RepeatHeader" xml:space="preserve"><value>Repeat</value></data>
+  <data name="Repeat_None" xml:space="preserve"><value>Once</value></data>
+  <data name="Repeat_Daily" xml:space="preserve"><value>Every day</value></data>
+  <data name="Repeat_Weekly" xml:space="preserve"><value>Days of week</value></data>
+  <data name="Repeat_Yearly" xml:space="preserve"><value>Every year</value></data>
+  <data name="NoDaysSelected" xml:space="preserve"><value>Pick at least one day</value></data>
+  <data name="NextOccurrence" xml:space="preserve"><value>Next: {0}</value></data>
 </root>

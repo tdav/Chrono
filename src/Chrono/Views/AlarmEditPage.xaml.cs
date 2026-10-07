@@ -40,14 +40,17 @@ public partial class AlarmEditPage : ContentPage
         // Поле заполнено набором (а не загрузкой значения) — фокус переходит к следующему.
         if (entry.IsFocused && digits.Length == entry.MaxLength && (e.OldTextValue?.Length ?? 0) < digits.Length)
         {
+            // Для ежедневного и по дням недели строки даты нет — после минут ввод закончен.
             var next = entry == this.HourEntry ? this.MinuteEntry
-                : entry == this.MinuteEntry ? this.DayEntry
+                : entry == this.MinuteEntry && this.viewModel.IsDateVisible ? this.DayEntry
                 : entry == this.DayEntry ? this.MonthEntry
                 : entry == this.MonthEntry ? this.YearEntry
                 : null;
 
             if (next is null)
             {
+                // Unfocus на Android клавиатуру не закрывает — скрываем явно.
+                _ = entry.HideSoftInputAsync(CancellationToken.None);
                 entry.Unfocus();
             }
             else

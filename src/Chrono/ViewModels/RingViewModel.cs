@@ -70,9 +70,9 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
             this.NewChallenge();
         }
         var alarm = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
-        var at = alarm?.At ?? DateTime.Now;
-        this.TimeText = at.ToString("HH:mm");
-        this.DateText = at.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
+        this.TimeText = (alarm?.At ?? DateTime.Now).ToString("HH:mm");
+        // Дата — сегодняшняя: у повторяющегося At уже указывает на следующее срабатывание.
+        this.DateText = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
         this.Label = string.IsNullOrWhiteSpace(alarm?.Label) ? AppResources.DefaultLabel : alarm.Label;
     }
 

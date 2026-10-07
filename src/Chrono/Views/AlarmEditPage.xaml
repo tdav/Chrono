@@ -4,6 +4,30 @@
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 
+    <!-- Чип выбора (мелодия, повтор, день недели): выбранный — с акцентной заливкой. -->
+    <ContentPage.Resources>
+        <Style x:Key="Chip" TargetType="Border">
+            <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Stroke" Value="{StaticResource SurfaceBorder}" />
+            <Setter Property="Background" Value="{StaticResource Surface}" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Border" x:DataType="vm:ChoiceOption" Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ChipText" TargetType="Label">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger TargetType="Label" x:DataType="vm:ChoiceOption" Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="TextColor" Value="{StaticResource OnAccent}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </ContentPage.Resources>
+
     <!-- Снизу All: кнопки поднимаются над клавиатурой (нужен WindowSoftInputModeAdjust=Resize в App.xaml). -->
     <Grid RowDefinitions="*,Auto" Padding="20,12,20,16" SafeAreaEdges="Container, Container, Container, All">
 
@@ -25,7 +49,7 @@
                                        FontSize="44" Placeholder="00" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
                             </Border>
                         </HorizontalStackLayout>
-                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6" IsVisible="{Binding IsDateVisible}">
                             <Border Style="{StaticResource DigitBox}" WidthRequest="56">
                                 <Entry x:Name="DayEntry" Text="{Binding Day}" Style="{StaticResource DigitEntry}" MaxLength="2"
                                        FontSize="18" Placeholder="{x:Static res:AppResources.DayPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
@@ -47,6 +71,42 @@
                 <Label Text="{Binding ErrorText}" TextColor="{StaticResource Danger}" Margin="4,6,0,0"
                        IsVisible="{Binding HasError}" />
 
+                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource SectionHeader}" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="4">
+                        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding RepeatOptions}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceOption">
+                                    <Border Style="{StaticResource Chip}" Margin="0,0,8,8">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding SelectRepeatCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                        <!-- Семь дней в одну строку: узкие чипы, равные промежутки. -->
+                        <FlexLayout JustifyContent="SpaceBetween" IsVisible="{Binding IsDaysVisible}"
+                                    BindableLayout.ItemsSource="{Binding DayOptions}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ChoiceOption">
+                                    <Border Style="{StaticResource Chip}" Padding="0,8" WidthRequest="40">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding ToggleDayCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Border>
+
                 <Label Text="{x:Static res:AppResources.LabelHeader}" Style="{StaticResource SectionHeader}" />
                 <Border Style="{StaticResource Card}" Padding="12,2" Stroke="{StaticResource Accent}">
                     <Entry Text="{Binding Label}" Placeholder="{x:Static res:AppResources.LabelPlaceholder}" MaxLength="60"
@@ -64,26 +124,14 @@
                         <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" IsVisible="{Binding SoundEnabled}">
                             <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding SoundOptions}">
                                 <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:SoundOption">
-                                        <Border StrokeShape="RoundRectangle 14" Padding="14,8" Stroke="{StaticResource SurfaceBorder}"
-                                                Background="{StaticResource Surface}">
-                                            <Border.Triggers>
-                                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                                </DataTrigger>
-                                            </Border.Triggers>
+                                    <DataTemplate x:DataType="vm:ChoiceOption">
+                                        <Border Style="{StaticResource Chip}">
                                             <Border.GestureRecognizers>
                                                 <TapGestureRecognizer
                                                     Command="{Binding SelectSoundCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
                                                     CommandParameter="{Binding .}" />
                                             </Border.GestureRecognizers>
-                                            <Label Text="{Binding Name}" FontSize="13">
-                                                <Label.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                        <Setter Property="TextColor" Value="{StaticResource OnAccent}" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
+                                            <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
                                         </Border>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
