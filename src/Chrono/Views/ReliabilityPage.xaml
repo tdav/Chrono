@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.ReliabilityPage"
+             x:DataType="vm:ReliabilityViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20,12,20,16" SafeAreaEdges="Container">
+        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" FontFamily="ManropeSemiBold" FontSize="24" Margin="0,0,0,12" />
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding Rows}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ReliabilityRow">
+                            <Border Style="{StaticResource Card}">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Label Text="{Binding Mark}" FontSize="18" VerticalOptions="Center" />
+                                    <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" />
+                                    <Button Grid.Column="2" Text="{x:Static res:AppResources.Fix}" Style="{StaticResource SecondaryButton}"
+                                            Padding="14,6" FontSize="13" IsVisible="{Binding NeedsFix}"
+                                            Command="{Binding FixCommand, Source={RelativeSource AncestorType={x:Type vm:ReliabilityViewModel}}, x:DataType=vm:ReliabilityViewModel}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <Label Text="{x:Static res:AppResources.OemHint}" Style="{StaticResource Muted}" IsVisible="{Binding IsAndroid}" Margin="4,8" />
+                <Label Text="{x:Static res:AppResources.SilentHint}" Style="{StaticResource Muted}" IsVisible="{Binding IsIos}" Margin="4,8" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Button Grid.Row="2" Text="{x:Static res:AppResources.Ok}" Style="{StaticResource PrimaryButton}"
+                HorizontalOptions="End" Command="{Binding CloseCommand}" />
+    </Grid>
+</ContentPage>

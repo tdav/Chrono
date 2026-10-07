@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Chrono</value></data>
+  <data name="NextInHours" xml:space="preserve"><value>Next alarm in {0} h {1} min</value></data>
+  <data name="NextInMinutes" xml:space="preserve"><value>Next alarm in {0} min</value></data>
+  <data name="NoActiveAlarms" xml:space="preserve"><value>No active alarms</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>No alarms yet. Tap + to add one.</value></data>
+  <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
+  <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
+  <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
+  <data name="TapToChange" xml:space="preserve"><value>tap the time or date to change</value></data>
+  <data name="LabelHeader" xml:space="preserve"><value>Text</value></data>
+  <data name="LabelPlaceholder" xml:space="preserve"><value>Alarm text</value></data>
+  <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
+  <data name="Sound" xml:space="preserve"><value>Sound</value></data>
+  <data name="Vibration" xml:space="preserve"><value>Vibration</value></data>
+  <data name="DeleteAlarm" xml:space="preserve"><value>Delete alarm</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="TimeInPast" xml:space="preserve"><value>This time has already passed</value></data>
+  <data name="PickNewDate" xml:space="preserve"><value>This alarm's time has passed. Choose a new date.</value></data>
+  <data name="DefaultLabel" xml:space="preserve"><value>Alarm</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop</value></data>
+  <data name="ChannelAlarms" xml:space="preserve"><value>Alarms</value></data>
+  <data name="ChannelMissed" xml:space="preserve"><value>Missed alarms</value></data>
+  <data name="MissedAlarm" xml:space="preserve"><value>Missed alarm {0}</value></data>
+  <data name="CorruptFile" xml:space="preserve"><value>Couldn't read the alarm list. The damaged file was set aside.</value></data>
+  <data name="SoundPickerTitle" xml:space="preserve"><value>Melody</value></data>
+  <data name="Sound_bell" xml:space="preserve"><value>Bell</value></data>
+  <data name="Sound_chime" xml:space="preserve"><value>Chime</value></data>
+  <data name="Sound_digital" xml:space="preserve"><value>Digital</value></data>
+  <data name="Sound_rising" xml:space="preserve"><value>Rising</value></data>
+  <data name="Sound_soft" xml:space="preserve"><value>Soft</value></data>
+  <data name="ReliabilityTitle" xml:space="preserve"><value>Reliability</value></data>
+  <data name="Rel_Notifications" xml:space="preserve"><value>Notifications allowed</value></data>
+  <data name="Rel_ExactAlarms" xml:space="preserve"><value>Exact alarms allowed</value></data>
+  <data name="Rel_FullScreen" xml:space="preserve"><value>Full-screen alerts allowed</value></data>
+  <data name="Rel_Battery" xml:space="preserve"><value>Battery optimization off</value></data>
+  <data name="Rel_TimeSensitive" xml:space="preserve"><value>Time-sensitive notifications allowed</value></data>
+  <data name="Fix" xml:space="preserve"><value>Fix</value></data>
+  <data name="OemHint" xml:space="preserve"><value>On Xiaomi, Huawei and Samsung phones also allow Autostart for Chrono: Settings → Apps → Chrono → Autostart / Battery.</value></data>
+  <data name="SilentHint" xml:space="preserve"><value>In silent mode only vibration will play.</value></data>
+</root>

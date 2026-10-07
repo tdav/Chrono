@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns:views="clr-namespace:Chrono.Views"
+       x:Class="Chrono.AppShell"
+       Shell.NavBarIsVisible="False"
+       Shell.FlyoutBehavior="Disabled">
+
+    <ShellContent ContentTemplate="{DataTemplate views:AlarmListPage}" Route="list" />
+
+</Shell>

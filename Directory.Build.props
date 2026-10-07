@@ -1,0 +1,12 @@
+<Project>
+  <!--
+    obj/bin вынесены в ASCII-путь: aapt2 (Android) не открывает файлы, если в пути есть кириллица
+    (ошибка APT2265), а репозиторий лежит в «Chrono-Будильник». Хеш пути проекта разводит сборки
+    разных worktree и клонов по своим каталогам.
+  -->
+  <PropertyGroup>
+    <ChronoBuildRoot>$(TEMP)\chrono-build\$([MSBuild]::StableStringHash($(MSBuildProjectDirectory)))\$(MSBuildProjectName)\</ChronoBuildRoot>
+    <BaseIntermediateOutputPath>$(ChronoBuildRoot)obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(ChronoBuildRoot)bin\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

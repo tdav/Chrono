@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>Chrono</value></data>
+  <data name="NextInHours" xml:space="preserve"><value>Следующий через {0} ч {1} мин</value></data>
+  <data name="NextInMinutes" xml:space="preserve"><value>Следующий через {0} мин</value></data>
+  <data name="NoActiveAlarms" xml:space="preserve"><value>Нет активных будильников</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>Будильников пока нет. Нажмите +, чтобы добавить.</value></data>
+  <data name="WarningBanner" xml:space="preserve"><value>Будильник может не сработать — исправить</value></data>
+  <data name="NewAlarm" xml:space="preserve"><value>Новый будильник</value></data>
+  <data name="EditAlarm" xml:space="preserve"><value>Изменить будильник</value></data>
+  <data name="TapToChange" xml:space="preserve"><value>нажмите на время или дату, чтобы изменить</value></data>
+  <data name="LabelHeader" xml:space="preserve"><value>Текст</value></data>
+  <data name="LabelPlaceholder" xml:space="preserve"><value>Текст будильника</value></data>
+  <data name="SignalHeader" xml:space="preserve"><value>Сигнал</value></data>
+  <data name="Sound" xml:space="preserve"><value>Звук</value></data>
+  <data name="Vibration" xml:space="preserve"><value>Вибрация</value></data>
+  <data name="DeleteAlarm" xml:space="preserve"><value>Удалить будильник</value></data>
+  <data name="Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Ok" xml:space="preserve"><value>ОК</value></data>
+  <data name="TimeInPast" xml:space="preserve"><value>Это время уже прошло</value></data>
+  <data name="PickNewDate" xml:space="preserve"><value>Время этого будильника прошло. Выберите новую дату.</value></data>
+  <data name="DefaultLabel" xml:space="preserve"><value>Будильник</value></data>
+  <data name="Stop" xml:space="preserve"><value>Стоп</value></data>
+  <data name="ChannelAlarms" xml:space="preserve"><value>Будильники</value></data>
+  <data name="ChannelMissed" xml:space="preserve"><value>Пропущенные будильники</value></data>
+  <data name="MissedAlarm" xml:space="preserve"><value>Пропущенный будильник {0}</value></data>
+  <data name="CorruptFile" xml:space="preserve"><value>Не удалось прочитать список будильников. Повреждённый файл сохранён отдельно.</value></data>
+  <data name="SoundPickerTitle" xml:space="preserve"><value>Мелодия</value></data>
+  <data name="Sound_bell" xml:space="preserve"><value>Колокол</value></data>
+  <data name="Sound_chime" xml:space="preserve"><value>Перезвон</value></data>
+  <data name="Sound_digital" xml:space="preserve"><value>Цифровой</value></data>
+  <data name="Sound_rising" xml:space="preserve"><value>Нарастающий</value></data>
+  <data name="Sound_soft" xml:space="preserve"><value>Мягкий</value></data>
+  <data name="ReliabilityTitle" xml:space="preserve"><value>Надёжность</value></data>
+  <data name="Rel_Notifications" xml:space="preserve"><value>Уведомления разрешены</value></data>
+  <data name="Rel_ExactAlarms" xml:space="preserve"><value>Точные будильники разрешены</value></data>
+  <data name="Rel_FullScreen" xml:space="preserve"><value>Полноэкранные уведомления разрешены</value></data>
+  <data name="Rel_Battery" xml:space="preserve"><value>Оптимизация батареи отключена</value></data>
+  <data name="Rel_TimeSensitive" xml:space="preserve"><value>Срочные уведомления разрешены</value></data>
+  <data name="Fix" xml:space="preserve"><value>Исправить</value></data>
+  <data name="OemHint" xml:space="preserve"><value>На телефонах Xiaomi, Huawei и Samsung также разрешите Chrono автозапуск: Настройки → Приложения → Chrono → Автозапуск / Батарея.</value></data>
+  <data name="SilentHint" xml:space="preserve"><value>В беззвучном режиме будет только вибрация.</value></data>
+</root>
