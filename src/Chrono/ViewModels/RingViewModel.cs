@@ -37,6 +37,13 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
 
     public void Load(Guid id)
     {
+        // Новый сигнал заменяет текущий: снимаем хвост цепочки уведомлений предыдущего будильника (iOS).
+        // Cancel, а не StopRinging: на Android StopRinging остановил бы сервис, который уже звонит новым сигналом.
+        if (this.alarmId != Guid.Empty && this.alarmId != id)
+        {
+            this.scheduler.Cancel(this.alarmId);
+        }
+
         this.alarmId = id;
         var alarm = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
         var at = alarm?.At ?? DateTime.Now;
