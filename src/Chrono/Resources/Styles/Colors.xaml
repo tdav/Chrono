@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Токены темы «Ночное небо». Приложение всегда тёмное. -->
+<ResourceDictionary>
+
+    <Color x:Key="BgDeep">#0A0B1A</Color>
+    <Color x:Key="BgMid">#12142E</Color>
+    <Color x:Key="BgTop">#2A2F6B</Color>
+    <!-- Поверхность карточек — белый 6 %, рамка — белый 8 %. -->
+    <Color x:Key="Surface">#0FFFFFFF</Color>
+    <Color x:Key="SurfaceBorder">#14FFFFFF</Color>
+    <Color x:Key="Accent">#FFB35C</Color>
+    <Color x:Key="AccentEnd">#FF7A59</Color>
+    <Color x:Key="OnAccent">#1A0F08</Color>
+    <Color x:Key="Text">#E9EBFF</Color>
+    <Color x:Key="TextMuted">#9AA0D6</Color>
+    <Color x:Key="Danger">#FF8F7A</Color>
+    <Color x:Key="SwitchOff">#3A3E66</Color>
+
+    <RadialGradientBrush x:Key="PageBackground" Center="0.8,0" Radius="1.2">
+        <GradientStop Color="{StaticResource BgTop}" Offset="0" />
+        <GradientStop Color="{StaticResource BgMid}" Offset="0.55" />
+        <GradientStop Color="{StaticResource BgDeep}" Offset="1" />
+    </RadialGradientBrush>
+
+    <LinearGradientBrush x:Key="AccentBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="{StaticResource Accent}" Offset="0" />
+        <GradientStop Color="{StaticResource AccentEnd}" Offset="1" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>
