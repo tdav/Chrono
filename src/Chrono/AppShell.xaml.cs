@@ -1,10 +1,14 @@
+using Chrono.Views;
+
 namespace Chrono;
 
-// Промежуточная версия каркаса (задача 1). Финальная версия — в задаче 7.
 public partial class AppShell : Shell
 {
     public AppShell()
     {
         this.InitializeComponent();
+        Routing.RegisterRoute("edit", typeof(AlarmEditPage));
+        Routing.RegisterRoute("ring", typeof(RingPage));
+        Routing.RegisterRoute("reliability", typeof(ReliabilityPage));
     }
 }

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<!-- Временная заглушка каркаса (задача 1). Удаляется в задаче 7. -->
-<ContentPage xmlns:res="clr-namespace:Chrono.Resources.Strings"
-             x:Class="Chrono.MainPage">
-    <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeLight" FontSize="48"
-           HorizontalOptions="Center" VerticalOptions="Center" />
-</ContentPage>

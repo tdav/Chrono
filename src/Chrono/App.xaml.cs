@@ -1,15 +1,28 @@
+using Chrono.Services;
+using Chrono.Views;
+
 namespace Chrono;
 
-// Промежуточная версия каркаса (задача 1). Финальная версия — в задаче 7.
 public partial class App : Application
 {
-    public App()
+    private readonly IServiceProvider services;
+
+    public App(IServiceProvider services, AlarmService alarmService)
     {
         this.InitializeComponent();
+        this.services = services;
+        // Приложение всегда тёмное: светлые иконки статус-бара и тёмные диалоги пикеров при любой системной теме.
+        this.UserAppTheme = AppTheme.Dark;
+        // Восстанавливаем расписание: после «Остановить принудительно» Android стирает будильники приложения.
+        alarmService.RescheduleAll();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new AppShell());
+        // Запуск по сигналу — без splash, сразу Shell; RingPage откроет AlarmListPage через RingLauncher.
+        Page first = RingLauncher.PendingId is null
+            ? new SplashPage(this.services)
+            : this.services.GetRequiredService<AppShell>();
+        return new Window(first);
     }
 }

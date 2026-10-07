@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Промежуточная версия каркаса (задача 1). Финальная версия — в задаче 7. -->
-<Shell xmlns:local="clr-namespace:Chrono"
+<Shell xmlns:views="clr-namespace:Chrono.Views"
        x:Class="Chrono.AppShell"
-       Shell.NavBarIsVisible="False">
+       Shell.NavBarIsVisible="False"
+       Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="main" />
+    <ShellContent ContentTemplate="{DataTemplate views:AlarmListPage}" Route="list" />
 
 </Shell>
