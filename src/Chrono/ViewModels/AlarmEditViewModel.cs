@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
@@ -7,9 +8,10 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-public sealed partial class SoundOption : ObservableObject
+/// <summary>Чип выбора: мелодия, вид повтора или день недели.</summary>
+public sealed partial class ChoiceOption : ObservableObject
 {
-    public SoundOption(string id, string name)
+    public ChoiceOption(string id, string name)
     {
         this.Id = id;
         this.Name = name;
@@ -38,7 +40,14 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.alarmService = alarmService;
         this.soundPlayer = soundPlayer;
         this.SoundOptions = new(Sounds.All.Select(id =>
-            new SoundOption(id, AppResources.ResourceManager.GetString($"Sound_{id}", AppResources.Culture) ?? id)));
+            new ChoiceOption(id, AppResources.ResourceManager.GetString($"Sound_{id}", AppResources.Culture) ?? id)));
+        this.RepeatOptions = new(Enum.GetValues<RepeatKind>().Select(kind =>
+            new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Repeat_{kind}", AppResources.Culture) ?? kind.ToString())));
+        // Дни — с первого дня недели культуры (в России с понедельника).
+        var format = CultureInfo.CurrentUICulture.DateTimeFormat;
+        this.DayOptions = new(Enumerable.Range(0, 7)
+            .Select(i => (DayOfWeek)(((int)format.FirstDayOfWeek + i) % 7))
+            .Select(day => new ChoiceOption(((WeekDays)(1 << (int)day)).ToString(), format.AbbreviatedDayNames[(int)day])));
 
         var start = DateTime.Now.AddHours(1);
         this.Hour = start.ToString("HH");
@@ -48,9 +57,14 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.Year = start.ToString("yyyy");
         // Инициализатор свойства не вызывает OnSoundIdChanged — отмечаем мелодию по умолчанию явно.
         this.OnSoundIdChanged(this.SoundId);
+        this.OnRepeatChanged(this.Repeat);
     }
 
-    public ObservableCollection<SoundOption> SoundOptions { get; }
+    public ObservableCollection<ChoiceOption> SoundOptions { get; }
+
+    public ObservableCollection<ChoiceOption> RepeatOptions { get; }
+
+    public ObservableCollection<ChoiceOption> DayOptions { get; }
 
     [ObservableProperty]
     public partial string Title { get; set; } = AppResources.NewAlarm;
@@ -90,8 +104,29 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             ? new DateTime(year, month, day, hour, minute, 0)
             : null;
 
-    /// <summary>Подсказка под полями: день недели и дата словами; пусто, пока ввод неполный (ошибку покажет сохранение).</summary>
-    public string WhenText => this.At?.ToString("dddd, d MMMM yyyy") ?? "";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(WhenText), nameof(IsDateVisible), nameof(IsDaysVisible))]
+    public partial RepeatKind Repeat { get; set; } = RepeatKind.None;
+
+    /// <summary>Дата нужна разовому и ежегодному; ежедневному и по дням недели — только время.</summary>
+    public bool IsDateVisible => this.Repeat is RepeatKind.None or RepeatKind.Yearly;
+
+    public bool IsDaysVisible => this.Repeat == RepeatKind.Weekly;
+
+    /// <summary>
+    /// Подсказка под полями: дата словами, у повторяющегося — ближайшее срабатывание;
+    /// пусто, пока ввод неполный (ошибку покажет сохранение).
+    /// </summary>
+    public string WhenText => this.At is not { } at
+        ? ""
+        : this.Repeat == RepeatKind.None
+            ? at.ToString("dddd, d MMMM yyyy")
+            : string.Format(
+                AppResources.NextOccurrence,
+                new Alarm { At = at, Repeat = this.Repeat, Days = this.SelectedDays }.NextAfter(DateTime.Now).ToString("dddd, d MMMM yyyy"));
+
+    private WeekDays SelectedDays =>
+        this.DayOptions.Where(o => o.IsSelected).Aggregate(WeekDays.None, (days, o) => days | Enum.Parse<WeekDays>(o.Id));
 
     [ObservableProperty]
     public partial string Label { get; set; } = "";
@@ -135,6 +170,11 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.SoundEnabled = this.existing.SoundEnabled;
         this.VibrationEnabled = this.existing.VibrationEnabled;
         this.SoundId = this.existing.SoundId;
+        this.Repeat = this.existing.Repeat;
+        foreach (var option in this.DayOptions)
+        {
+            option.IsSelected = this.existing.Days.HasFlag(Enum.Parse<WeekDays>(option.Id));
+        }
 
         if (query.ContainsKey("expired"))
         {
@@ -143,10 +183,21 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
-    private void SelectSound(SoundOption option)
+    private void SelectSound(ChoiceOption option)
     {
         this.SoundId = option.Id;
         this.soundPlayer.Play(option.Id, loop: false);
+    }
+
+    [RelayCommand]
+    private void SelectRepeat(ChoiceOption option) => this.Repeat = Enum.Parse<RepeatKind>(option.Id);
+
+    [RelayCommand]
+    private void ToggleDay(ChoiceOption option)
+    {
+        option.IsSelected = !option.IsSelected;
+        this.ErrorText = "";
+        this.OnPropertyChanged(nameof(this.WhenText));
     }
 
     [RelayCommand]
@@ -166,7 +217,21 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             SoundId = this.SoundId,
             VibrationEnabled = this.VibrationEnabled,
             IsEnabled = true,
+            Repeat = this.Repeat,
+            Days = this.Repeat == RepeatKind.Weekly ? this.SelectedDays : WeekDays.None,
         };
+
+        if (alarm.Repeat == RepeatKind.Weekly && alarm.Days == WeekDays.None)
+        {
+            this.ErrorText = AppResources.NoDaysSelected;
+            return;
+        }
+
+        // У повторяющегося из полей берётся время (и день с месяцем для ежегодного), At — ближайшее срабатывание.
+        if (alarm.Repeat != RepeatKind.None)
+        {
+            alarm = alarm with { At = alarm.NextAfter(DateTime.Now) };
+        }
 
         if (!this.alarmService.Save(alarm))
         {
@@ -208,6 +273,15 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     partial void OnMonthChanged(string value) => this.ErrorText = "";
 
     partial void OnYearChanged(string value) => this.ErrorText = "";
+
+    partial void OnRepeatChanged(RepeatKind value)
+    {
+        this.ErrorText = "";
+        foreach (var option in this.RepeatOptions)
+        {
+            option.IsSelected = option.Id == value.ToString();
+        }
+    }
 
     partial void OnSoundIdChanged(string value)
     {

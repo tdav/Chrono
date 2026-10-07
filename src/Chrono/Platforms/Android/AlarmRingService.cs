@@ -103,6 +103,9 @@ public sealed class AlarmRingService : Service
             return StartCommandResult.NotSticky;
         }
 
+        // Повторяющийся переходит на следующее срабатывание и планируется сразу, не дожидаясь открытия приложения.
+        new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System).RescheduleAll();
+
         // Повторный старт (второй будильник) продлевает удержание CPU на полный срок нового сигнала.
         if (this.wakeLock?.IsHeld == true)
         {

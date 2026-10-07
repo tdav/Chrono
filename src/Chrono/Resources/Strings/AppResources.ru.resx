@@ -65,4 +65,11 @@
   <data name="MathChallengeDescription" xml:space="preserve"><value>Чтобы выключить будильник, нужно решить пример на сложение или вычитание двузначных чисел. Выберите верный ответ из четырёх вариантов; при неверном сигнал продолжается и появляется новый пример.</value></data>
   <data name="SolveToStop" xml:space="preserve"><value>Решите пример, чтобы выключить сигнал</value></data>
   <data name="WrongAnswer" xml:space="preserve"><value>Неверно. Сигнал продолжается — решите этот пример</value></data>
+  <data name="RepeatHeader" xml:space="preserve"><value>Повтор</value></data>
+  <data name="Repeat_None" xml:space="preserve"><value>Однократно</value></data>
+  <data name="Repeat_Daily" xml:space="preserve"><value>Каждый день</value></data>
+  <data name="Repeat_Weekly" xml:space="preserve"><value>По дням недели</value></data>
+  <data name="Repeat_Yearly" xml:space="preserve"><value>Каждый год</value></data>
+  <data name="NoDaysSelected" xml:space="preserve"><value>Выберите хотя бы один день</value></data>
+  <data name="NextOccurrence" xml:space="preserve"><value>Ближайший: {0}</value></data>
 </root>

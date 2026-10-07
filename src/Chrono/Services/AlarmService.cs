@@ -22,7 +22,10 @@ public sealed class AlarmService
     /// <summary>Последняя ошибка планировщика ОС (null — ошибок не было). Будильник при этом сохранён.</summary>
     public Exception? SchedulingError { get; private set; }
 
-    /// <summary>Все будильники по времени. Сработавшие (включённые с At ≤ now) переводятся в выключенные и сохраняются.</summary>
+    /// <summary>
+    /// Все будильники по времени. Сработавшие (включённые с At ≤ now): разовые выключаются,
+    /// повторяющиеся переходят на следующее срабатывание; изменения сохраняются.
+    /// </summary>
     public IReadOnlyList<Alarm> GetAll()
     {
         var (alarms, wasCorrupt) = this.store.Load();
@@ -34,7 +37,9 @@ public sealed class AlarmService
         {
             if (alarms[i].IsEnabled && alarms[i].At <= now)
             {
-                alarms[i] = alarms[i] with { IsEnabled = false };
+                alarms[i] = alarms[i].Repeat == RepeatKind.None
+                    ? alarms[i] with { IsEnabled = false }
+                    : alarms[i] with { At = alarms[i].NextAfter(now) };
                 changed = true;
             }
         }
@@ -85,7 +90,10 @@ public sealed class AlarmService
         return true;
     }
 
-    /// <summary>Включить или выключить. false — включение отклонено: время уже прошло.</summary>
+    /// <summary>
+    /// Включить или выключить. Повторяющийся при включении переходит на ближайшее срабатывание.
+    /// false — включение разового отклонено: время уже прошло.
+    /// </summary>
     public bool Toggle(Guid id, bool enabled)
     {
         var alarms = this.GetAll().ToList();
@@ -95,9 +103,15 @@ public sealed class AlarmService
             return false;
         }
 
-        if (enabled && alarms[index].At <= this.time.GetLocalNow().DateTime)
+        var now = this.time.GetLocalNow().DateTime;
+        if (enabled && alarms[index].At <= now)
         {
-            return false;
+            if (alarms[index].Repeat == RepeatKind.None)
+            {
+                return false;
+            }
+
+            alarms[index] = alarms[index] with { At = alarms[index].NextAfter(now) };
         }
 
         alarms[index] = alarms[index] with { IsEnabled = enabled };

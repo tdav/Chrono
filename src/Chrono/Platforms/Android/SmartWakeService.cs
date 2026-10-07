@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.Hardware;
 using Android.OS;
 using Android.Runtime;
+using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
 
@@ -162,9 +163,18 @@ public sealed class SmartWakeService : Service, ISensorEventListener
         global::Android.Util.Log.Info("Chrono", $"Умное пробуждение: фаза {phase}, движение {this.movementPerMinute[^1]}, пульс {this.heartRate.Count} отсч., база {this.baselineBpm}, стадия {this.stage}");
         if (phase == SleepPhase.Light)
         {
-            // Будильник выключается (снимается сигнал на срок), затем звонит сразу — тем же путём,
-            // что и обычный: точный будильник → AlarmReceiver → AlarmRingService.
-            new Services.AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System).Toggle(this.alarmId, false);
+            // Сигнал на срок снимается: разовый будильник выключается, повторяющийся переходит
+            // на следующее срабатывание. Затем звонит сразу — тем же путём, что и обычный:
+            // точный будильник → AlarmReceiver → AlarmRingService.
+            var service = new Services.AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System);
+            if (alarm.Repeat == RepeatKind.None)
+            {
+                service.Toggle(this.alarmId, false);
+            }
+            else
+            {
+                service.Save(alarm with { At = alarm.NextAfter(alarm.At) });
+            }
             var manager = (AlarmManager)this.GetSystemService(Context.AlarmService)!;
             var showIntent = PendingIntent.GetActivity(this, 3, new Intent(this, typeof(MainActivity)), PendingIntentFlags.Immutable);
             manager.SetAlarmClock(
