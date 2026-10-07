@@ -84,16 +84,22 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
     </Style>
 
-    <Style TargetType="DatePicker">
-        <Setter Property="TextColor" Value="{StaticResource Accent}" />
-        <Setter Property="FontFamily" Value="ManropeRegular" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
+    <!-- Поле для цифр времени и даты: рамка вокруг Entry, текст по центру. -->
+    <Style x:Key="DigitBox" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource Surface}" />
+        <Setter Property="Stroke" Value="{StaticResource TextMuted}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="4,0" />
     </Style>
 
-    <Style TargetType="TimePicker">
+    <Style x:Key="DigitEntry" TargetType="Entry">
         <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="FontFamily" Value="ManropeLight" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="FontFamily" Value="ManropeRegular" />
         <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="Keyboard" Value="Numeric" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
 </ResourceDictionary>

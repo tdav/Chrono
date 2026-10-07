@@ -21,6 +21,24 @@
         <Label Grid.Row="4" Text="{Binding DateText}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
 
         <Button Grid.Row="6" Text="{x:Static res:AppResources.Stop}" Style="{StaticResource PrimaryButton}"
-                FontSize="18" CornerRadius="24" Padding="0,18" Command="{Binding StopCommand}" />
+                FontSize="18" CornerRadius="24" Padding="0,18" Command="{Binding StopCommand}" IsVisible="{Binding IsStopVisible}" />
+
+        <!-- Пример для отключения: верный вариант выключает сигнал, неверный — новый пример, сигнал продолжается. -->
+        <VerticalStackLayout Grid.Row="6" Spacing="12" IsVisible="{Binding IsChallengeVisible}">
+            <Label Text="{x:Static res:AppResources.SolveToStop}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
+            <Label Text="{Binding ChallengeText}" FontFamily="ManropeSemiBold" FontSize="40" HorizontalOptions="Center" />
+            <Label Text="{x:Static res:AppResources.WrongAnswer}" TextColor="{StaticResource Danger}" FontSize="14"
+                   HorizontalOptions="Center" IsVisible="{Binding IsWrongAnswer}" />
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                <Button Text="{Binding Options[0]}" Style="{StaticResource SecondaryButton}" FontSize="22" Padding="0,16"
+                        Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[0]}" />
+                <Button Grid.Column="1" Text="{Binding Options[1]}" Style="{StaticResource SecondaryButton}" FontSize="22" Padding="0,16"
+                        Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[1]}" />
+                <Button Grid.Row="1" Text="{Binding Options[2]}" Style="{StaticResource SecondaryButton}" FontSize="22" Padding="0,16"
+                        Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[2]}" />
+                <Button Grid.Row="1" Grid.Column="1" Text="{Binding Options[3]}" Style="{StaticResource SecondaryButton}" FontSize="22" Padding="0,16"
+                        Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[3]}" />
+            </Grid>
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

@@ -61,19 +61,25 @@ public sealed class AlarmRingService : Service
         var stopIntent = PendingIntent.GetService(
             this, 1, new Intent(this, typeof(AlarmRingService)).SetAction(ActionStop), PendingIntentFlags.Immutable);
 
-        var notification = new Notification.Builder(this, AlarmChannelId)
+        var builder = new Notification.Builder(this, AlarmChannelId)
             .SetSmallIcon(Resource.Drawable.ic_stat_alarm)!
             .SetContentTitle(timeText)!
             .SetContentText(label)!
             .SetCategory(Notification.CategoryAlarm)!
             .SetOngoing(true)!
             .SetFullScreenIntent(fullScreenIntent, true)!
-            .SetContentIntent(fullScreenIntent)!
-            .AddAction(new Notification.Action.Builder(
+            .SetContentIntent(fullScreenIntent)!;
+
+        // С примером для отключения кнопки «Стоп» в уведомлении нет: она выключала бы сигнал без решения.
+        if (!Services.DismissSettings.MathChallenge)
+        {
+            builder.AddAction(new Notification.Action.Builder(
                 global::Android.Graphics.Drawables.Icon.CreateWithResource(this, Resource.Drawable.ic_stat_alarm),
                 AppResources.Stop,
-                stopIntent).Build())!
-            .Build()!;
+                stopIntent).Build());
+        }
+
+        var notification = builder.Build()!;
 
         // StartForeground обязан прозвучать в течение нескольких секунд после StartForegroundService —
         // вызываем его до любых ранних выходов, иначе система роняет процесс.

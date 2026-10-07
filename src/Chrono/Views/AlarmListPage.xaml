@@ -10,8 +10,8 @@
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeSemiBold" FontSize="28" />
             <Button Grid.Column="1" Text="⚙" FontSize="22" BackgroundColor="Transparent" TextColor="{StaticResource TextMuted}"
-                    Padding="8,0" Command="{Binding OpenReliabilityCommand}"
-                    SemanticProperties.Description="{x:Static res:AppResources.ReliabilityTitle}" />
+                    Padding="8,0" Command="{Binding OpenSettingsCommand}"
+                    SemanticProperties.Description="{x:Static res:AppResources.SettingsTitle}" />
         </Grid>
 
         <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource Accent}" FontSize="13" Margin="0,2,0,12" />
