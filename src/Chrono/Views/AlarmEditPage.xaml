@@ -11,14 +11,37 @@
             <VerticalStackLayout>
                 <Label Text="{Binding Title}" FontFamily="ManropeSemiBold" FontSize="20" Margin="0,0,0,12" />
 
-                <!-- Крупные время и дата: нажатие открывает нативные пикеры. -->
+                <!-- Время и дата — обычные цифровые поля; заполненное поле передаёт фокус следующему. -->
                 <Border Style="{StaticResource Card}" Padding="16,14">
-                    <VerticalStackLayout HorizontalOptions="Center">
-                        <TimePicker Time="{Binding Time}" Format="HH:mm" FontSize="56" HorizontalOptions="Center" />
-                        <DatePicker Date="{Binding Date}" MinimumDate="{Binding MinimumDate}" Format="dddd, d MMMM"
-                                    FontSize="14" HorizontalOptions="Center" />
-                        <Label Text="{x:Static res:AppResources.TapToChange}" Style="{StaticResource Muted}" FontSize="11"
-                               HorizontalOptions="Center" />
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
+                            <Border Style="{StaticResource DigitBox}" WidthRequest="96">
+                                <Entry x:Name="HourEntry" Text="{Binding Hour}" Style="{StaticResource DigitEntry}" MaxLength="2"
+                                       FontSize="44" Placeholder="00" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
+                            </Border>
+                            <Label Text=":" FontSize="44" VerticalOptions="Center" />
+                            <Border Style="{StaticResource DigitBox}" WidthRequest="96">
+                                <Entry x:Name="MinuteEntry" Text="{Binding Minute}" Style="{StaticResource DigitEntry}" MaxLength="2"
+                                       FontSize="44" Placeholder="00" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
+                            </Border>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6">
+                            <Border Style="{StaticResource DigitBox}" WidthRequest="56">
+                                <Entry x:Name="DayEntry" Text="{Binding Day}" Style="{StaticResource DigitEntry}" MaxLength="2"
+                                       FontSize="18" Placeholder="{x:Static res:AppResources.DayPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
+                            </Border>
+                            <Label Text="." FontSize="18" VerticalOptions="Center" />
+                            <Border Style="{StaticResource DigitBox}" WidthRequest="56">
+                                <Entry x:Name="MonthEntry" Text="{Binding Month}" Style="{StaticResource DigitEntry}" MaxLength="2"
+                                       FontSize="18" Placeholder="{x:Static res:AppResources.MonthPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
+                            </Border>
+                            <Label Text="." FontSize="18" VerticalOptions="Center" />
+                            <Border Style="{StaticResource DigitBox}" WidthRequest="80">
+                                <Entry x:Name="YearEntry" Text="{Binding Year}" Style="{StaticResource DigitEntry}" MaxLength="4"
+                                       FontSize="18" Placeholder="{x:Static res:AppResources.YearPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
+                            </Border>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding WhenText}" Style="{StaticResource Muted}" FontSize="13" HorizontalOptions="Center" />
                     </VerticalStackLayout>
                 </Border>
                 <Label Text="{Binding ErrorText}" TextColor="{StaticResource Danger}" Margin="4,6,0,0"

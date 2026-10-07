@@ -12,7 +12,10 @@
   <data name="WarningBanner" xml:space="preserve"><value>Будильник может не сработать — исправить</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>Новый будильник</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Изменить будильник</value></data>
-  <data name="TapToChange" xml:space="preserve"><value>нажмите на время или дату, чтобы изменить</value></data>
+  <data name="InvalidDateTime" xml:space="preserve"><value>Проверьте дату и время</value></data>
+  <data name="DayPlaceholder" xml:space="preserve"><value>ДД</value></data>
+  <data name="MonthPlaceholder" xml:space="preserve"><value>ММ</value></data>
+  <data name="YearPlaceholder" xml:space="preserve"><value>ГГГГ</value></data>
   <data name="LabelHeader" xml:space="preserve"><value>Текст</value></data>
   <data name="LabelPlaceholder" xml:space="preserve"><value>Текст будильника</value></data>
   <data name="SignalHeader" xml:space="preserve"><value>Сигнал</value></data>
@@ -46,4 +49,20 @@
   <data name="Fix" xml:space="preserve"><value>Исправить</value></data>
   <data name="OemHint" xml:space="preserve"><value>На телефонах Xiaomi, Huawei и Samsung также разрешите Chrono автозапуск: Настройки → Приложения → Chrono → Автозапуск / Батарея.</value></data>
   <data name="SilentHint" xml:space="preserve"><value>В беззвучном режиме будет только вибрация.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Настройки</value></data>
+  <data name="SmartWake" xml:space="preserve"><value>Умное пробуждение</value></data>
+  <data name="SmartWakeDescription" xml:space="preserve"><value>За 30 минут до будильника Chrono ищет фазу лёгкого сна по данным умных часов (через Health Connect) и движению телефона и будит в ней, а не в глубоком сне. Если лёгкий сон не найден, будильник звонит в заданное время. Положите телефон на кровать.</value></data>
+  <data name="SmartWakePrivacy" xml:space="preserve"><value>Пульс и данные сна читаются только на этом телефоне и только в течение 30 минут перед будильником. Они не сохраняются и никуда не передаются.</value></data>
+  <data name="SmartWakeAccessGranted" xml:space="preserve"><value>Данные часов: Health Connect подключён</value></data>
+  <data name="SmartWakeAccessNoPermission" xml:space="preserve"><value>Данные часов: нет доступа к Health Connect — будет использоваться только движение телефона</value></data>
+  <data name="SmartWakeAccessMissing" xml:space="preserve"><value>Health Connect не установлен — будет использоваться только движение телефона</value></data>
+  <data name="SmartWakeUnsupported" xml:space="preserve"><value>Умное пробуждение доступно только на Android</value></data>
+  <data name="GrantAccess" xml:space="preserve"><value>Дать доступ</value></data>
+  <data name="SmartWakeNotification" xml:space="preserve"><value>Ищу фазу лёгкого сна до {0}</value></data>
+  <data name="ChannelSmartWake" xml:space="preserve"><value>Умное пробуждение</value></data>
+  <data name="DismissGroup" xml:space="preserve"><value>Отключение сигнала</value></data>
+  <data name="MathChallenge" xml:space="preserve"><value>Решить пример</value></data>
+  <data name="MathChallengeDescription" xml:space="preserve"><value>Чтобы выключить будильник, нужно решить пример на сложение или вычитание двузначных чисел. Выберите верный ответ из четырёх вариантов; при неверном сигнал продолжается и появляется новый пример.</value></data>
+  <data name="SolveToStop" xml:space="preserve"><value>Решите пример, чтобы выключить сигнал</value></data>
+  <data name="WrongAnswer" xml:space="preserve"><value>Неверно. Сигнал продолжается — решите этот пример</value></data>
 </root>

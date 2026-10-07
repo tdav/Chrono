@@ -41,15 +41,16 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             new SoundOption(id, AppResources.ResourceManager.GetString($"Sound_{id}", AppResources.Culture) ?? id)));
 
         var start = DateTime.Now.AddHours(1);
-        this.Date = start.Date;
-        this.Time = new TimeSpan(start.Hour, start.Minute, 0);
+        this.Hour = start.ToString("HH");
+        this.Minute = start.ToString("mm");
+        this.Day = start.ToString("dd");
+        this.Month = start.ToString("MM");
+        this.Year = start.ToString("yyyy");
         // Инициализатор свойства не вызывает OnSoundIdChanged — отмечаем мелодию по умолчанию явно.
         this.OnSoundIdChanged(this.SoundId);
     }
 
     public ObservableCollection<SoundOption> SoundOptions { get; }
-
-    public DateTime MinimumDate => DateTime.Today;
 
     [ObservableProperty]
     public partial string Title { get; set; } = AppResources.NewAlarm;
@@ -57,11 +58,40 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     public partial bool IsExisting { get; set; }
 
+    // Время и дата вводятся цифрами в отдельные поля; разбираются в At.
     [ObservableProperty]
-    public partial DateTime? Date { get; set; }
+    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
+    public partial string Hour { get; set; } = "";
 
     [ObservableProperty]
-    public partial TimeSpan? Time { get; set; }
+    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
+    public partial string Minute { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
+    public partial string Day { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
+    public partial string Month { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
+    public partial string Year { get; set; } = "";
+
+    /// <summary>Введённый момент или null, если поля не складываются в существующие дату и время.</summary>
+    public DateTime? At =>
+        int.TryParse(this.Hour, out var hour) && hour < 24
+        && int.TryParse(this.Minute, out var minute) && minute < 60
+        && int.TryParse(this.Day, out var day)
+        && int.TryParse(this.Month, out var month) && month is >= 1 and <= 12
+        && int.TryParse(this.Year, out var year) && year is >= 2000 and <= 9999
+        && day >= 1 && day <= DateTime.DaysInMonth(year, month)
+            ? new DateTime(year, month, day, hour, minute, 0)
+            : null;
+
+    /// <summary>Подсказка под полями: день недели и дата словами; пусто, пока ввод неполный (ошибку покажет сохранение).</summary>
+    public string WhenText => this.At?.ToString("dddd, d MMMM yyyy") ?? "";
 
     [ObservableProperty]
     public partial string Label { get; set; } = "";
@@ -96,8 +126,11 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
         this.Title = AppResources.EditAlarm;
         this.IsExisting = true;
-        this.Date = this.existing.At.Date;
-        this.Time = this.existing.At.TimeOfDay;
+        this.Hour = this.existing.At.ToString("HH");
+        this.Minute = this.existing.At.ToString("mm");
+        this.Day = this.existing.At.ToString("dd");
+        this.Month = this.existing.At.ToString("MM");
+        this.Year = this.existing.At.ToString("yyyy");
         this.Label = this.existing.Label;
         this.SoundEnabled = this.existing.SoundEnabled;
         this.VibrationEnabled = this.existing.VibrationEnabled;
@@ -119,7 +152,12 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task SaveAsync()
     {
-        var at = (this.Date ?? DateTime.Today).Date + (this.Time ?? TimeSpan.Zero);
+        if (this.At is not { } at)
+        {
+            this.ErrorText = AppResources.InvalidDateTime;
+            return;
+        }
+
         var alarm = (this.existing ?? new Alarm()) with
         {
             At = at,
@@ -161,9 +199,15 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     public void StopPreview() => this.soundPlayer.Stop();
 
-    partial void OnDateChanged(DateTime? value) => this.ErrorText = "";
+    partial void OnHourChanged(string value) => this.ErrorText = "";
 
-    partial void OnTimeChanged(TimeSpan? value) => this.ErrorText = "";
+    partial void OnMinuteChanged(string value) => this.ErrorText = "";
+
+    partial void OnDayChanged(string value) => this.ErrorText = "";
+
+    partial void OnMonthChanged(string value) => this.ErrorText = "";
+
+    partial void OnYearChanged(string value) => this.ErrorText = "";
 
     partial void OnSoundIdChanged(string value)
     {

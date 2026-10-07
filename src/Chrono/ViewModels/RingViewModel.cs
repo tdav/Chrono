@@ -11,6 +11,7 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     private readonly AlarmService alarmService;
     private readonly IAlarmScheduler scheduler;
     private Guid alarmId;
+    private int expectedAnswer;
 
     public RingViewModel(AlarmService alarmService, IAlarmScheduler scheduler)
     {
@@ -26,6 +27,23 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
 
     [ObservableProperty]
     public partial string DateText { get; set; } = "";
+
+    /// <summary>Пример с вариантами ответа показан вместо кнопки «Стоп» (включается в настройках).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsStopVisible))]
+    public partial bool IsChallengeVisible { get; set; }
+
+    public bool IsStopVisible => !this.IsChallengeVisible;
+
+    [ObservableProperty]
+    public partial string ChallengeText { get; set; } = "";
+
+    /// <summary>Четыре варианта ответа, один из них верный; порядок случайный.</summary>
+    [ObservableProperty]
+    public partial int[] Options { get; set; } = [0, 0, 0, 0];
+
+    [ObservableProperty]
+    public partial bool IsWrongAnswer { get; set; }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -45,6 +63,12 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         }
 
         this.alarmId = id;
+        this.IsWrongAnswer = false;
+        this.IsChallengeVisible = DismissSettings.MathChallenge;
+        if (this.IsChallengeVisible)
+        {
+            this.NewChallenge();
+        }
         var alarm = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
         var at = alarm?.At ?? DateTime.Now;
         this.TimeText = at.ToString("HH:mm");
@@ -57,5 +81,49 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     {
         this.scheduler.StopRinging(this.alarmId);
         await Shell.Current.GoToAsync("..");
+    }
+
+    [RelayCommand]
+    private async Task ChooseAsync(int answer)
+    {
+        if (answer == this.expectedAnswer)
+        {
+            this.scheduler.StopRinging(this.alarmId);
+            await Shell.Current.GoToAsync("..");
+            return;
+        }
+
+        // Неверный ответ: сигнал продолжается, вместо подбора того же ответа — новый пример.
+        this.IsWrongAnswer = true;
+        this.NewChallenge();
+    }
+
+    /// <summary>Сложение или вычитание двух двузначных чисел; при вычитании ответ не отрицательный.</summary>
+    private void NewChallenge()
+    {
+        var a = Random.Shared.Next(10, 100);
+        var b = Random.Shared.Next(10, 100);
+        if (Random.Shared.Next(2) == 0)
+        {
+            this.expectedAnswer = a + b;
+            this.ChallengeText = $"{a} + {b} = ?";
+        }
+        else
+        {
+            (a, b) = a >= b ? (a, b) : (b, a);
+            this.expectedAnswer = a - b;
+            this.ChallengeText = $"{a} − {b} = ?";
+        }
+
+        // Неверные варианты — рядом с ответом (±1, ±2, ±10, ±11), чтобы не угадывались на глаз.
+        int[] deltas = [-11, -10, -2, -1, 1, 2, 10, 11];
+        Random.Shared.Shuffle(deltas);
+        int[] options =
+        [
+            this.expectedAnswer,
+            .. deltas.Select(d => this.expectedAnswer + d).Where(v => v >= 0).Take(3),
+        ];
+        Random.Shared.Shuffle(options);
+        this.Options = options;
     }
 }

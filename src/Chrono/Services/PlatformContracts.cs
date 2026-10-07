@@ -23,6 +23,26 @@ public interface ISoundPlayer
     void Stop();
 }
 
+/// <summary>Доступ к данным часов для умного пробуждения (Android — через Health Connect).</summary>
+public enum SmartWakeAccess
+{
+    Unsupported,
+    HealthConnectMissing,
+    NoPermission,
+    Granted,
+}
+
+/// <summary>Умное пробуждение: поддержка платформой и разрешения на чтение данных часов.</summary>
+public interface ISmartWake
+{
+    bool IsSupported { get; }
+
+    Task<SmartWakeAccess> GetAccessAsync();
+
+    /// <summary>Запросить все нужные разрешения; если Health Connect не установлен — открыть его установку.</summary>
+    Task<SmartWakeAccess> RequestAccessAsync();
+}
+
 public enum ReliabilityItem
 {
     Notifications,

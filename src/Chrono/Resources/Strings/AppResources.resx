@@ -12,7 +12,10 @@
   <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
-  <data name="TapToChange" xml:space="preserve"><value>tap the time or date to change</value></data>
+  <data name="InvalidDateTime" xml:space="preserve"><value>Check the date and time</value></data>
+  <data name="DayPlaceholder" xml:space="preserve"><value>DD</value></data>
+  <data name="MonthPlaceholder" xml:space="preserve"><value>MM</value></data>
+  <data name="YearPlaceholder" xml:space="preserve"><value>YYYY</value></data>
   <data name="LabelHeader" xml:space="preserve"><value>Text</value></data>
   <data name="LabelPlaceholder" xml:space="preserve"><value>Alarm text</value></data>
   <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
@@ -46,4 +49,20 @@
   <data name="Fix" xml:space="preserve"><value>Fix</value></data>
   <data name="OemHint" xml:space="preserve"><value>On Xiaomi, Huawei and Samsung phones also allow Autostart for Chrono: Settings → Apps → Chrono → Autostart / Battery.</value></data>
   <data name="SilentHint" xml:space="preserve"><value>In silent mode only vibration will play.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SmartWake" xml:space="preserve"><value>Smart wake</value></data>
+  <data name="SmartWakeDescription" xml:space="preserve"><value>Up to 30 minutes before the alarm, Chrono looks for light sleep using your smart watch data (via Health Connect) and phone motion, and wakes you then instead of in deep sleep. If light sleep isn't detected, the alarm rings at the set time. Keep the phone on the bed.</value></data>
+  <data name="SmartWakePrivacy" xml:space="preserve"><value>Heart rate and sleep data are read only on this phone and only during the 30 minutes before an alarm. They are never stored or sent anywhere.</value></data>
+  <data name="SmartWakeAccessGranted" xml:space="preserve"><value>Watch data: Health Connect connected</value></data>
+  <data name="SmartWakeAccessNoPermission" xml:space="preserve"><value>Watch data: no access to Health Connect — only phone motion will be used</value></data>
+  <data name="SmartWakeAccessMissing" xml:space="preserve"><value>Health Connect is not installed — only phone motion will be used</value></data>
+  <data name="SmartWakeUnsupported" xml:space="preserve"><value>Smart wake is available on Android only</value></data>
+  <data name="GrantAccess" xml:space="preserve"><value>Grant access</value></data>
+  <data name="SmartWakeNotification" xml:space="preserve"><value>Looking for light sleep until {0}</value></data>
+  <data name="ChannelSmartWake" xml:space="preserve"><value>Smart wake</value></data>
+  <data name="DismissGroup" xml:space="preserve"><value>Turning off the alarm</value></data>
+  <data name="MathChallenge" xml:space="preserve"><value>Solve a problem</value></data>
+  <data name="MathChallengeDescription" xml:space="preserve"><value>To stop the alarm, solve an addition or subtraction problem with two-digit numbers. Pick the right answer out of four; a wrong one gives a new problem and the alarm keeps ringing.</value></data>
+  <data name="SolveToStop" xml:space="preserve"><value>Solve to stop the alarm</value></data>
+  <data name="WrongAnswer" xml:space="preserve"><value>Wrong. The alarm keeps ringing — try this one</value></data>
 </root>

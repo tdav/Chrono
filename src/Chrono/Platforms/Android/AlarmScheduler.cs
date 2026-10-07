@@ -31,6 +31,20 @@ public sealed class AlarmScheduler : IAlarmScheduler
             {
                 manager.Cancel(operation);
             }
+
+            // Начало окна умного пробуждения — обычный точный будильник: SetAlarmClock показал бы
+            // в статус-баре время окна вместо времени будильника.
+            var smartOperation = SmartWakeReceiver.CreatePendingIntent(context, alarm.Id);
+            var windowStart = alarm.At - SleepPhaseEstimator.Window;
+            if (alarm.IsEnabled && SmartWakeSettings.Enabled && windowStart > now)
+            {
+                var windowStartMs = new DateTimeOffset(DateTime.SpecifyKind(windowStart, DateTimeKind.Local)).ToUnixTimeMilliseconds();
+                manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, windowStartMs, smartOperation);
+            }
+            else
+            {
+                manager.Cancel(smartOperation);
+            }
         }
     }
 
@@ -39,6 +53,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
         var context = global::Android.App.Application.Context;
         var manager = (AlarmManager)context.GetSystemService(Context.AlarmService)!;
         manager.Cancel(AlarmReceiver.CreatePendingIntent(context, id));
+        manager.Cancel(SmartWakeReceiver.CreatePendingIntent(context, id));
     }
 
     public void StopRinging(Guid id)

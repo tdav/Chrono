@@ -57,4 +57,9 @@
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
 	</ItemGroup>
 
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<!-- Умное пробуждение: данные умных часов (пульс, стадии сна) из Health Connect. -->
+		<PackageReference Include="Xamarin.AndroidX.Health.Connect.ConnectClient" Version="1.1.0.4" />
+	</ItemGroup>
+
 </Project>

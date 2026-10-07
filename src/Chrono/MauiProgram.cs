@@ -36,10 +36,6 @@ public static class MauiProgram
         // Нативное подчёркивание Android у полей лишнее: поля уже стоят в карточках с рамкой.
         Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
             handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
-        Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
-            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
-        Microsoft.Maui.Handlers.TimePickerHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
-            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
 #endif
 
         builder.Services.AddSingleton(TimeProvider.System);
@@ -47,6 +43,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ISoundPlayer, SoundPlayer>();
         builder.Services.AddSingleton<IAlarmScheduler, AlarmScheduler>();
         builder.Services.AddSingleton<IReliabilityChecks, ReliabilityChecks>();
+        builder.Services.AddSingleton<ISmartWake, SmartWake>();
         builder.Services.AddSingleton<AlarmService>();
 
         // Transient: новый Shell для каждого окна (см. AppShell).
@@ -59,6 +56,8 @@ public static class MauiProgram
         builder.Services.AddTransient<RingPage>();
         builder.Services.AddTransient<ReliabilityViewModel>();
         builder.Services.AddTransient<ReliabilityPage>();
+        builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<SettingsPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
