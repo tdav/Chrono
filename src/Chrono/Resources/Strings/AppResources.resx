@@ -72,4 +72,25 @@
   <data name="Repeat_Yearly" xml:space="preserve"><value>Every year</value></data>
   <data name="NoDaysSelected" xml:space="preserve"><value>Pick at least one day</value></data>
   <data name="NextOccurrence" xml:space="preserve"><value>Next: {0}</value></data>
+  <data name="PlateDate" xml:space="preserve"><value>Rings · {0}</value></data>
+  <data name="PlateToday" xml:space="preserve"><value>Rings today · {0}</value></data>
+  <data name="PlateTomorrow" xml:space="preserve"><value>Rings tomorrow · {0}</value></data>
+  <data name="RelDays" xml:space="preserve"><value>in {0} d {1} h</value></data>
+  <data name="RelHours" xml:space="preserve"><value>in {0} h {1} min</value></data>
+  <data name="RelMinutes" xml:space="preserve"><value>in {0} min</value></data>
+  <data name="TimePassed" xml:space="preserve"><value>time has passed</value></data>
+  <data name="RowTime" xml:space="preserve"><value>Time</value></data>
+  <data name="RowDate" xml:space="preserve"><value>Date</value></data>
+  <data name="RowName" xml:space="preserve"><value>Name</value></data>
+  <data name="Nearest" xml:space="preserve"><value>Nearest</value></data>
+  <data name="NearestHint" xml:space="preserve"><value>Nearest suitable</value></data>
+  <data name="NoSound" xml:space="preserve"><value>No sound</value></data>
+  <data name="SaveFootnote" xml:space="preserve"><value>Changes apply when you tap Save.</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Discard changes?</value></data>
+  <data name="DiscardYes" xml:space="preserve"><value>Discard</value></data>
+  <data name="SheetOk" xml:space="preserve"><value>OK</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Now" xml:space="preserve"><value>Now</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
 </root>
