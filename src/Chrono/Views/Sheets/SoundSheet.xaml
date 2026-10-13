@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.Sheets.SoundSheet"
+             x:DataType="vm:SoundSheetModel">
+
+    <VerticalStackLayout Spacing="16">
+
+        <!-- «Без звука» и мелодии: галочка у выбранного, нажатие проигрывает мелодию один раз. -->
+        <Border Style="{StaticResource RowGroup}">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChoiceOption">
+                        <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Name}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20"
+                                       VerticalOptions="Center" IsVisible="{Binding IsSelected}" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SoundSheetModel}}, Path=SelectCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
+            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CancelCommand}" />
+            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding OkCommand}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>
