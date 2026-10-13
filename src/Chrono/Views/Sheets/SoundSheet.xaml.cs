@@ -1,13 +1,10 @@
-using Chrono.ViewModels;
-
 namespace Chrono.Views.Sheets;
 
-/// <summary>Содержимое шторки звука; хостит его BottomSheet.</summary>
+/// <summary>Содержимое шторки звука; модель приходит через BindingContext.</summary>
 public partial class SoundSheet : ContentView
 {
-    public SoundSheet(SoundSheetModel model)
+    public SoundSheet()
     {
         this.InitializeComponent();
-        this.BindingContext = model;
     }
 }

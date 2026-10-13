@@ -1,13 +1,10 @@
-using Chrono.ViewModels;
-
 namespace Chrono.Views.Sheets;
 
-/// <summary>Содержимое шторки повтора; хостит его BottomSheet.</summary>
+/// <summary>Содержимое шторки повтора; модель приходит через BindingContext.</summary>
 public partial class RepeatSheet : ContentView
 {
-    public RepeatSheet(RepeatSheetModel model)
+    public RepeatSheet()
     {
         this.InitializeComponent();
-        this.BindingContext = model;
     }
 }
