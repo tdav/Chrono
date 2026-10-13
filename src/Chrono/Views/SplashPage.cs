@@ -24,8 +24,13 @@ public sealed class SplashPage : ContentPage
         {
             WidthRequest = 71,
             HeightRequest = 71,
-            Fill = (Brush)Application.Current!.Resources["MetalBrush"],
-            Stroke = (Brush)Application.Current.Resources["GoldEdgeBrush"],
+            // TryGetValue ищет и в MergedDictionaries; при отсутствии ключа — сплошной цвет токена, а не исключение.
+            Fill = Application.Current!.Resources.TryGetValue("MetalBrush", out var metal) && metal is Brush metalBrush
+                ? metalBrush
+                : new SolidColorBrush(Color.FromArgb("#2E3136")),
+            Stroke = Application.Current.Resources.TryGetValue("GoldEdgeBrush", out var edge) && edge is Brush edgeBrush
+                ? edgeBrush
+                : new SolidColorBrush(Color.FromArgb("#D1B27C")),
             StrokeThickness = 1.5,
         };
         this.bell = new Image { Source = "bell.png", WidthRequest = 34, HeightRequest = 39, AnchorY = 0.08 };
