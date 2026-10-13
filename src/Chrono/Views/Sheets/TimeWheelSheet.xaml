@@ -13,7 +13,7 @@
                     StrokeShape="RoundRectangle 16" />
 
             <CollectionView x:Name="HourWheel" Grid.Column="1" ItemsSource="{Binding Hours}" SelectionMode="None"
-                            VerticalScrollBarVisibility="Never" Scrolled="OnHourScrolled">
+                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
                 </CollectionView.ItemsLayout>
@@ -49,7 +49,7 @@
                    HorizontalOptions="Center" VerticalOptions="Center" />
 
             <CollectionView x:Name="MinuteWheel" Grid.Column="3" ItemsSource="{Binding Minutes}" SelectionMode="None"
-                            VerticalScrollBarVisibility="Never" Scrolled="OnMinuteScrolled">
+                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
                 </CollectionView.ItemsLayout>
