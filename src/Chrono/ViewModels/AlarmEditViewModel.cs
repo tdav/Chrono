@@ -8,23 +8,6 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-/// <summary>Чип выбора: мелодия, вид повтора или день недели.</summary>
-public sealed partial class ChoiceOption : ObservableObject
-{
-    public ChoiceOption(string id, string name)
-    {
-        this.Id = id;
-        this.Name = name;
-    }
-
-    public string Id { get; }
-
-    public string Name { get; }
-
-    [ObservableProperty]
-    public partial bool IsSelected { get; set; }
-}
-
 /// <summary>
 /// Создание и редактирование. Сохранение всегда включает будильник (как в системных «Часах»)
 /// и требует время в будущем.

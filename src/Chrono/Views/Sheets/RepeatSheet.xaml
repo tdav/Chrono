@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.Sheets.RepeatSheet"
+             x:DataType="vm:RepeatSheetModel">
+
+    <VerticalStackLayout Spacing="16">
+
+        <!-- Варианты повтора: галочка у выбранного. -->
+        <Border Style="{StaticResource RowGroup}">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChoiceOption">
+                        <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Name}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20"
+                                       VerticalOptions="Center" IsVisible="{Binding IsSelected}" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RepeatSheetModel}}, Path=SelectCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Дни недели: видны только при «По дням недели». -->
+        <FlexLayout JustifyContent="SpaceBetween" IsVisible="{Binding IsDaysVisible}"
+                    BindableLayout.ItemsSource="{Binding Days}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChoiceOption">
+                    <Border Style="{StaticResource Chip}" WidthRequest="44" Padding="0">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RepeatSheetModel}}, Path=ToggleDayCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </FlexLayout>
+
+        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
+            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CancelCommand}" />
+            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding OkCommand}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>
