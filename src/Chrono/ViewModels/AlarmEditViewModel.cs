@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Globalization;
 using Chrono.Models;
 using Chrono.Resources.Strings;
@@ -10,7 +9,7 @@ namespace Chrono.ViewModels;
 
 /// <summary>
 /// Создание и редактирование. Сохранение всегда включает будильник (как в системных «Часах»)
-/// и требует время в будущем.
+/// и требует время в будущем. Время, дата, повтор и звук выбираются в нижних шторках.
 /// </summary>
 public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttributable
 {
@@ -22,32 +21,96 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     {
         this.alarmService = alarmService;
         this.soundPlayer = soundPlayer;
-        this.SoundOptions = new(Sounds.All.Select(id =>
-            new ChoiceOption(id, AppResources.ResourceManager.GetString($"Sound_{id}", AppResources.Culture) ?? id)));
-        this.RepeatOptions = new(Enum.GetValues<RepeatKind>().Select(kind =>
-            new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Repeat_{kind}", AppResources.Culture) ?? kind.ToString())));
-        // Дни — с первого дня недели культуры (в России с понедельника).
-        var format = CultureInfo.CurrentUICulture.DateTimeFormat;
-        this.DayOptions = new(Enumerable.Range(0, 7)
-            .Select(i => (DayOfWeek)(((int)format.FirstDayOfWeek + i) % 7))
-            .Select(day => new ChoiceOption(((WeekDays)(1 << (int)day)).ToString(), format.AbbreviatedDayNames[(int)day])));
+        this.SoundSheet = new SoundSheetModel(soundPlayer);
 
         var start = DateTime.Now.AddHours(1);
-        this.Hour = start.ToString("HH");
-        this.Minute = start.ToString("mm");
-        this.Day = start.ToString("dd");
-        this.Month = start.ToString("MM");
-        this.Year = start.ToString("yyyy");
-        // Инициализатор свойства не вызывает OnSoundIdChanged — отмечаем мелодию по умолчанию явно.
-        this.OnSoundIdChanged(this.SoundId);
-        this.OnRepeatChanged(this.Repeat);
+        this.Time = new TimeOnly(start.Hour, start.Minute);
+
+        this.TimeSheet.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(TimeSheetModel.Hour) or nameof(TimeSheetModel.Minute))
+            {
+                this.OnPropertyChanged(nameof(this.TimeHint));
+            }
+        };
+
+        this.TimeSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.Time = this.TimeSheet.Value;
+            }
+
+            this.IsTimeSheetOpen = false;
+        };
+
+        this.CalendarSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                // Ежегодному нужны день и месяц: «Ближайшее» для него не имеет смысла.
+                this.Date = this.CalendarSheet.Selected ?? (this.Repeat == RepeatKind.Yearly ? DateOnly.FromDateTime(DateTime.Now) : null);
+            }
+
+            this.IsDateSheetOpen = false;
+        };
+
+        this.RepeatSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.Repeat = this.RepeatSheet.Repeat;
+                this.Days = this.RepeatSheet.Repeat == RepeatKind.Weekly ? this.RepeatSheet.SelectedDays : WeekDays.None;
+
+                // Ежегодному нужны день и месяц: «Ближайшее» для него не имеет смысла.
+                if (this.Repeat == RepeatKind.Yearly && this.Date is null)
+                {
+                    this.Date = DateOnly.FromDateTime(DateTime.Now);
+                }
+            }
+
+            this.IsRepeatSheetOpen = false;
+        };
+
+        this.SoundSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.SoundEnabled = this.SoundSheet.SelectedId.Length > 0;
+                if (this.SoundEnabled)
+                {
+                    this.SoundId = this.SoundSheet.SelectedId;
+                }
+            }
+
+            this.IsSoundSheetOpen = false;
+        };
+
+        // Начальные значения не считаются правками.
+        this.IsDirty = false;
     }
 
-    public ObservableCollection<ChoiceOption> SoundOptions { get; }
+    public TimeSheetModel TimeSheet { get; } = new();
 
-    public ObservableCollection<ChoiceOption> RepeatOptions { get; }
+    public CalendarSheetModel CalendarSheet { get; } = new();
 
-    public ObservableCollection<ChoiceOption> DayOptions { get; }
+    public RepeatSheetModel RepeatSheet { get; } = new();
+
+    public SoundSheetModel SoundSheet { get; }
+
+    [ObservableProperty]
+    public partial bool IsTimeSheetOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDateSheetOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsRepeatSheetOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsSoundSheetOpen { get; set; }
+
+    public bool IsAnySheetOpen => this.IsTimeSheetOpen || this.IsDateSheetOpen || this.IsRepeatSheetOpen || this.IsSoundSheetOpen;
 
     [ObservableProperty]
     public partial string Title { get; set; } = AppResources.NewAlarm;
@@ -55,69 +118,32 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     public partial bool IsExisting { get; set; }
 
-    // Время и дата вводятся цифрами в отдельные поля; разбираются в At.
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
-    public partial string Hour { get; set; } = "";
+    [NotifyPropertyChangedFor(nameof(TimeText), nameof(PlateTitle), nameof(RelText))]
+    public partial TimeOnly Time { get; set; }
+
+    /// <summary>null — «Ближайшее» (сегодня или завтра по времени).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DateText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
+    public partial DateOnly? Date { get; set; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
-    public partial string Minute { get; set; } = "";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
-    public partial string Day { get; set; } = "";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
-    public partial string Month { get; set; } = "";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(At), nameof(WhenText))]
-    public partial string Year { get; set; } = "";
-
-    /// <summary>Введённый момент или null, если поля не складываются в существующие дату и время.</summary>
-    public DateTime? At =>
-        int.TryParse(this.Hour, out var hour) && hour < 24
-        && int.TryParse(this.Minute, out var minute) && minute < 60
-        && int.TryParse(this.Day, out var day)
-        && int.TryParse(this.Month, out var month) && month is >= 1 and <= 12
-        && int.TryParse(this.Year, out var year) && year is >= 2000 and <= 9999
-        && day >= 1 && day <= DateTime.DaysInMonth(year, month)
-            ? new DateTime(year, month, day, hour, minute, 0)
-            : null;
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(WhenText), nameof(IsDateVisible), nameof(IsDaysVisible))]
+    [NotifyPropertyChangedFor(nameof(DateText), nameof(IsDateRowVisible), nameof(RepeatText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
     public partial RepeatKind Repeat { get; set; } = RepeatKind.None;
 
-    /// <summary>Дата нужна разовому и ежегодному; ежедневному и по дням недели — только время.</summary>
-    public bool IsDateVisible => this.Repeat is RepeatKind.None or RepeatKind.Yearly;
-
-    public bool IsDaysVisible => this.Repeat == RepeatKind.Weekly;
-
-    /// <summary>
-    /// Подсказка под полями: дата словами, у повторяющегося — ближайшее срабатывание;
-    /// пусто, пока ввод неполный (ошибку покажет сохранение).
-    /// </summary>
-    public string WhenText => this.At is not { } at
-        ? ""
-        : this.Repeat == RepeatKind.None
-            ? at.ToString("dddd, d MMMM yyyy")
-            : string.Format(
-                AppResources.NextOccurrence,
-                new Alarm { At = at, Repeat = this.Repeat, Days = this.SelectedDays }.NextAfter(DateTime.Now).ToString("dddd, d MMMM yyyy"));
-
-    private WeekDays SelectedDays =>
-        this.DayOptions.Where(o => o.IsSelected).Aggregate(WeekDays.None, (days, o) => days | Enum.Parse<WeekDays>(o.Id));
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RepeatText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
+    public partial WeekDays Days { get; set; } = WeekDays.None;
 
     [ObservableProperty]
     public partial string Label { get; set; } = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SoundText))]
     public partial bool SoundEnabled { get; set; } = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SoundText))]
     public partial string SoundId { get; set; } = Sounds.Default;
 
     [ObservableProperty]
@@ -128,6 +154,64 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     public partial string ErrorText { get; set; } = "";
 
     public bool HasError => !string.IsNullOrEmpty(this.ErrorText);
+
+    /// <summary>Есть правки после загрузки: уход со страницы потребует подтверждения.</summary>
+    public bool IsDirty { get; private set; }
+
+    public string TimeText => this.Time.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    public string DateText => this.Date is not { } date
+        ? AppResources.Nearest
+        : date.ToString(this.Repeat == RepeatKind.Yearly ? "d MMMM" : "dd.MM.yyyy", CultureInfo.CurrentUICulture);
+
+    /// <summary>Дата нужна разовому и ежегодному; ежедневному и по дням недели — только время.</summary>
+    public bool IsDateRowVisible => this.Repeat is RepeatKind.None or RepeatKind.Yearly;
+
+    public string RepeatText
+    {
+        get
+        {
+            if (this.Repeat != RepeatKind.Weekly || this.Days == WeekDays.None)
+            {
+                // Weekly без дней сохраняется как «Каждый день».
+                return this.Repeat switch
+                {
+                    RepeatKind.None => AppResources.Repeat_None,
+                    RepeatKind.Yearly => AppResources.Repeat_Yearly,
+                    _ => AppResources.Repeat_Daily,
+                };
+            }
+
+            // Дни с понедельника; AbbreviatedDayNames начинается с воскресенья.
+            var names = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames;
+            return string.Join(", ", Enumerable.Range(1, 7)
+                .Select(i => (DayOfWeek)(i % 7))
+                .Where(day => this.Days.HasFlag((WeekDays)(1 << (int)day)))
+                .Select(day => names[(int)day]));
+        }
+    }
+
+    public string SoundText => this.SoundEnabled
+        ? AppResources.ResourceManager.GetString($"Sound_{this.SoundId}", AppResources.Culture) ?? this.SoundId
+        : AppResources.NoSound;
+
+    public string PlateTitle
+    {
+        get
+        {
+            var target = this.Target(this.Time);
+            return this.Repeat == RepeatKind.None && this.Date is null
+                ? string.Format(
+                    target.Date == DateTime.Today ? AppResources.PlateToday : AppResources.PlateTomorrow,
+                    target.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture))
+                : string.Format(AppResources.PlateDate, target.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture));
+        }
+    }
+
+    public string RelText => RelativeText(this.Target(this.Time));
+
+    /// <summary>Подсказка шторки времени: сколько останется до выбранного на барабанах времени.</summary>
+    public string TimeHint => RelativeText(this.Target(this.TimeSheet.Value));
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -144,77 +228,99 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
         this.Title = AppResources.EditAlarm;
         this.IsExisting = true;
-        this.Hour = this.existing.At.ToString("HH");
-        this.Minute = this.existing.At.ToString("mm");
-        this.Day = this.existing.At.ToString("dd");
-        this.Month = this.existing.At.ToString("MM");
-        this.Year = this.existing.At.ToString("yyyy");
+        this.Time = new TimeOnly(this.existing.At.Hour, this.existing.At.Minute);
+        this.Repeat = this.existing.Repeat;
+        this.Date = this.existing.Repeat is RepeatKind.None or RepeatKind.Yearly ? DateOnly.FromDateTime(this.existing.At) : null;
+        this.Days = this.existing.Days;
         this.Label = this.existing.Label;
         this.SoundEnabled = this.existing.SoundEnabled;
-        this.VibrationEnabled = this.existing.VibrationEnabled;
         this.SoundId = this.existing.SoundId;
-        this.Repeat = this.existing.Repeat;
-        foreach (var option in this.DayOptions)
-        {
-            option.IsSelected = this.existing.Days.HasFlag(Enum.Parse<WeekDays>(option.Id));
-        }
+        this.VibrationEnabled = this.existing.VibrationEnabled;
 
         if (query.ContainsKey("expired"))
         {
             this.ErrorText = AppResources.PickNewDate;
         }
+
+        // Загрузка — не правка: последней, после всех присваиваний.
+        this.IsDirty = false;
+    }
+
+    /// <summary>Пересчёт плашки и «через сколько» — по таймеру страницы.</summary>
+    public void RefreshClock()
+    {
+        this.OnPropertyChanged(nameof(this.PlateTitle));
+        this.OnPropertyChanged(nameof(this.RelText));
+        this.OnPropertyChanged(nameof(this.TimeHint));
+    }
+
+    public void StopPreview() => this.soundPlayer.Stop();
+
+    [RelayCommand]
+    private void OpenTime()
+    {
+        this.TimeSheet.Load(this.Time);
+        this.IsTimeSheetOpen = true;
+        MainThread.BeginInvokeOnMainThread(this.TimeSheet.RequestScroll);
     }
 
     [RelayCommand]
-    private void SelectSound(ChoiceOption option)
+    private void OpenDate()
     {
-        this.SoundId = option.Id;
-        this.soundPlayer.Play(option.Id, loop: false);
+        this.CalendarSheet.Load(this.Date, DateOnly.FromDateTime(DateTime.Now), allowPast: this.Repeat == RepeatKind.Yearly);
+        this.IsDateSheetOpen = true;
     }
 
     [RelayCommand]
-    private void SelectRepeat(ChoiceOption option) => this.Repeat = Enum.Parse<RepeatKind>(option.Id);
+    private void OpenRepeat()
+    {
+        this.RepeatSheet.Load(this.Repeat, this.Days);
+        this.IsRepeatSheetOpen = true;
+    }
 
     [RelayCommand]
-    private void ToggleDay(ChoiceOption option)
+    private void OpenSound()
     {
-        option.IsSelected = !option.IsSelected;
-        this.ErrorText = "";
-        this.OnPropertyChanged(nameof(this.WhenText));
+        this.SoundSheet.Load(this.SoundEnabled, this.SoundId);
+        this.IsSoundSheetOpen = true;
+    }
+
+    /// <summary>Затемнение или системная «Назад» при открытой шторке: «Отмена» открытой шторки.</summary>
+    [RelayCommand]
+    private void CloseSheet()
+    {
+        if (this.IsTimeSheetOpen)
+        {
+            this.TimeSheet.CancelCommand.Execute(null);
+        }
+        else if (this.IsDateSheetOpen)
+        {
+            this.CalendarSheet.CancelCommand.Execute(null);
+        }
+        else if (this.IsRepeatSheetOpen)
+        {
+            this.RepeatSheet.CancelCommand.Execute(null);
+        }
+        else if (this.IsSoundSheetOpen)
+        {
+            this.SoundSheet.CancelCommand.Execute(null);
+        }
     }
 
     [RelayCommand]
     private async Task SaveAsync()
     {
-        if (this.At is not { } at)
-        {
-            this.ErrorText = AppResources.InvalidDateTime;
-            return;
-        }
-
         var alarm = (this.existing ?? new Alarm()) with
         {
-            At = at,
+            At = this.Target(this.Time),
             Label = this.Label.Trim(),
             SoundEnabled = this.SoundEnabled,
             SoundId = this.SoundId,
             VibrationEnabled = this.VibrationEnabled,
             IsEnabled = true,
             Repeat = this.Repeat,
-            Days = this.Repeat == RepeatKind.Weekly ? this.SelectedDays : WeekDays.None,
+            Days = this.Repeat == RepeatKind.Weekly ? this.Days : WeekDays.None,
         };
-
-        if (alarm.Repeat == RepeatKind.Weekly && alarm.Days == WeekDays.None)
-        {
-            this.ErrorText = AppResources.NoDaysSelected;
-            return;
-        }
-
-        // У повторяющегося из полей берётся время (и день с месяцем для ежегодного), At — ближайшее срабатывание.
-        if (alarm.Repeat != RepeatKind.None)
-        {
-            alarm = alarm with { At = alarm.NextAfter(DateTime.Now) };
-        }
 
         if (!this.alarmService.Save(alarm))
         {
@@ -227,8 +333,14 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
-    private async Task CancelAsync()
+    private async Task BackAsync()
     {
+        if (this.IsDirty
+            && !await Shell.Current.DisplayAlertAsync(AppResources.DiscardTitle, "", AppResources.DiscardYes, AppResources.Cancel))
+        {
+            return;
+        }
+
         this.soundPlayer.Stop();
         await Shell.Current.GoToAsync("..");
     }
@@ -245,32 +357,51 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         await Shell.Current.GoToAsync("..");
     }
 
-    public void StopPreview() => this.soundPlayer.Stop();
+    // Четыре вызывающих (PlateTitle, RelText, TimeHint, сохранение). Повтор — ближайшее по правилу;
+    // разовый с датой — ровно эта дата (может быть в прошлом: сохранение откажет); разовый без даты — «Ближайшее».
+    private DateTime Target(TimeOnly time) => this.Repeat != RepeatKind.None
+        ? new Alarm { At = (this.Date ?? DateOnly.FromDateTime(DateTime.Now)).ToDateTime(time), Repeat = this.Repeat, Days = this.Days }.NextAfter(DateTime.Now)
+        : this.Date is { } date
+            ? date.ToDateTime(time)
+            : AlarmSchedule.ResolveNearest(time, DateTime.Now);
 
-    partial void OnHourChanged(string value) => this.ErrorText = "";
-
-    partial void OnMinuteChanged(string value) => this.ErrorText = "";
-
-    partial void OnDayChanged(string value) => this.ErrorText = "";
-
-    partial void OnMonthChanged(string value) => this.ErrorText = "";
-
-    partial void OnYearChanged(string value) => this.ErrorText = "";
-
-    partial void OnRepeatChanged(RepeatKind value)
+    // Два вызывающих (RelText, TimeHint).
+    private static string RelativeText(DateTime target) => AlarmSchedule.Until(target, DateTime.Now) switch
     {
+        (var days, var hours, _) when days > 0 => string.Format(AppResources.RelDays, days, hours),
+        (_, var hours, var minutes) when hours > 0 => string.Format(AppResources.RelHours, hours, minutes),
+        (_, _, var minutes) => string.Format(AppResources.RelMinutes, minutes),
+        null => AppResources.TimePassed,
+    };
+
+    partial void OnIsTimeSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnIsDateSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnIsRepeatSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnIsSoundSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnTimeChanged(TimeOnly value) => this.MarkDirty();
+
+    partial void OnDateChanged(DateOnly? value) => this.MarkDirty();
+
+    partial void OnRepeatChanged(RepeatKind value) => this.MarkDirty();
+
+    partial void OnDaysChanged(WeekDays value) => this.MarkDirty();
+
+    partial void OnLabelChanged(string value) => this.MarkDirty();
+
+    partial void OnSoundEnabledChanged(bool value) => this.MarkDirty();
+
+    partial void OnSoundIdChanged(string value) => this.MarkDirty();
+
+    partial void OnVibrationEnabledChanged(bool value) => this.MarkDirty();
+
+    // Восемь вызывающих (по одному на каждое сохраняемое значение).
+    private void MarkDirty()
+    {
+        this.IsDirty = true;
         this.ErrorText = "";
-        foreach (var option in this.RepeatOptions)
-        {
-            option.IsSelected = option.Id == value.ToString();
-        }
-    }
-
-    partial void OnSoundIdChanged(string value)
-    {
-        foreach (var option in this.SoundOptions)
-        {
-            option.IsSelected = option.Id == value;
-        }
     }
 }
