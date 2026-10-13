@@ -32,6 +32,11 @@ public class MainActivity : MauiAppCompatActivity
 
         base.OnCreate(savedInstanceState);
 
+        // Светлая тема «Кость»: тёмные значки статус-бара и панели навигации (иначе белые значки пропадают на светлом фоне).
+        var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(this.Window!, this.Window!.DecorView)!;
+        insets.AppearanceLightStatusBars = true;
+        insets.AppearanceLightNavigationBars = true;
+
         // Показываемся поверх блокировки.
         if (startedByAlarm)
         {

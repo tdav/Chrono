@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.Sheets.TimeWheelSheet"
+             x:DataType="vm:TimeSheetModel">
+    <VerticalStackLayout Spacing="16">
+        <!-- Два барабана: строка 56, окно 224, поэтому сверху и снизу по 84 пустого места (Header/Footer). -->
+        <Grid HeightRequest="224" ColumnDefinitions="*,110,Auto,110,*">
+            <Border Grid.ColumnSpan="5" HeightRequest="56" VerticalOptions="Center" InputTransparent="True"
+                    Background="{StaticResource Surface2}" Stroke="{StaticResource Hairline}" StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16" />
+
+            <CollectionView x:Name="HourWheel" Grid.Column="1" ItemsSource="{Binding Hours}" SelectionMode="None"
+                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.Header>
+                    <BoxView HeightRequest="84" Color="Transparent" />
+                </CollectionView.Header>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="84" Color="Transparent" />
+                </CollectionView.Footer>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:WheelItem">
+                        <Grid HeightRequest="56">
+                            <Label Text="{Binding Label}" HorizontalOptions="Center" VerticalOptions="Center"
+                                   FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+                                        <Setter Property="FontSize" Value="40" />
+                                        <Setter Property="TextColor" Value="{StaticResource Text}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer CommandParameter="{Binding .}"
+                                                      Command="{Binding PickHourCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Grid.Column="2" Text=":" FontFamily="ManropeExtraBold" FontSize="32" TextColor="{StaticResource Text}"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+
+            <CollectionView x:Name="MinuteWheel" Grid.Column="3" ItemsSource="{Binding Minutes}" SelectionMode="None"
+                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.Header>
+                    <BoxView HeightRequest="84" Color="Transparent" />
+                </CollectionView.Header>
+                <CollectionView.Footer>
+                    <BoxView HeightRequest="84" Color="Transparent" />
+                </CollectionView.Footer>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:WheelItem">
+                        <Grid HeightRequest="56">
+                            <Label Text="{Binding Label}" HorizontalOptions="Center" VerticalOptions="Center"
+                                   FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+                                        <Setter Property="FontSize" Value="40" />
+                                        <Setter Property="TextColor" Value="{StaticResource Text}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer CommandParameter="{Binding .}"
+                                                      Command="{Binding PickMinuteCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Затухание у краёв барабанов. -->
+            <BoxView Grid.ColumnSpan="5" HeightRequest="84" VerticalOptions="Start" Background="{StaticResource FadeDownBrush}" InputTransparent="True" />
+            <BoxView Grid.ColumnSpan="5" HeightRequest="84" VerticalOptions="End" Background="{StaticResource FadeUpBrush}" InputTransparent="True" />
+        </Grid>
+
+        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+            <Border Style="{StaticResource Chip}">
+                <Label Text="06:30" Style="{StaticResource ChipText}" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="06:30" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource Chip}">
+                <Label Text="07:00" Style="{StaticResource ChipText}" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="07:00" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource Chip}">
+                <Label Text="08:00" Style="{StaticResource ChipText}" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="08:00" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="3" Style="{StaticResource Chip}">
+                <Label Text="{x:Static res:AppResources.Now}" Style="{StaticResource ChipText}" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NowCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+        </Grid>
+
+        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="10">
+            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelCommand}" />
+            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}" Command="{Binding OkCommand}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>

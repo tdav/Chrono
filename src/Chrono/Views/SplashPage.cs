@@ -17,13 +17,26 @@ public sealed class SplashPage : ContentPage
     {
         this.services = services;
         // Сплошной цвет как у нативного splash — переход без вспышки.
-        this.Background = new SolidColorBrush(Color.FromArgb("#0A0B1A"));
+        this.Background = new SolidColorBrush(Color.FromArgb("#F5F2EC"));
 
-        // Размер колокола совпадает с нативным splash (тело ≈55 dp), чтобы переход был без скачка.
-        this.bell = new Image { Source = "bell.png", WidthRequest = 72, HeightRequest = 82, AnchorY = 0.08 };
+        // Круг и колокол совпадают с нативным splash (круг r=30 из 108 при BaseSize 128 ≈ 71 dp, колокол ≈34×39 dp) — переход без скачка.
+        var disc = new Ellipse
+        {
+            WidthRequest = 71,
+            HeightRequest = 71,
+            // TryGetValue ищет и в MergedDictionaries; при отсутствии ключа — сплошной цвет токена, а не исключение.
+            Fill = Application.Current!.Resources.TryGetValue("MetalBrush", out var metal) && metal is Brush metalBrush
+                ? metalBrush
+                : new SolidColorBrush(Color.FromArgb("#2E3136")),
+            Stroke = Application.Current.Resources.TryGetValue("GoldEdgeBrush", out var edge) && edge is Brush edgeBrush
+                ? edgeBrush
+                : new SolidColorBrush(Color.FromArgb("#D1B27C")),
+            StrokeThickness = 1.5,
+        };
+        this.bell = new Image { Source = "bell.png", WidthRequest = 34, HeightRequest = 39, AnchorY = 0.08 };
         this.waves = Enumerable.Range(0, 3).Select(_ => new Ellipse
         {
-            Stroke = new SolidColorBrush(Color.FromArgb("#FFB35C")),
+            Stroke = new SolidColorBrush(Color.FromArgb("#D1B27C")),
             StrokeThickness = 2,
             WidthRequest = 160,
             HeightRequest = 160,
@@ -32,9 +45,9 @@ public sealed class SplashPage : ContentPage
         this.title = new Label
         {
             Text = "Chrono",
-            FontFamily = "ManropeSemiBold",
-            FontSize = 30,
-            TextColor = Color.FromArgb("#E9EBFF"),
+            FontFamily = "ManropeExtraBold",
+            FontSize = 28,
+            TextColor = Color.FromArgb("#2E3136"),
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center,
             Opacity = 0,
@@ -47,6 +60,7 @@ public sealed class SplashPage : ContentPage
             center.Add(wave);
         }
 
+        center.Add(disc);
         center.Add(this.bell);
         center.Add(this.title);
         this.Content = center;

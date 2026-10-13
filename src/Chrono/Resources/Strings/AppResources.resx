@@ -12,13 +12,6 @@
   <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
-  <data name="InvalidDateTime" xml:space="preserve"><value>Check the date and time</value></data>
-  <data name="DayPlaceholder" xml:space="preserve"><value>DD</value></data>
-  <data name="MonthPlaceholder" xml:space="preserve"><value>MM</value></data>
-  <data name="YearPlaceholder" xml:space="preserve"><value>YYYY</value></data>
-  <data name="LabelHeader" xml:space="preserve"><value>Text</value></data>
-  <data name="LabelPlaceholder" xml:space="preserve"><value>Alarm text</value></data>
-  <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
   <data name="Sound" xml:space="preserve"><value>Sound</value></data>
   <data name="Vibration" xml:space="preserve"><value>Vibration</value></data>
   <data name="DeleteAlarm" xml:space="preserve"><value>Delete alarm</value></data>
@@ -34,7 +27,6 @@
   <data name="ChannelMissed" xml:space="preserve"><value>Missed alarms</value></data>
   <data name="MissedAlarm" xml:space="preserve"><value>Missed alarm {0}</value></data>
   <data name="CorruptFile" xml:space="preserve"><value>Couldn't read the alarm list. The damaged file was set aside.</value></data>
-  <data name="SoundPickerTitle" xml:space="preserve"><value>Melody</value></data>
   <data name="Sound_bell" xml:space="preserve"><value>Bell</value></data>
   <data name="Sound_chime" xml:space="preserve"><value>Chime</value></data>
   <data name="Sound_digital" xml:space="preserve"><value>Digital</value></data>
@@ -70,6 +62,25 @@
   <data name="Repeat_Daily" xml:space="preserve"><value>Every day</value></data>
   <data name="Repeat_Weekly" xml:space="preserve"><value>Days of week</value></data>
   <data name="Repeat_Yearly" xml:space="preserve"><value>Every year</value></data>
-  <data name="NoDaysSelected" xml:space="preserve"><value>Pick at least one day</value></data>
-  <data name="NextOccurrence" xml:space="preserve"><value>Next: {0}</value></data>
+  <data name="PlateDate" xml:space="preserve"><value>Rings · {0}</value></data>
+  <data name="PlateToday" xml:space="preserve"><value>Rings today · {0}</value></data>
+  <data name="PlateTomorrow" xml:space="preserve"><value>Rings tomorrow · {0}</value></data>
+  <data name="RelDays" xml:space="preserve"><value>in {0} d {1} h</value></data>
+  <data name="RelHours" xml:space="preserve"><value>in {0} h {1} min</value></data>
+  <data name="RelMinutes" xml:space="preserve"><value>in {0} min</value></data>
+  <data name="TimePassed" xml:space="preserve"><value>time has passed</value></data>
+  <data name="RowTime" xml:space="preserve"><value>Time</value></data>
+  <data name="RowDate" xml:space="preserve"><value>Date</value></data>
+  <data name="RowName" xml:space="preserve"><value>Name</value></data>
+  <data name="Nearest" xml:space="preserve"><value>Nearest</value></data>
+  <data name="NearestHint" xml:space="preserve"><value>Nearest suitable</value></data>
+  <data name="NoSound" xml:space="preserve"><value>No sound</value></data>
+  <data name="SaveFootnote" xml:space="preserve"><value>Changes apply when you tap Save.</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Discard changes?</value></data>
+  <data name="DiscardYes" xml:space="preserve"><value>Discard</value></data>
+  <data name="SheetOk" xml:space="preserve"><value>OK</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Now" xml:space="preserve"><value>Now</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
 </root>

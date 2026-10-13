@@ -1,161 +1,139 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 
-    <!-- Чип выбора (мелодия, повтор, день недели): выбранный — с акцентной заливкой. -->
-    <ContentPage.Resources>
-        <Style x:Key="Chip" TargetType="Border">
-            <Setter Property="StrokeShape" Value="RoundRectangle 14" />
-            <Setter Property="Padding" Value="14,8" />
-            <Setter Property="Stroke" Value="{StaticResource SurfaceBorder}" />
-            <Setter Property="Background" Value="{StaticResource Surface}" />
-            <Style.Triggers>
-                <DataTrigger TargetType="Border" x:DataType="vm:ChoiceOption" Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="ChipText" TargetType="Label">
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="HorizontalTextAlignment" Value="Center" />
-            <Style.Triggers>
-                <DataTrigger TargetType="Label" x:DataType="vm:ChoiceOption" Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="TextColor" Value="{StaticResource OnAccent}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </ContentPage.Resources>
-
     <!-- Снизу All: кнопки поднимаются над клавиатурой (нужен WindowSoftInputModeAdjust=Resize в App.xaml). -->
-    <Grid RowDefinitions="*,Auto" Padding="20,12,20,16" SafeAreaEdges="Container, Container, Container, All">
+    <Grid SafeAreaEdges="Container, Container, Container, All">
 
-        <ScrollView VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout>
-                <Label Text="{Binding Title}" FontFamily="ManropeSemiBold" FontSize="20" Margin="0,0,0,12" />
+        <Grid RowDefinitions="Auto,*,Auto" Padding="20,12,20,16">
 
-                <!-- Время и дата — обычные цифровые поля; заполненное поле передаёт фокус следующему. -->
-                <Border Style="{StaticResource Card}" Padding="16,14">
-                    <VerticalStackLayout HorizontalOptions="Center" Spacing="10">
-                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="8">
-                            <Border Style="{StaticResource DigitBox}" WidthRequest="96">
-                                <Entry x:Name="HourEntry" Text="{Binding Hour}" Style="{StaticResource DigitEntry}" MaxLength="2"
-                                       FontSize="44" Placeholder="00" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
-                            </Border>
-                            <Label Text=":" FontSize="44" VerticalOptions="Center" />
-                            <Border Style="{StaticResource DigitBox}" WidthRequest="96">
-                                <Entry x:Name="MinuteEntry" Text="{Binding Minute}" Style="{StaticResource DigitEntry}" MaxLength="2"
-                                       FontSize="44" Placeholder="00" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
-                            </Border>
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="6" IsVisible="{Binding IsDateVisible}">
-                            <Border Style="{StaticResource DigitBox}" WidthRequest="56">
-                                <Entry x:Name="DayEntry" Text="{Binding Day}" Style="{StaticResource DigitEntry}" MaxLength="2"
-                                       FontSize="18" Placeholder="{x:Static res:AppResources.DayPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
-                            </Border>
-                            <Label Text="." FontSize="18" VerticalOptions="Center" />
-                            <Border Style="{StaticResource DigitBox}" WidthRequest="56">
-                                <Entry x:Name="MonthEntry" Text="{Binding Month}" Style="{StaticResource DigitEntry}" MaxLength="2"
-                                       FontSize="18" Placeholder="{x:Static res:AppResources.MonthPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
-                            </Border>
-                            <Label Text="." FontSize="18" VerticalOptions="Center" />
-                            <Border Style="{StaticResource DigitBox}" WidthRequest="80">
-                                <Entry x:Name="YearEntry" Text="{Binding Year}" Style="{StaticResource DigitEntry}" MaxLength="4"
-                                       FontSize="18" Placeholder="{x:Static res:AppResources.YearPlaceholder}" TextChanged="OnDigitsChanged" Focused="OnDigitsFocused" />
-                            </Border>
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding WhenText}" Style="{StaticResource Muted}" FontSize="13" HorizontalOptions="Center" />
-                    </VerticalStackLayout>
+            <!-- Шапка: «назад» и название экрана. -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" Margin="0,0,0,16">
+                <Border Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.Back}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding BackCommand}" />
+                    </Border.GestureRecognizers>
+                    <Image Source="icon_back.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
                 </Border>
-                <Label Text="{Binding ErrorText}" TextColor="{StaticResource Danger}" Margin="4,6,0,0"
-                       IsVisible="{Binding HasError}" />
+                <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource ScreenTitle}" />
+            </Grid>
 
-                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}">
-                    <VerticalStackLayout Spacing="4">
-                        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding RepeatOptions}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ChoiceOption">
-                                    <Border Style="{StaticResource Chip}" Margin="0,0,8,8">
-                                        <Border.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding SelectRepeatCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
-                                                CommandParameter="{Binding .}" />
-                                        </Border.GestureRecognizers>
-                                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </FlexLayout>
-                        <!-- Семь дней в одну строку: узкие чипы, равные промежутки. -->
-                        <FlexLayout JustifyContent="SpaceBetween" IsVisible="{Binding IsDaysVisible}"
-                                    BindableLayout.ItemsSource="{Binding DayOptions}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ChoiceOption">
-                                    <Border Style="{StaticResource Chip}" Padding="0,8" WidthRequest="40">
-                                        <Border.GestureRecognizers>
-                                            <TapGestureRecognizer
-                                                Command="{Binding ToggleDayCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
-                                                CommandParameter="{Binding .}" />
-                                        </Border.GestureRecognizers>
-                                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </FlexLayout>
-                    </VerticalStackLayout>
-                </Border>
+            <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Spacing="22">
 
-                <Label Text="{x:Static res:AppResources.LabelHeader}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}" Padding="12,2" Stroke="{StaticResource Accent}">
-                    <Entry Text="{Binding Label}" Placeholder="{x:Static res:AppResources.LabelPlaceholder}" MaxLength="60"
-                           ReturnType="Done" />
-                </Border>
+                    <!-- Плашка: когда сработает и через сколько. -->
+                    <Border StrokeShape="RoundRectangle 20" Background="{StaticResource MetalBrush}"
+                            Stroke="{StaticResource GoldEdgeBrush}" StrokeThickness="1" Padding="20,20,20,18">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding PlateTitle}" Style="{StaticResource Eyebrow}" TextColor="{StaticResource Gold}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="64" TextColor="{StaticResource OnMetal}" />
+                                <Label Grid.Column="1" Text="{Binding RelText}" FontFamily="ManropeSemiBold" FontSize="13"
+                                       TextColor="{StaticResource OnMetal}" Opacity="0.7" VerticalOptions="End" Margin="0,0,0,12" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
 
-                <Label Text="{x:Static res:AppResources.SignalHeader}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}" Margin="0,0,0,8">
-                    <VerticalStackLayout Spacing="10">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{x:Static res:AppResources.Sound}" VerticalOptions="Center" />
-                            <Switch Grid.Column="1" IsToggled="{Binding SoundEnabled}" />
-                        </Grid>
-                        <!-- Мелодии: нажатие выбирает и проигрывает один раз. -->
-                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" IsVisible="{Binding SoundEnabled}">
-                            <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding SoundOptions}">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:ChoiceOption">
-                                        <Border Style="{StaticResource Chip}">
-                                            <Border.GestureRecognizers>
-                                                <TapGestureRecognizer
-                                                    Command="{Binding SelectSoundCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmEditViewModel}}, x:DataType=vm:AlarmEditViewModel}"
-                                                    CommandParameter="{Binding .}" />
-                                            </Border.GestureRecognizers>
-                                            <Label Text="{Binding Name}" Style="{StaticResource ChipText}" />
-                                        </Border>
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </HorizontalStackLayout>
-                        </ScrollView>
-                    </VerticalStackLayout>
-                </Border>
-                <Border Style="{StaticResource Card}">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{x:Static res:AppResources.Vibration}" VerticalOptions="Center" />
-                        <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" />
-                    </Grid>
-                </Border>
+                    <!-- Время, дата, повтор: каждая строка открывает свою шторку. -->
+                    <Border Style="{StaticResource RowGroup}">
+                        <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenTimeCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowTime}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding TimeText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsDateRowVisible}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsDateRowVisible}">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenDateCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowDate}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding DateText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenRepeatCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding RepeatText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Название, звук, вибрация. -->
+                    <Border Style="{StaticResource RowGroup}">
+                        <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*">
+                                <Label Text="{x:Static res:AppResources.RowName}" Style="{StaticResource RowKey}" />
+                                <Entry Grid.Column="1" Text="{Binding Label}" Placeholder="{x:Static res:AppResources.DefaultLabel}"
+                                       MaxLength="60" HorizontalTextAlignment="End" VerticalOptions="Center"
+                                       FontFamily="ManropeBold" FontSize="14.5" ReturnType="Done" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenSoundCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.Sound}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding SoundText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                <Label Text="{x:Static res:AppResources.Vibration}" Style="{StaticResource RowKey}" />
+                                <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" VerticalOptions="Center" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="{x:Static res:AppResources.SaveFootnote}" Style="{StaticResource Footnote}" />
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Действия: «Удалить» (только у существующего) и «Сохранить». -->
+            <VerticalStackLayout Grid.Row="2" Spacing="8" Padding="0,14,0,0">
+                <Label Text="{Binding ErrorText}" TextColor="{StaticResource GoldInk}" IsVisible="{Binding HasError}" />
+                <!-- Отступ у «Удалить» вместо ColumnSpacing: скрытая кнопка не оставляет зазора слева от «Сохранить». -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="0">
+                    <Border WidthRequest="54" HeightRequest="54" Margin="0,0,10,0" StrokeShape="RoundRectangle 18"
+                            Background="{StaticResource CanvasBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
+                            IsVisible="{Binding IsExisting}" SemanticProperties.Description="{x:Static res:AppResources.DeleteAlarm}">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding DeleteCommand}" />
+                        </Border.GestureRecognizers>
+                        <Image Source="icon_trash.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Button Grid.Column="1" Text="{x:Static res:AppResources.Save}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" />
+                </Grid>
             </VerticalStackLayout>
-        </ScrollView>
+        </Grid>
 
-        <!-- Действия: «Удалить» над кнопками; «Отмена» и «Сохранить» прижаты вправо, «Сохранить» — крайняя справа. -->
-        <VerticalStackLayout Grid.Row="1" Spacing="4" Margin="0,8,0,0">
-            <Button Text="{x:Static res:AppResources.DeleteAlarm}" Style="{StaticResource DangerLink}"
-                    IsVisible="{Binding IsExisting}" Command="{Binding DeleteCommand}" HorizontalOptions="Center" />
-            <HorizontalStackLayout HorizontalOptions="End" Spacing="10">
-                <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}" Command="{Binding CancelCommand}" />
-                <Button Text="{x:Static res:AppResources.Save}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" />
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+        <!-- Шторки поверх страницы; каждая получает модель через BindingContext. -->
+        <controls:BottomSheet IsOpen="{Binding IsTimeSheetOpen}" Title="{x:Static res:AppResources.RowTime}"
+                              Hint="{Binding TimeHint}" CancelCommand="{Binding CloseSheetCommand}">
+            <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsDateSheetOpen}" Title="{x:Static res:AppResources.RowDate}"
+                              Hint="{Binding CalendarSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
+            <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"
+                              CancelCommand="{Binding CloseSheetCommand}">
+            <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsSoundSheetOpen}" Title="{x:Static res:AppResources.Sound}"
+                              CancelCommand="{Binding CloseSheetCommand}">
+            <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
+        </controls:BottomSheet>
     </Grid>
 </ContentPage>

@@ -4,25 +4,36 @@
              x:Class="Chrono.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="20,12,20,16" SafeAreaEdges="Container">
-        <Label Text="{x:Static res:AppResources.SettingsTitle}" FontFamily="ManropeSemiBold" FontSize="24" Margin="0,0,0,12" />
+    <Grid RowDefinitions="Auto,*" Padding="20,12,20,16" SafeAreaEdges="Container">
+
+        <!-- Шапка: назад и заголовок. -->
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="0,6,0,14">
+            <Border Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.Back}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CloseCommand}" />
+                </Border.GestureRecognizers>
+                <Image Source="icon_back.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <Label Grid.Column="1" Text="{x:Static res:AppResources.SettingsTitle}" Style="{StaticResource ScreenTitle}" VerticalOptions="Center" />
+        </Grid>
 
         <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout Spacing="10">
+            <VerticalStackLayout Spacing="0">
                 <!-- Умное пробуждение: переключатель, описание, состояние доступа к данным часов. -->
+                <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}" />
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{x:Static res:AppResources.SmartWake}" FontFamily="ManropeSemiBold" FontSize="16" VerticalOptions="Center" />
+                            <Label Text="{x:Static res:AppResources.SmartWake}" FontFamily="ManropeBold" FontSize="15" VerticalOptions="Center" />
                             <Switch Grid.Column="1" IsToggled="{Binding SmartWakeEnabled}" IsEnabled="{Binding IsSmartWakeSupported}"
                                     SemanticProperties.Description="{x:Static res:AppResources.SmartWake}" />
                         </Grid>
                         <Label Text="{x:Static res:AppResources.SmartWakeDescription}" Style="{StaticResource Muted}" FontSize="13" />
-                        <Label Text="{Binding AccessText}" TextColor="{StaticResource Accent}" FontSize="13" />
-                        <Button Text="{x:Static res:AppResources.GrantAccess}" Style="{StaticResource SecondaryButton}"
-                                HorizontalOptions="Start" Padding="14,6" FontSize="13"
+                        <Label Text="{Binding AccessText}" TextColor="{StaticResource GoldInk}" FontSize="13" />
+                        <Button Text="{x:Static res:AppResources.GrantAccess}" Style="{StaticResource CompactAccentButton}"
+                                HorizontalOptions="Start"
                                 IsVisible="{Binding CanGrantAccess}" Command="{Binding GrantAccessCommand}" />
-                        <Label Text="{x:Static res:AppResources.SmartWakePrivacy}" Style="{StaticResource Muted}" FontSize="12" />
+                        <Label Text="{x:Static res:AppResources.SmartWakePrivacy}" Style="{StaticResource Footnote}" />
                     </VerticalStackLayout>
                 </Border>
 
@@ -31,28 +42,26 @@
                 <Border Style="{StaticResource Card}">
                     <VerticalStackLayout Spacing="8">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
-                            <CheckBox IsChecked="{Binding MathChallengeEnabled}" Color="{StaticResource Accent}" VerticalOptions="Center"
+                            <CheckBox IsChecked="{Binding MathChallengeEnabled}" Color="{StaticResource Metal700}" VerticalOptions="Center"
                                       SemanticProperties.Description="{x:Static res:AppResources.MathChallenge}" />
-                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MathChallenge}" FontFamily="ManropeSemiBold" FontSize="16"
+                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MathChallenge}" FontFamily="ManropeBold" FontSize="15"
                                    VerticalOptions="Center" />
                         </Grid>
                         <Label Text="{x:Static res:AppResources.MathChallengeDescription}" Style="{StaticResource Muted}" FontSize="13" />
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Style="{StaticResource Card}">
+                <!-- Переход к «Надёжности». -->
+                <Border Style="{StaticResource RowGroup}" Margin="0,14,0,0">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
                     </Border.GestureRecognizers>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" FontSize="16" VerticalOptions="Center" />
-                        <Label Grid.Column="1" Text="›" FontSize="22" TextColor="{StaticResource TextMuted}" VerticalOptions="Center" />
+                    <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowValue}" />
+                        <Image Grid.Column="1" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
                     </Grid>
                 </Border>
             </VerticalStackLayout>
         </ScrollView>
-
-        <Button Grid.Row="2" Text="{x:Static res:AppResources.Ok}" Style="{StaticResource PrimaryButton}"
-                HorizontalOptions="End" Command="{Binding CloseCommand}" />
     </Grid>
 </ContentPage>
