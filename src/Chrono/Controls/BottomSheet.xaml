@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             x:Class="Chrono.Controls.BottomSheet"
+             x:Name="Root" x:DataType="controls:BottomSheet" IsVisible="False">
+    <!-- Слой поверх страницы: затемнение (нажатие = «Отмена») и панель снизу. Без анимаций — состояние меняется сразу. -->
+    <Grid>
+        <BoxView Color="{StaticResource Scrim}">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelCommand, Source={x:Reference Root}}" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+        <Border VerticalOptions="End" Background="{StaticResource Surface}" StrokeThickness="0"
+                StrokeShape="RoundRectangle 28,28,0,0" Padding="22,10,22,34">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,-10" Radius="40" Opacity="0.25" />
+            </Border.Shadow>
+            <!-- Пустой обработчик нажатия: тап по панели не должен проваливаться в затемнение под ней. -->
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer />
+            </Border.GestureRecognizers>
+            <VerticalStackLayout Spacing="16">
+                <BoxView WidthRequest="44" HeightRequest="5" CornerRadius="3" Color="{StaticResource Hairline}" HorizontalOptions="Center" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="{Binding Title, Source={x:Reference Root}}" Style="{StaticResource SheetTitle}" />
+                    <Label Grid.Column="1" Text="{Binding Hint, Source={x:Reference Root}}" Style="{StaticResource SheetHint}" />
+                </Grid>
+                <ContentView x:Name="Body" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentView>
