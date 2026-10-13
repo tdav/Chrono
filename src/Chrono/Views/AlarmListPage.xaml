@@ -8,20 +8,24 @@
 
         <!-- Шапка: название и шестерёнка «Надёжность». -->
         <Grid ColumnDefinitions="*,Auto">
-            <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeSemiBold" FontSize="28" />
-            <Button Grid.Column="1" Text="⚙" FontSize="22" BackgroundColor="Transparent" TextColor="{StaticResource TextMuted}"
-                    Padding="8,0" Command="{Binding OpenSettingsCommand}"
-                    SemanticProperties.Description="{x:Static res:AppResources.SettingsTitle}" />
+            <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeExtraBold" FontSize="28" VerticalOptions="Center" />
+            <Border Grid.Column="1" Style="{StaticResource IconWell}"
+                    SemanticProperties.Description="{x:Static res:AppResources.SettingsTitle}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
+                </Border.GestureRecognizers>
+                <Image Source="icon_gear.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
         </Grid>
 
-        <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource Accent}" FontSize="13" Margin="0,2,0,12" />
+        <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource TextMuted}" FontSize="13" Margin="0,2,0,12" />
 
-        <Border Grid.Row="2" IsVisible="{Binding IsWarningVisible}" Background="#33FF8F7A" Stroke="{StaticResource Danger}"
-                StrokeShape="RoundRectangle 14" Padding="14,10" Margin="0,0,0,12">
+        <Border Grid.Row="2" IsVisible="{Binding IsWarningVisible}" Background="{StaticResource Surface}" Stroke="{StaticResource Gold}"
+                StrokeShape="RoundRectangle 16" Padding="14,10" Margin="0,0,0,12">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
             </Border.GestureRecognizers>
-            <Label Text="{x:Static res:AppResources.WarningBanner}" TextColor="{StaticResource Danger}" FontFamily="ManropeSemiBold" />
+            <Label Text="{x:Static res:AppResources.WarningBanner}" TextColor="{StaticResource GoldInk}" FontFamily="ManropeSemiBold" />
         </Border>
 
         <CollectionView Grid.Row="3" ItemsSource="{Binding Alarms}" SelectionMode="None" VerticalScrollBarVisibility="Never">
@@ -34,17 +38,12 @@
                     <SwipeView Margin="0,0,0,10">
                         <SwipeView.RightItems>
                             <SwipeItems Mode="Execute">
-                                <SwipeItem Text="{x:Static res:AppResources.Delete}" BackgroundColor="{StaticResource Danger}"
+                                <SwipeItem Text="{x:Static res:AppResources.Delete}" BackgroundColor="{StaticResource Metal700}"
                                            Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
                                            CommandParameter="{Binding .}" />
                             </SwipeItems>
                         </SwipeView.RightItems>
                         <Border Style="{StaticResource Card}">
-                            <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsEnabled}" Value="False">
-                                    <Setter Property="Opacity" Value="0.45" />
-                                </DataTrigger>
-                            </Border.Triggers>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
@@ -52,8 +51,14 @@
                             </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="*,Auto">
                                 <VerticalStackLayout>
-                                    <Label Text="{Binding TimeText}" FontFamily="ManropeLight" FontSize="38" />
-                                    <Label Text="{Binding Details}" Style="{StaticResource Muted}" />
+                                    <Label Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="38">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsEnabled}" Value="False">
+                                                <Setter Property="TextColor" Value="{StaticResource Hairline}" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Label Text="{Binding Details}" Style="{StaticResource Muted}" FontSize="12.5" />
                                 </VerticalStackLayout>
                                 <Switch Grid.Column="1" IsToggled="{Binding IsEnabled}" VerticalOptions="Center" />
                             </Grid>
@@ -67,10 +72,17 @@
         </CollectionView>
 
         <!-- Плавающая кнопка «+». -->
-        <Button Grid.Row="3" Text="+" FontSize="30" FontFamily="ManropeLight" Padding="0"
-                WidthRequest="60" HeightRequest="60" CornerRadius="20"
-                Background="{StaticResource AccentBrush}" TextColor="{StaticResource OnAccent}"
+        <Border Grid.Row="3" WidthRequest="60" HeightRequest="60" StrokeShape="RoundRectangle 30"
+                Background="{StaticResource MetalBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
                 HorizontalOptions="End" VerticalOptions="End" Margin="0,0,4,24"
-                Command="{Binding AddCommand}" SemanticProperties.Description="{x:Static res:AppResources.NewAlarm}" />
+                SemanticProperties.Description="{x:Static res:AppResources.NewAlarm}">
+            <Border.Shadow>
+                <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding AddCommand}" />
+            </Border.GestureRecognizers>
+            <Image Source="icon_plus.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Border>
     </Grid>
 </ContentPage>

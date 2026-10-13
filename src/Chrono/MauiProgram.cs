@@ -39,6 +39,20 @@ public static class MauiProgram
         // Нативное подчёркивание Android у полей лишнее: поля уже стоят в карточках с рамкой.
         Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
             handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+
+        // Выключенный тумблер на белой карточке почти не виден (серая дорожка платформы): красим дорожку и бегунок
+        // по состоянию. Вешаем на ключи MAUI (OnColor, ThumbColor, IsOn), чтобы отработать после их собственных
+        // маппингов, которые сбрасывают тинт.
+        foreach (var key in new[] { "OnColor", "ThumbColor", "IsOn" })
+        {
+            Microsoft.Maui.Handlers.SwitchHandler.Mapper.AppendToMapping(key, (handler, view) =>
+            {
+                var states = new[] { new[] { Android.Resource.Attribute.StateChecked }, Array.Empty<int>() };
+                handler.PlatformView.TrackTintList = new Android.Content.Res.ColorStateList(states,
+                    new[] { Android.Graphics.Color.ParseColor("#2E3136").ToArgb(), Android.Graphics.Color.ParseColor("#D9D3C8").ToArgb() });
+                handler.PlatformView.ThumbTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.White);
+            });
+        }
 #endif
 
         builder.Services.AddSingleton(TimeProvider.System);
