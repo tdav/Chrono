@@ -2,14 +2,33 @@
 <ResourceDictionary>
 
     <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
-        <Setter Property="Background" Value="{StaticResource PageBackground}" />
+        <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
         <Setter Property="Shell.NavBarIsVisible" Value="False" />
     </Style>
 
     <Style TargetType="Label">
         <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="FontFamily" Value="ManropeRegular" />
+        <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style x:Key="ScreenTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <!-- Надпись-«бровь»: 11/600, капсом. -->
+    <Style x:Key="Eyebrow" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="CharacterSpacing" Value="1" />
+        <Setter Property="TextTransform" Value="Uppercase" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    </Style>
+
+    <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource Eyebrow}">
+        <Setter Property="Margin" Value="4,14,0,6" />
     </Style>
 
     <Style x:Key="Muted" TargetType="Label">
@@ -17,77 +36,157 @@
         <Setter Property="FontSize" Value="12" />
     </Style>
 
-    <Style x:Key="SectionHeader" TargetType="Label">
+    <Style x:Key="Footnote" TargetType="Label">
         <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="CharacterSpacing" Value="1" />
-        <Setter Property="TextTransform" Value="Uppercase" />
-        <Setter Property="Margin" Value="4,14,0,6" />
+        <Setter Property="FontSize" Value="11.5" />
+        <Setter Property="LineHeight" Value="1.5" />
     </Style>
 
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource Surface}" />
-        <Setter Property="Stroke" Value="{StaticResource SurfaceBorder}" />
+        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
         <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
         <Setter Property="Padding" Value="16,12" />
     </Style>
 
-    <Style TargetType="Switch">
-        <Setter Property="OnColor" Value="{StaticResource Accent}" />
-        <Setter Property="ThumbColor" Value="White" />
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal" />
-                    <VisualState x:Name="Off">
-                        <VisualState.Setters>
-                            <Setter Property="ThumbColor" Value="White" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
+    <!-- Группа строк: карточка без внутренних отступов; строки 54 pt разделены RowDivider. -->
+    <Style x:Key="RowGroup" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style x:Key="Row" TargetType="Grid">
+        <Setter Property="HeightRequest" Value="54" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="ColumnSpacing" Value="12" />
+    </Style>
+
+    <Style x:Key="RowKey" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeMedium" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="RowValue" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeBold" />
+        <Setter Property="FontSize" Value="14.5" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="RowDivider" TargetType="BoxView">
+        <Setter Property="HeightRequest" Value="1" />
+        <Setter Property="Color" Value="{StaticResource Divider}" />
+        <Setter Property="Margin" Value="16,0" />
+    </Style>
+
+    <!-- Колодец 42×42 для иконок: назад, настройки, листание месяца. -->
+    <Style x:Key="IconWell" TargetType="Border">
+        <Setter Property="WidthRequest" Value="42" />
+        <Setter Property="HeightRequest" Value="42" />
+        <Setter Property="Background" Value="{StaticResource Surface2}" />
+        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 15" />
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-        <Setter Property="TextColor" Value="{StaticResource OnAccent}" />
+        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+        <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
         <Setter Property="FontFamily" Value="ManropeSemiBold" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="Padding" Value="22,12" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="HeightRequest" Value="54" />
+        <Setter Property="Padding" Value="22,0" />
+        <Setter Property="Shadow">
+            <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
+        </Setter>
     </Style>
 
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource Surface}" />
+        <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
+        <Setter Property="BorderColor" Value="{StaticResource Hairline}" />
+        <Setter Property="BorderWidth" Value="1" />
         <Setter Property="TextColor" Value="{StaticResource Text}" />
         <Setter Property="FontFamily" Value="ManropeSemiBold" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="CornerRadius" Value="16" />
-        <Setter Property="Padding" Value="22,12" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="HeightRequest" Value="54" />
+        <Setter Property="Padding" Value="22,0" />
     </Style>
 
+    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+        <Setter Property="BorderColor" Value="{StaticResource Gold}" />
+        <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
+    </Style>
+
+    <Style x:Key="CompactAccentButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+        <Setter Property="HeightRequest" Value="38" />
+        <Setter Property="CornerRadius" Value="13" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="14,0" />
+    </Style>
+
+    <!-- Старая ссылка «Удалить»; убирается в задаче 12. -->
     <Style x:Key="DangerLink" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource Danger}" />
-        <Setter Property="FontFamily" Value="ManropeRegular" />
+        <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
+        <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style x:Key="Chip" TargetType="Border">
+        <Setter Property="HeightRequest" Value="40" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="Background" Value="{StaticResource Surface2}" />
+        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+    </Style>
+
+    <Style x:Key="ChipText" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="SheetTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+        <Setter Property="FontSize" Value="21" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="SheetHint" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="End" />
+    </Style>
+
+    <Style TargetType="Switch">
+        <Setter Property="OnColor" Value="{StaticResource Metal700}" />
+        <Setter Property="ThumbColor" Value="White" />
+    </Style>
+
+    <Style TargetType="CheckBox">
+        <Setter Property="Color" Value="{StaticResource Text}" />
     </Style>
 
     <Style TargetType="Entry">
         <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="FontFamily" Value="ManropeRegular" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Hairline}" />
+        <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="BackgroundColor" Value="Transparent" />
     </Style>
 
-    <!-- Поле для цифр времени и даты: рамка вокруг Entry, текст по центру. -->
+    <!-- Цифровые поля старого редактора; удаляются в задаче 12. -->
     <Style x:Key="DigitBox" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource Surface}" />
-        <Setter Property="Stroke" Value="{StaticResource TextMuted}" />
+        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
         <Setter Property="StrokeThickness" Value="1" />
         <Setter Property="StrokeShape" Value="RoundRectangle 12" />
         <Setter Property="Padding" Value="4,0" />
@@ -95,8 +194,8 @@
 
     <Style x:Key="DigitEntry" TargetType="Entry">
         <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="FontFamily" Value="ManropeRegular" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource Hairline}" />
+        <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="Keyboard" Value="Numeric" />
         <Setter Property="HorizontalTextAlignment" Value="Center" />

@@ -72,4 +72,25 @@
   <data name="Repeat_Yearly" xml:space="preserve"><value>Каждый год</value></data>
   <data name="NoDaysSelected" xml:space="preserve"><value>Выберите хотя бы один день</value></data>
   <data name="NextOccurrence" xml:space="preserve"><value>Ближайший: {0}</value></data>
+  <data name="PlateDate" xml:space="preserve"><value>Сработает · {0}</value></data>
+  <data name="PlateToday" xml:space="preserve"><value>Сработает сегодня · {0}</value></data>
+  <data name="PlateTomorrow" xml:space="preserve"><value>Сработает завтра · {0}</value></data>
+  <data name="RelDays" xml:space="preserve"><value>через {0} д {1} ч</value></data>
+  <data name="RelHours" xml:space="preserve"><value>через {0} ч {1} мин</value></data>
+  <data name="RelMinutes" xml:space="preserve"><value>через {0} мин</value></data>
+  <data name="TimePassed" xml:space="preserve"><value>время уже прошло</value></data>
+  <data name="RowTime" xml:space="preserve"><value>Время</value></data>
+  <data name="RowDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="RowName" xml:space="preserve"><value>Название</value></data>
+  <data name="Nearest" xml:space="preserve"><value>Ближайшее</value></data>
+  <data name="NearestHint" xml:space="preserve"><value>Ближайшее подходящее</value></data>
+  <data name="NoSound" xml:space="preserve"><value>Без звука</value></data>
+  <data name="SaveFootnote" xml:space="preserve"><value>Изменения применяются по кнопке «Сохранить».</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Не сохранять изменения?</value></data>
+  <data name="DiscardYes" xml:space="preserve"><value>Не сохранять</value></data>
+  <data name="SheetOk" xml:space="preserve"><value>Окей</value></data>
+  <data name="Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="Today" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="Now" xml:space="preserve"><value>Сейчас</value></data>
+  <data name="Back" xml:space="preserve"><value>Назад</value></data>
 </root>

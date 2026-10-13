@@ -19,6 +19,9 @@ public static class MauiProgram
                 fonts.AddFont("Manrope-Light.ttf", "ManropeLight");
                 fonts.AddFont("Manrope-Regular.ttf", "ManropeRegular");
                 fonts.AddFont("Manrope-SemiBold.ttf", "ManropeSemiBold");
+                fonts.AddFont("Manrope-Medium.ttf", "ManropeMedium");
+                fonts.AddFont("Manrope-Bold.ttf", "ManropeBold");
+                fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
             })
             .ConfigureLifecycleEvents(events =>
             {
