@@ -777,6 +777,9 @@ git commit -m "Графика темы «Металл · Кость»: конт�
              x:Class="Chrono.Controls.BottomSheet"
              x:Name="Root" IsVisible="False">
     <!-- Слой поверх страницы: затемнение (нажатие = «Отмена») и панель снизу. Без анимаций — состояние меняется сразу. -->
+    <!-- Явный ContentView.Content обязателен: [ContentProperty(SheetContent)] класса иначе заберёт этот Grid в SheetContent,
+         он переедет в Body внутри самого себя — цикл дерева и зависание главного потока (найдено на эмуляторе). -->
+    <ContentView.Content>
     <Grid>
         <BoxView Color="{StaticResource Scrim}">
             <BoxView.GestureRecognizers>
@@ -798,6 +801,7 @@ git commit -m "Графика темы «Металл · Кость»: конт�
             </VerticalStackLayout>
         </Border>
     </Grid>
+    </ContentView.Content>
 </ContentView>
 ```
 
