@@ -5,6 +5,8 @@
              x:Class="Chrono.Controls.BottomSheet"
              x:Name="Root" x:DataType="controls:BottomSheet" IsVisible="False">
     <!-- Слой поверх страницы: затемнение (нажатие = «Отмена») и панель снизу. Без анимаций — состояние меняется сразу. -->
+    <!-- Явный Content: ContentProperty класса (SheetContent) иначе перехватил бы корневой Grid самого контрола. -->
+    <ContentView.Content>
     <Grid>
         <BoxView Color="{StaticResource Scrim}">
             <BoxView.GestureRecognizers>
@@ -30,4 +32,5 @@
             </VerticalStackLayout>
         </Border>
     </Grid>
+    </ContentView.Content>
 </ContentView>

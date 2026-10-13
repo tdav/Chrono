@@ -5,7 +5,7 @@ namespace Chrono.Views;
 public partial class AlarmEditPage : ContentPage
 {
     private readonly AlarmEditViewModel viewModel;
-    private bool isShown;
+    private IDispatcherTimer? clockTimer;
 
     public AlarmEditPage(AlarmEditViewModel viewModel)
     {
@@ -17,19 +17,21 @@ public partial class AlarmEditPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        this.isShown = true;
-
         // Плашка («сегодня/завтра») и «через сколько» устаревают, пока экран открыт.
-        this.Dispatcher.StartTimer(TimeSpan.FromSeconds(30), () =>
+        // Таймер создаётся здесь: к показу страницы Dispatcher уже привязан к окну.
+        if (this.clockTimer is null)
         {
-            this.viewModel.RefreshClock();
-            return this.isShown;
-        });
+            this.clockTimer = this.Dispatcher.CreateTimer();
+            this.clockTimer.Interval = TimeSpan.FromSeconds(30);
+            this.clockTimer.Tick += (_, _) => this.viewModel.RefreshClock();
+        }
+
+        this.clockTimer.Start();
     }
 
     protected override void OnDisappearing()
     {
-        this.isShown = false;
+        this.clockTimer?.Stop();
 
         // Прослушивание мелодии не должно продолжаться после ухода со страницы (в т.ч. системной кнопкой «Назад»).
         this.viewModel.StopPreview();

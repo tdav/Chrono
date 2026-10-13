@@ -48,7 +48,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         {
             if (accepted)
             {
-                this.Date = this.CalendarSheet.Selected;
+                // Ежегодному нужны день и месяц: «Ближайшее» для него не имеет смысла.
+                this.Date = this.CalendarSheet.Selected ?? (this.Repeat == RepeatKind.Yearly ? DateOnly.FromDateTime(DateTime.Now) : null);
             }
 
             this.IsDateSheetOpen = false;
@@ -227,7 +228,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
         this.Title = AppResources.EditAlarm;
         this.IsExisting = true;
-        this.Time = TimeOnly.FromDateTime(this.existing.At);
+        this.Time = new TimeOnly(this.existing.At.Hour, this.existing.At.Minute);
         this.Repeat = this.existing.Repeat;
         this.Date = this.existing.Repeat is RepeatKind.None or RepeatKind.Yearly ? DateOnly.FromDateTime(this.existing.At) : null;
         this.Days = this.existing.Days;
@@ -250,6 +251,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     {
         this.OnPropertyChanged(nameof(this.PlateTitle));
         this.OnPropertyChanged(nameof(this.RelText));
+        this.OnPropertyChanged(nameof(this.TimeHint));
     }
 
     public void StopPreview() => this.soundPlayer.Stop();
