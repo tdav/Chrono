@@ -103,8 +103,9 @@
             <!-- Действия: «Удалить» (только у существующего) и «Сохранить». -->
             <VerticalStackLayout Grid.Row="2" Spacing="8" Padding="0,14,0,0">
                 <Label Text="{Binding ErrorText}" TextColor="{StaticResource GoldInk}" IsVisible="{Binding HasError}" />
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                    <Border WidthRequest="54" HeightRequest="54" StrokeShape="RoundRectangle 18"
+                <!-- Отступ у «Удалить» вместо ColumnSpacing: скрытая кнопка не оставляет зазора слева от «Сохранить». -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="0">
+                    <Border WidthRequest="54" HeightRequest="54" Margin="0,0,10,0" StrokeShape="RoundRectangle 18"
                             Background="{StaticResource CanvasBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
                             IsVisible="{Binding IsExisting}" SemanticProperties.Description="{x:Static res:AppResources.DeleteAlarm}">
                         <Border.GestureRecognizers>

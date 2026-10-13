@@ -12,13 +12,6 @@
   <data name="WarningBanner" xml:space="preserve"><value>Будильник может не сработать — исправить</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>Новый будильник</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Изменить будильник</value></data>
-  <data name="InvalidDateTime" xml:space="preserve"><value>Проверьте дату и время</value></data>
-  <data name="DayPlaceholder" xml:space="preserve"><value>ДД</value></data>
-  <data name="MonthPlaceholder" xml:space="preserve"><value>ММ</value></data>
-  <data name="YearPlaceholder" xml:space="preserve"><value>ГГГГ</value></data>
-  <data name="LabelHeader" xml:space="preserve"><value>Текст</value></data>
-  <data name="LabelPlaceholder" xml:space="preserve"><value>Текст будильника</value></data>
-  <data name="SignalHeader" xml:space="preserve"><value>Сигнал</value></data>
   <data name="Sound" xml:space="preserve"><value>Звук</value></data>
   <data name="Vibration" xml:space="preserve"><value>Вибрация</value></data>
   <data name="DeleteAlarm" xml:space="preserve"><value>Удалить будильник</value></data>
@@ -34,7 +27,6 @@
   <data name="ChannelMissed" xml:space="preserve"><value>Пропущенные будильники</value></data>
   <data name="MissedAlarm" xml:space="preserve"><value>Пропущенный будильник {0}</value></data>
   <data name="CorruptFile" xml:space="preserve"><value>Не удалось прочитать список будильников. Повреждённый файл сохранён отдельно.</value></data>
-  <data name="SoundPickerTitle" xml:space="preserve"><value>Мелодия</value></data>
   <data name="Sound_bell" xml:space="preserve"><value>Колокол</value></data>
   <data name="Sound_chime" xml:space="preserve"><value>Перезвон</value></data>
   <data name="Sound_digital" xml:space="preserve"><value>Цифровой</value></data>
@@ -70,8 +62,6 @@
   <data name="Repeat_Daily" xml:space="preserve"><value>Каждый день</value></data>
   <data name="Repeat_Weekly" xml:space="preserve"><value>По дням недели</value></data>
   <data name="Repeat_Yearly" xml:space="preserve"><value>Каждый год</value></data>
-  <data name="NoDaysSelected" xml:space="preserve"><value>Выберите хотя бы один день</value></data>
-  <data name="NextOccurrence" xml:space="preserve"><value>Ближайший: {0}</value></data>
   <data name="PlateDate" xml:space="preserve"><value>Сработает · {0}</value></data>
   <data name="PlateToday" xml:space="preserve"><value>Сработает сегодня · {0}</value></data>
   <data name="PlateTomorrow" xml:space="preserve"><value>Сработает завтра · {0}</value></data>

@@ -39,7 +39,6 @@
     <Style x:Key="Footnote" TargetType="Label">
         <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
         <Setter Property="FontSize" Value="11.5" />
-        <Setter Property="LineHeight" Value="1.5" />
     </Style>
 
     <Style x:Key="Card" TargetType="Border">
@@ -127,14 +126,6 @@
         <Setter Property="Padding" Value="14,0" />
     </Style>
 
-    <!-- Старая ссылка «Удалить»; убирается в задаче 12. -->
-    <Style x:Key="DangerLink" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
-        <Setter Property="FontFamily" Value="ManropeMedium" />
-        <Setter Property="FontSize" Value="14" />
-    </Style>
-
     <Style x:Key="Chip" TargetType="Border">
         <Setter Property="HeightRequest" Value="40" />
         <Setter Property="Padding" Value="14,0" />
@@ -181,24 +172,6 @@
         <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="BackgroundColor" Value="Transparent" />
-    </Style>
-
-    <!-- Цифровые поля старого редактора; удаляются в задаче 12. -->
-    <Style x:Key="DigitBox" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource Surface}" />
-        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
-        <Setter Property="Padding" Value="4,0" />
-    </Style>
-
-    <Style x:Key="DigitEntry" TargetType="Entry">
-        <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource Hairline}" />
-        <Setter Property="FontFamily" Value="ManropeMedium" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="Keyboard" Value="Numeric" />
-        <Setter Property="HorizontalTextAlignment" Value="Center" />
     </Style>
 
 </ResourceDictionary>

@@ -16,7 +16,6 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .ConfigureFonts(fonts =>
             {
-                fonts.AddFont("Manrope-Light.ttf", "ManropeLight");
                 fonts.AddFont("Manrope-Regular.ttf", "ManropeRegular");
                 fonts.AddFont("Manrope-SemiBold.ttf", "ManropeSemiBold");
                 fonts.AddFont("Manrope-Medium.ttf", "ManropeMedium");

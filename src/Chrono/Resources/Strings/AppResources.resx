@@ -12,13 +12,6 @@
   <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
-  <data name="InvalidDateTime" xml:space="preserve"><value>Check the date and time</value></data>
-  <data name="DayPlaceholder" xml:space="preserve"><value>DD</value></data>
-  <data name="MonthPlaceholder" xml:space="preserve"><value>MM</value></data>
-  <data name="YearPlaceholder" xml:space="preserve"><value>YYYY</value></data>
-  <data name="LabelHeader" xml:space="preserve"><value>Text</value></data>
-  <data name="LabelPlaceholder" xml:space="preserve"><value>Alarm text</value></data>
-  <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
   <data name="Sound" xml:space="preserve"><value>Sound</value></data>
   <data name="Vibration" xml:space="preserve"><value>Vibration</value></data>
   <data name="DeleteAlarm" xml:space="preserve"><value>Delete alarm</value></data>
@@ -34,7 +27,6 @@
   <data name="ChannelMissed" xml:space="preserve"><value>Missed alarms</value></data>
   <data name="MissedAlarm" xml:space="preserve"><value>Missed alarm {0}</value></data>
   <data name="CorruptFile" xml:space="preserve"><value>Couldn't read the alarm list. The damaged file was set aside.</value></data>
-  <data name="SoundPickerTitle" xml:space="preserve"><value>Melody</value></data>
   <data name="Sound_bell" xml:space="preserve"><value>Bell</value></data>
   <data name="Sound_chime" xml:space="preserve"><value>Chime</value></data>
   <data name="Sound_digital" xml:space="preserve"><value>Digital</value></data>
@@ -70,8 +62,6 @@
   <data name="Repeat_Daily" xml:space="preserve"><value>Every day</value></data>
   <data name="Repeat_Weekly" xml:space="preserve"><value>Days of week</value></data>
   <data name="Repeat_Yearly" xml:space="preserve"><value>Every year</value></data>
-  <data name="NoDaysSelected" xml:space="preserve"><value>Pick at least one day</value></data>
-  <data name="NextOccurrence" xml:space="preserve"><value>Next: {0}</value></data>
   <data name="PlateDate" xml:space="preserve"><value>Rings · {0}</value></data>
   <data name="PlateToday" xml:space="preserve"><value>Rings today · {0}</value></data>
   <data name="PlateTomorrow" xml:space="preserve"><value>Rings tomorrow · {0}</value></data>
