@@ -54,8 +54,14 @@ public partial class TimeWheelSheet : ContentView
         if (wheel.Handler?.PlatformView is AndroidX.RecyclerView.Widget.RecyclerView list
             && list.FindChildViewUnder(list.Width / 2f, list.Height / 2f) is { } center)
         {
-            // Позиция 0 в адаптере — заголовок-отступ.
-            index = list.GetChildAdapterPosition(center) - 1;
+            // Позиция 0 в адаптере — заголовок-отступ; NO_POSITION (−1) бывает во время анимации адаптера.
+            var position = list.GetChildAdapterPosition(center);
+            if (position < 0)
+            {
+                return;
+            }
+
+            index = position - 1;
         }
 #endif
         // Доводка до строки: после флинга прилипание MandatorySingle на Android иногда не срабатывает
@@ -67,6 +73,17 @@ public partial class TimeWheelSheet : ContentView
             this.settleTimer.IsRepeating = false;
             this.settleTimer.Tick += (_, _) =>
             {
+#if ANDROID
+                // Палец держит барабан или список ещё докатывается: доводка подождёт следующей паузы.
+                if (this.HourWheel.Handler?.PlatformView is AndroidX.RecyclerView.Widget.RecyclerView hours
+                    && this.MinuteWheel.Handler?.PlatformView is AndroidX.RecyclerView.Widget.RecyclerView minutes
+                    && (hours.ScrollState != AndroidX.RecyclerView.Widget.RecyclerView.ScrollStateIdle
+                        || minutes.ScrollState != AndroidX.RecyclerView.Widget.RecyclerView.ScrollStateIdle))
+                {
+                    this.settleTimer.Start();
+                    return;
+                }
+#endif
                 if (this.model is not null)
                 {
                     this.HourWheel.ScrollTo(this.model.Hour, position: ScrollToPosition.Center, animate: true);

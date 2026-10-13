@@ -40,6 +40,13 @@ public partial class AlarmEditPage : ContentPage
 
     protected override bool OnBackButtonPressed()
     {
+        // Уход со страницы уже идёт (сохранение, удаление или подтверждённый выход): повторная «Назад»
+        // показала бы диалог над уходящей страницей и сделала бы второй GoToAsync("..").
+        if (this.viewModel.BackCommand.IsRunning || this.viewModel.SaveCommand.IsRunning || this.viewModel.DeleteCommand.IsRunning)
+        {
+            return true;
+        }
+
         if (this.viewModel.IsAnySheetOpen)
         {
             this.viewModel.CloseSheetCommand.Execute(null);
