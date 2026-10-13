@@ -34,7 +34,7 @@
 
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#0A0B1A" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#F5F2EC" BaseSize="128,128" />
 		<MauiImage Include="Resources\Images\*" />
 		<MauiFont Include="Resources\Fonts\*" />
 		<!-- Без подпапок: на iOS звук уведомления ищется в корне бандла, на Android — в корне assets. -->
