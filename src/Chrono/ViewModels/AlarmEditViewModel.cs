@@ -183,11 +183,13 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             }
 
             // Дни с понедельника; AbbreviatedDayNames начинается с воскресенья.
-            var names = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames;
+            // В ru сокращения приходят строчными («пн») — первая буква заглавная.
+            var culture = CultureInfo.CurrentUICulture;
+            var names = culture.DateTimeFormat.AbbreviatedDayNames;
             return string.Join(", ", Enumerable.Range(1, 7)
                 .Select(i => (DayOfWeek)(i % 7))
                 .Where(day => this.Days.HasFlag((WeekDays)(1 << (int)day)))
-                .Select(day => names[(int)day]));
+                .Select(day => culture.TextInfo.ToUpper(names[(int)day][0]) + names[(int)day][1..]));
         }
     }
 
@@ -261,7 +263,6 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     {
         this.TimeSheet.Load(this.Time);
         this.IsTimeSheetOpen = true;
-        MainThread.BeginInvokeOnMainThread(this.TimeSheet.RequestScroll);
     }
 
     [RelayCommand]

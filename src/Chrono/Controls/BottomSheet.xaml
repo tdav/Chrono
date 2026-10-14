@@ -5,7 +5,7 @@
              x:Class="Chrono.Controls.BottomSheet"
              x:Name="Root" x:DataType="controls:BottomSheet" IsVisible="False">
     <!-- Слой поверх страницы: затемнение (нажатие = «Отмена») и панель снизу. Без анимаций — состояние меняется сразу. -->
-    <!-- Явный Content: ContentProperty класса (SheetContent) иначе перехватил бы корневой Grid самого контрола. -->
+    <!-- Явный Content: корневой Grid контрола кладётся в Content, а не в SheetContent (содержимое шторки задаётся снаружи через BottomSheet.SheetContent). -->
     <ContentView.Content>
     <Grid>
         <BoxView Color="{StaticResource Scrim}">

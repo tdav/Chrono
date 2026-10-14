@@ -19,6 +19,7 @@ public sealed partial class SoundSheetModel : ObservableObject
             new ChoiceOption("", AppResources.NoSound),
             .. Sounds.All.Select(id => new ChoiceOption(id, AppResources.ResourceManager.GetString($"Sound_{id}", AppResources.Culture) ?? id)),
         ]);
+        this.Options[^1].IsLast = true;
         this.OnSelectedIdChanged(this.SelectedId);
     }
 

@@ -3,7 +3,6 @@ using System.Windows.Input;
 namespace Chrono.Controls;
 
 /// <summary>Нижняя шторка поверх страницы: затемнение, панель с заголовком и произвольным содержимым.</summary>
-[ContentProperty(nameof(SheetContent))]
 public partial class BottomSheet : ContentView
 {
     public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(

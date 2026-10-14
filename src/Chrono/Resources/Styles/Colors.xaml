@@ -2,7 +2,6 @@
 <!-- Тема «Шлифованный металл · Кость» (DESIGN.md). Приложение всегда светлое. -->
 <ResourceDictionary>
 
-    <Color x:Key="CanvasFlat">#F5F2EC</Color>
     <Color x:Key="Surface">#FFFFFF</Color>
     <Color x:Key="Surface2">#F5F2EC</Color>
     <Color x:Key="Hairline">#B8B0A6</Color>
@@ -24,9 +23,9 @@
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="MetalBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#3A3E44" Offset="0" />
-        <GradientStop Color="#2E3136" Offset="0.55" />
-        <GradientStop Color="#26292D" Offset="1" />
+        <GradientStop Color="{StaticResource Metal500}" Offset="0" />
+        <GradientStop Color="{StaticResource Metal700}" Offset="0.55" />
+        <GradientStop Color="{StaticResource Metal900}" Offset="1" />
     </LinearGradientBrush>
 
     <LinearGradientBrush x:Key="GoldEdgeBrush" StartPoint="0,0" EndPoint="1,1">

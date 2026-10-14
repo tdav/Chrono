@@ -121,19 +121,27 @@
         <!-- Шторки поверх страницы; каждая получает модель через BindingContext. -->
         <controls:BottomSheet IsOpen="{Binding IsTimeSheetOpen}" Title="{x:Static res:AppResources.RowTime}"
                               Hint="{Binding TimeHint}" CancelCommand="{Binding CloseSheetCommand}">
-            <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
+            <controls:BottomSheet.SheetContent>
+                <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
+            </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsDateSheetOpen}" Title="{x:Static res:AppResources.RowDate}"
                               Hint="{Binding CalendarSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
-            <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
+            <controls:BottomSheet.SheetContent>
+                <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
+            </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
+            <controls:BottomSheet.SheetContent>
+                <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
+            </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsSoundSheetOpen}" Title="{x:Static res:AppResources.Sound}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
+            <controls:BottomSheet.SheetContent>
+                <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
+            </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
     </Grid>
 </ContentPage>

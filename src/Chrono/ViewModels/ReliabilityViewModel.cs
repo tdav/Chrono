@@ -6,10 +6,8 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-public sealed record ReliabilityRow(ReliabilityItem Item, string Title, bool Ok)
+public sealed record ReliabilityRow(ReliabilityItem Item, string Title, bool Ok, bool IsLast)
 {
-    public string Mark => this.Ok ? "✅" : "⚠️";
-
     public bool NeedsFix => !this.Ok;
 }
 
@@ -32,10 +30,10 @@ public sealed partial class ReliabilityViewModel : ObservableObject
     {
         var statuses = await this.reliability.GetStatusAsync();
         this.Rows.Clear();
-        foreach (var status in statuses)
+        foreach (var (status, index) in statuses.Select((status, index) => (status, index)))
         {
             var title = AppResources.ResourceManager.GetString($"Rel_{status.Item}", AppResources.Culture) ?? status.Item.ToString();
-            this.Rows.Add(new ReliabilityRow(status.Item, title, status.Ok));
+            this.Rows.Add(new ReliabilityRow(status.Item, title, status.Ok, index == statuses.Count - 1));
         }
     }
 
