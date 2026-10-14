@@ -16,9 +16,11 @@ public sealed partial class RepeatSheetModel : ObservableObject
             new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Repeat_{kind}", AppResources.Culture) ?? kind.ToString())));
 
         // Неделя с понедельника; AbbreviatedDayNames начинается с воскресенья.
-        var names = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames;
+        // В ru сокращения приходят строчными («пн») — первая буква заглавная.
+        var culture = CultureInfo.CurrentUICulture;
+        var names = culture.DateTimeFormat.AbbreviatedDayNames;
         this.Days = new(Enumerable.Range(1, 7).Select(i => (DayOfWeek)(i % 7))
-            .Select(day => new ChoiceOption(((WeekDays)(1 << (int)day)).ToString(), names[(int)day])));
+            .Select(day => new ChoiceOption(((WeekDays)(1 << (int)day)).ToString(), culture.TextInfo.ToUpper(names[(int)day][0]) + names[(int)day][1..])));
         this.OnRepeatChanged(this.Repeat);
     }
 

@@ -83,4 +83,6 @@
   <data name="Today" xml:space="preserve"><value>Сегодня</value></data>
   <data name="Now" xml:space="preserve"><value>Сейчас</value></data>
   <data name="Back" xml:space="preserve"><value>Назад</value></data>
+  <data name="PrevMonth" xml:space="preserve"><value>Предыдущий месяц</value></data>
+  <data name="NextMonth" xml:space="preserve"><value>Следующий месяц</value></data>
 </root>

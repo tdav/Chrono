@@ -42,14 +42,16 @@ public static class MauiProgram
         // Выключенный тумблер на белой карточке почти не виден (серая дорожка платформы): красим дорожку и бегунок
         // по состоянию. Вешаем на ключи MAUI (OnColor, ThumbColor, IsOn), чтобы отработать после их собственных
         // маппингов, которые сбрасывают тинт.
+        var trackTint = new Android.Content.Res.ColorStateList(
+            new[] { new[] { Android.Resource.Attribute.StateChecked }, Array.Empty<int>() },
+            new[] { Android.Graphics.Color.ParseColor("#2E3136").ToArgb(), Android.Graphics.Color.ParseColor("#D9D3C8").ToArgb() });
+        var thumbTint = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.White);
         foreach (var key in new[] { "OnColor", "ThumbColor", "IsOn" })
         {
             Microsoft.Maui.Handlers.SwitchHandler.Mapper.AppendToMapping(key, (handler, view) =>
             {
-                var states = new[] { new[] { Android.Resource.Attribute.StateChecked }, Array.Empty<int>() };
-                handler.PlatformView.TrackTintList = new Android.Content.Res.ColorStateList(states,
-                    new[] { Android.Graphics.Color.ParseColor("#2E3136").ToArgb(), Android.Graphics.Color.ParseColor("#D9D3C8").ToArgb() });
-                handler.PlatformView.ThumbTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.White);
+                handler.PlatformView.TrackTintList = trackTint;
+                handler.PlatformView.ThumbTintList = thumbTint;
             });
         }
 #endif

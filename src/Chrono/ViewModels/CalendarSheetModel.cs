@@ -40,8 +40,10 @@ public sealed partial class CalendarSheetModel : ObservableObject
     public CalendarSheetModel()
     {
         // Подписи дней с понедельника: AbbreviatedDayNames начинается с воскресенья.
-        var names = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames;
-        this.WeekDayNames = Enumerable.Range(1, 7).Select(i => names[i % 7]).ToArray();
+        // В ru сокращения приходят строчными («пн») — первая буква заглавная.
+        var culture = CultureInfo.CurrentUICulture;
+        var names = culture.DateTimeFormat.AbbreviatedDayNames;
+        this.WeekDayNames = Enumerable.Range(1, 7).Select(i => culture.TextInfo.ToUpper(names[i % 7][0]) + names[i % 7][1..]).ToArray();
     }
 
     public ObservableCollection<CalendarDayItem> Cells { get; } = [];
@@ -59,12 +61,17 @@ public sealed partial class CalendarSheetModel : ObservableObject
         ? date.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture)
         : AppResources.NearestHint;
 
+    /// <summary>«Очистить» (= «Ближайшее») не имеет смысла для ежегодного будильника: дата в нём обязательна.</summary>
+    [ObservableProperty]
+    public partial bool IsClearVisible { get; set; } = true;
+
     public event EventHandler<bool>? Done;
 
     public void Load(DateOnly? selected, DateOnly today, bool allowPast)
     {
         this.today = today;
         this.allowPast = allowPast;
+        this.IsClearVisible = !allowPast;
         this.Selected = selected;
         var view = selected ?? today;
         this.year = view.Year;

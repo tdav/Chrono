@@ -24,7 +24,13 @@
                                         CommandParameter="{Binding .}" />
                                 </Grid.GestureRecognizers>
                             </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
+                            <BoxView Style="{StaticResource RowDivider}">
+                                <BoxView.Triggers>
+                                    <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </DataTrigger>
+                                </BoxView.Triggers>
+                            </BoxView>
                         </VerticalStackLayout>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>

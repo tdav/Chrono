@@ -19,7 +19,8 @@ public sealed partial class AlarmItem : ObservableObject
         this.Alarm = alarm;
         this.TimeText = alarm.At.ToString("HH:mm");
         var label = string.IsNullOrWhiteSpace(alarm.Label) ? AppResources.DefaultLabel : alarm.Label;
-        var format = CultureInfo.CurrentUICulture.DateTimeFormat;
+        var culture = CultureInfo.CurrentUICulture;
+        var format = culture.DateTimeFormat;
         var when = alarm.Repeat switch
         {
             RepeatKind.Daily => AppResources.Repeat_Daily,
@@ -27,7 +28,8 @@ public sealed partial class AlarmItem : ObservableObject
             RepeatKind.Weekly when alarm.Days is not WeekDays.None and not (WeekDays)0b111_1111 => string.Join(", ", Enumerable.Range(0, 7)
                 .Select(i => ((int)format.FirstDayOfWeek + i) % 7)
                 .Where(d => alarm.Days.HasFlag((WeekDays)(1 << d)))
-                .Select(d => format.AbbreviatedDayNames[d])),
+                // В ru сокращения приходят строчными («пн») — первая буква заглавная.
+                .Select(d => culture.TextInfo.ToUpper(format.AbbreviatedDayNames[d][0]) + format.AbbreviatedDayNames[d][1..])),
             RepeatKind.Weekly => AppResources.Repeat_Daily,
             RepeatKind.Yearly => $"{AppResources.Repeat_Yearly}, {alarm.At.ToString("d MMM", CultureInfo.CurrentUICulture)}",
             _ => alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture),

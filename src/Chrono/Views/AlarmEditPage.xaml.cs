@@ -17,12 +17,13 @@ public partial class AlarmEditPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // Плашка («сегодня/завтра») и «через сколько» устаревают, пока экран открыт.
+        // Плашка («сегодня/завтра») и «через сколько» устаревают, пока экран открыт; раз в секунду —
+        // RefreshClock дешёвый: уведомления уходят только при смене значения.
         // Таймер создаётся здесь: к показу страницы Dispatcher уже привязан к окну.
         if (this.clockTimer is null)
         {
             this.clockTimer = this.Dispatcher.CreateTimer();
-            this.clockTimer.Interval = TimeSpan.FromSeconds(30);
+            this.clockTimer.Interval = TimeSpan.FromSeconds(1);
             this.clockTimer.Tick += (_, _) => this.viewModel.RefreshClock();
         }
 
