@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Android 11 и ниже. Зашифрованные данные SecureStorage без ключа Keystore на новом устройстве не читаются.
-     Файл общий с Preferences (MAUI Essentials: PackageId.microsoft.maui.essentials.preferences), поэтому флаги
-     настроек тоже не переносятся. alarms.json и sync.json лежат в filesDir и в копию попадают. -->
+     Исключён только файл SecureStorage (PackageId.microsoft.maui.essentials.preferences); Preferences.Default пишет
+     в PackageId_preferences и в копию попадает, как и alarms.json и sync.json из filesDir.
+     Имя пакета вписано литералом: при смене ApplicationId исправить и здесь, и в data_extraction_rules.xml. -->
 <full-backup-content>
 	<exclude domain="sharedpref" path="com.chrono.alarm.microsoft.maui.essentials.preferences.xml" />
 </full-backup-content>
