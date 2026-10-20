@@ -16,40 +16,50 @@
             </Label.FormattedText>
         </Label>
 
-        <!-- Неделя с понедельника; свайп влево/вправо листает недели. -->
-        <FlexLayout Grid.Row="1" Direction="Row" JustifyContent="SpaceBetween" Margin="0,14,0,10"
-                    BindableLayout.ItemsSource="{Binding Days}">
-            <FlexLayout.GestureRecognizers>
+        <!-- Неделя с понедельника: семь колонок поровну; свайп влево/вправо листает недели. -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,14,0,10"
+              BindableLayout.ItemsSource="{Binding Days}">
+            <Grid.GestureRecognizers>
                 <SwipeGestureRecognizer Direction="Left" Command="{Binding NextWeekCommand}" />
                 <SwipeGestureRecognizer Direction="Right" Command="{Binding PrevWeekCommand}" />
-            </FlexLayout.GestureRecognizers>
+            </Grid.GestureRecognizers>
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="vm:DayCell">
-                    <VerticalStackLayout WidthRequest="44" Spacing="3"
+                    <VerticalStackLayout Grid.Column="{Binding Column}" Spacing="3"
                                          SemanticProperties.Description="{Binding AccessibleText}">
+                        <VerticalStackLayout.Resources>
+                            <!-- Кружок 40: выбранный — металл, сегодня — золотое кольцо 1,5. Базовые значения — в стиле, не локально. -->
+                            <Style x:Key="DayCircle" TargetType="Border">
+                                <Setter Property="WidthRequest" Value="40" />
+                                <Setter Property="HeightRequest" Value="40" />
+                                <Setter Property="HorizontalOptions" Value="Center" />
+                                <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+                                <Setter Property="StrokeThickness" Value="1.5" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="Stroke" Value="Transparent" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
+                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </VerticalStackLayout.Resources>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding SelectDayCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
                                 CommandParameter="{Binding Date}" />
                         </VerticalStackLayout.GestureRecognizers>
-                        <Label Text="{Binding Label}" Style="{StaticResource Footnote}" HorizontalOptions="Center">
+                        <Label Text="{Binding Label}" Style="{StaticResource Eyebrow}" HorizontalOptions="Center">
                             <Label.Triggers>
                                 <DataTrigger TargetType="Label" Binding="{Binding IsWeekendInk}" Value="True">
                                     <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
                                 </DataTrigger>
                             </Label.Triggers>
                         </Label>
-                        <!-- Кружок 40: выбранный — металл, сегодня — золотое кольцо 1,5. -->
-                        <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20"
-                                Background="Transparent" StrokeThickness="1.5" Stroke="Transparent">
-                            <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
-                                    <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                </DataTrigger>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                                </DataTrigger>
-                            </Border.Triggers>
+                        <Border Style="{StaticResource DayCircle}">
                             <Label Text="{Binding Number}" FontFamily="ManropeBold" FontSize="15"
                                    HorizontalOptions="Center" VerticalOptions="Center">
                                 <Label.Triggers>
@@ -67,43 +77,77 @@
                                                BindableLayout.ItemsSource="{Binding Dots}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="x:Int32">
-                                    <BoxView WidthRequest="4" HeightRequest="4" CornerRadius="2" Color="{StaticResource Gold}" />
+                                    <BoxView WidthRequest="4" HeightRequest="4" CornerRadius="2" Color="{StaticResource Hairline}" />
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
-        </FlexLayout>
+        </Grid>
 
         <CollectionView Grid.Row="2" ItemsSource="{Binding Entries}" SelectionMode="None" VerticalScrollBarVisibility="Never">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:DayEntryItem">
                     <Grid ColumnDefinitions="46,42,*,44" ColumnSpacing="10" Margin="0,0,0,14">
+                        <Grid.Resources>
+                            <!-- Базовые значения — в стилях с триггерами внутри, чтобы локальное значение не перекрывало триггер. -->
+                            <Style x:Key="EntryTime" TargetType="Label" BasedOn="{StaticResource Footnote}">
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Hairline}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowValue}">
+                                <Setter Property="TextColor" Value="{StaticResource Text}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource Hairline}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style x:Key="IconCapsule" TargetType="Border">
+                                <Setter Property="WidthRequest" Value="42" />
+                                <Setter Property="VerticalOptions" Value="Start" />
+                                <Setter Property="StrokeShape" Value="RoundRectangle 21" />
+                                <Setter Property="StrokeThickness" Value="1" />
+                                <Setter Property="Background" Value="{StaticResource Surface}" />
+                                <Setter Property="Stroke" Value="{StaticResource Hairline}" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsCurrent}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style x:Key="DoneCircle" TargetType="Border">
+                                <Setter Property="WidthRequest" Value="22" />
+                                <Setter Property="HeightRequest" Value="22" />
+                                <Setter Property="HorizontalOptions" Value="Center" />
+                                <Setter Property="VerticalOptions" Value="Center" />
+                                <Setter Property="StrokeShape" Value="RoundRectangle 11" />
+                                <Setter Property="StrokeThickness" Value="1.5" />
+                                <Setter Property="Stroke" Value="{StaticResource Hairline}" />
+                                <Setter Property="Background" Value="Transparent" />
+                                <Style.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsDone}" Value="True">
+                                        <Setter Property="Background" Value="{StaticResource Gold}" />
+                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Resources>
                         <Grid.GestureRecognizers>
                             <TapGestureRecognizer
                                 Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
                                 CommandParameter="{Binding .}" />
                         </Grid.GestureRecognizers>
 
-                        <Label Text="{Binding TimeText}" Style="{StaticResource Footnote}" VerticalOptions="Start" Margin="0,13,0,0">
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
-                                    <Setter Property="TextColor" Value="{StaticResource Hairline}" />
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
+                        <Label Text="{Binding TimeText}" Style="{StaticResource EntryTime}" VerticalOptions="Start" Margin="0,13,0,0" />
 
                         <!-- Иконка: круг 42; у текущего дела — капсула на металле, иконка в круге 30 у верхнего края. -->
-                        <Border Grid.Column="1" WidthRequest="42" HeightRequest="{Binding CapsuleHeight}" VerticalOptions="Start"
-                                StrokeShape="RoundRectangle 21" Background="{StaticResource Surface}"
-                                Stroke="{StaticResource Hairline}" StrokeThickness="1">
-                            <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsCurrent}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                                    <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                </DataTrigger>
-                            </Border.Triggers>
+                        <Border Grid.Column="1" Style="{StaticResource IconCapsule}" HeightRequest="{Binding CapsuleHeight}">
                             <Border WidthRequest="30" HeightRequest="30" StrokeShape="RoundRectangle 15" StrokeThickness="0"
                                     Background="{StaticResource Surface}" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0">
                                 <Image Source="{Binding IconImage}" WidthRequest="20" HeightRequest="20"
@@ -113,13 +157,7 @@
 
                         <VerticalStackLayout Grid.Column="2" VerticalOptions="Start" Margin="0,4,0,0" Spacing="1">
                             <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" />
-                            <Label Text="{Binding Title}" Style="{StaticResource RowValue}" TextColor="{StaticResource Text}">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
-                                        <Setter Property="TextColor" Value="{StaticResource Hairline}" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
+                            <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" />
                         </VerticalStackLayout>
 
                         <!-- Отметка «сделано»: кружок 22 в области нажатия 44. -->
@@ -130,16 +168,7 @@
                                     Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
                                     CommandParameter="{Binding .}" />
                             </Grid.GestureRecognizers>
-                            <Border WidthRequest="22" HeightRequest="22" StrokeShape="RoundRectangle 11" StrokeThickness="1.5"
-                                    Stroke="{StaticResource Hairline}" Background="Transparent"
-                                    HorizontalOptions="Center" VerticalOptions="Center">
-                                <Border.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsDone}" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource Gold}" />
-                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                    </DataTrigger>
-                                </Border.Triggers>
-                            </Border>
+                            <Border Style="{StaticResource DoneCircle}" />
                         </Grid>
                     </Grid>
                 </DataTemplate>

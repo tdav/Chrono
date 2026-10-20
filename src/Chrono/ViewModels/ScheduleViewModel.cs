@@ -22,6 +22,9 @@ public sealed record DayCell(DateOnly Date, int DotCount, bool IsSelected, bool 
         }
     }
 
+    /// <summary>Колонка в сетке недели: понедельник — 0, воскресенье — 6.</summary>
+    public int Column => ((int)this.Date.DayOfWeek + 6) % 7;
+
     public string Number => this.Date.Day.ToString(CultureInfo.CurrentUICulture);
 
     /// <summary>Для озвучивания TalkBack: «понедельник, 20 октября».</summary>
@@ -61,22 +64,22 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
     {
         this.alarmService = alarmService;
         this.timeProvider = timeProvider;
-        this.SelectedDay = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
     }
 
     public ObservableCollection<DayEntryItem> Entries { get; } = [];
 
+    public ObservableCollection<DayCell> Days { get; } = [];
+
+    // Начальное значение — инициализатором, а не присваиванием в конструкторе: так OnSelectedDayChanged (и Refresh) не вызывается.
+    // Данные загрузит первый OnAppearing страницы.
     [ObservableProperty]
-    public partial DateOnly SelectedDay { get; set; }
+    public partial DateOnly SelectedDay { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
     [ObservableProperty]
     public partial string TitleDay { get; set; } = "";
 
     [ObservableProperty]
     public partial string TitleYear { get; set; } = "";
-
-    [ObservableProperty]
-    public partial IReadOnlyList<DayCell> Days { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsEmpty { get; set; }
@@ -130,19 +133,40 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
             })
             .ToList();
 
-        // Таймер зовёт Refresh каждые 30 с: без изменений ничего не трогаем, иначе CollectionView прыгает к началу списка.
-        if (!this.Days.SequenceEqual(days))
+        // Обновляем на месте: Clear + Add сбрасывает прокрутку CollectionView к началу, а «осталось N мин» меняется каждую минуту.
+        // Совпадающие позиции не трогаем, различающиеся заменяем, лишние удаляем, недостающие добавляем.
+        for (var i = 0; i < days.Count; i++)
         {
-            this.Days = days;
+            if (i >= this.Days.Count)
+            {
+                this.Days.Add(days[i]);
+            }
+            else if (this.Days[i] != days[i])
+            {
+                this.Days[i] = days[i];
+            }
         }
 
-        if (!this.Entries.SequenceEqual(items))
+        while (this.Days.Count > days.Count)
         {
-            this.Entries.Clear();
-            foreach (var item in items)
+            this.Days.RemoveAt(this.Days.Count - 1);
+        }
+
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (i >= this.Entries.Count)
             {
-                this.Entries.Add(item);
+                this.Entries.Add(items[i]);
             }
+            else if (this.Entries[i] != items[i])
+            {
+                this.Entries[i] = items[i];
+            }
+        }
+
+        while (this.Entries.Count > items.Count)
+        {
+            this.Entries.RemoveAt(this.Entries.Count - 1);
         }
 
         this.IsEmpty = items.Count == 0;
