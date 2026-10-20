@@ -2,6 +2,7 @@ using Chrono.Resources.Strings;
 using Chrono.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Chrono.ViewModels;
 
@@ -9,11 +10,28 @@ public sealed partial class SettingsViewModel : ObservableObject
 {
     private readonly ISmartWake smartWake;
     private readonly AlarmService alarmService;
+    private readonly IGoogleAuth auth;
+    private readonly GoogleCalendarClient google;
+    private readonly SyncStore syncStore;
+    private readonly SyncLauncher syncLauncher;
+    private readonly IMemoryCache cache;
 
-    public SettingsViewModel(ISmartWake smartWake, AlarmService alarmService)
+    public SettingsViewModel(
+        ISmartWake smartWake,
+        AlarmService alarmService,
+        IGoogleAuth auth,
+        GoogleCalendarClient google,
+        SyncStore syncStore,
+        SyncLauncher syncLauncher,
+        IMemoryCache cache)
     {
         this.smartWake = smartWake;
         this.alarmService = alarmService;
+        this.auth = auth;
+        this.google = google;
+        this.syncStore = syncStore;
+        this.syncLauncher = syncLauncher;
+        this.cache = cache;
         this.smartWakeEnabled = smartWake.IsSupported && SmartWakeSettings.Enabled;
         this.mathChallengeEnabled = DismissSettings.MathChallenge;
     }
@@ -34,8 +52,55 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     public partial bool CanGrantAccess { get; set; }
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSignedIn))]
+    [NotifyPropertyChangedFor(nameof(IsSignedOut))]
+    public partial string? GoogleEmail { get; set; }
+
+    public bool IsSignedIn => this.GoogleEmail is not null;
+
+    public bool IsSignedOut => this.GoogleEmail is null;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSyncStatus))]
+    public partial string SyncStatusText { get; set; } = "";
+
+    public bool HasSyncStatus => this.SyncStatusText.Length > 0;
+
+    /// <summary>Подписка на состояние синхронизации; идемпотентна, снимается в Detach (лаунчер живёт дольше страницы).</summary>
+    public void Attach()
+    {
+        this.syncLauncher.StatusChanged -= this.OnSyncStatusChanged;
+        this.syncLauncher.StatusChanged += this.OnSyncStatusChanged;
+    }
+
+    public void Detach() => this.syncLauncher.StatusChanged -= this.OnSyncStatusChanged;
+
+    // StatusChanged приходит и с потока таймера, а свойства привязаны к интерфейсу.
+    private void OnSyncStatusChanged(object? sender, EventArgs e) =>
+        MainThread.BeginInvokeOnMainThread(() => this.ShowStatus(this.syncLauncher.Status));
+
+    private void ShowStatus(SyncStatus status)
+    {
+        var state = this.syncStore.Load();
+        this.GoogleEmail = state.Email;
+        // Ошибки видны и без входа: иначе неудачная попытка войти ничего бы не показала.
+        this.SyncStatusText = status switch
+        {
+            SyncStatus.NoNetwork => AppResources.SyncNoNetwork,
+            SyncStatus.SignInRequired => AppResources.SyncSignInAgain,
+            SyncStatus.Failed => AppResources.SyncFailed,
+            _ when state.Email is not null && state.LastSyncUtc is { } last =>
+                string.Format(AppResources.SyncedAt, DateTime.SpecifyKind(last, DateTimeKind.Utc).ToLocalTime().ToString("HH:mm")),
+            _ => "",
+        };
+    }
+
     public async Task RefreshAsync()
     {
+        this.Attach();
+        this.ShowStatus(this.syncLauncher.Status);
+
         SmartWakeAccess access;
         try
         {
@@ -87,4 +152,63 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenReliabilityAsync() => Shell.Current.GoToAsync("reliability");
+
+    [RelayCommand]
+    private async Task SignInGoogleAsync()
+    {
+        try
+        {
+            // Окно согласия Google; null — пользователь закрыл его.
+            if (await this.auth.GetTokenAsync(true, CancellationToken.None) is null)
+            {
+                return;
+            }
+
+            var email = await this.google.GetEmailAsync(CancellationToken.None);
+            this.syncStore.Save(this.syncStore.Load() with { Email = email });
+        }
+        catch (Exception ex)
+        {
+            this.ShowStatus(SyncLauncher.StatusOf(ex));
+            return;
+        }
+
+#if ANDROID
+        Platform.SyncWorker.Schedule(global::Android.App.Application.Context);
+#endif
+        this.ShowStatus(SyncStatus.Idle);
+        await this.SyncNowAsync();
+    }
+
+    [RelayCommand]
+    private async Task SyncNowAsync()
+    {
+        await this.syncLauncher.RunNowAsync();
+        this.ShowStatus(this.syncLauncher.Status);
+    }
+
+    [RelayCommand]
+    private async Task SignOutGoogleAsync()
+    {
+        try
+        {
+            // Без сети отзыв доступа не проходит и бросает: выход можно повторить, ничего не очищаем.
+            await this.auth.SignOutAsync();
+        }
+        catch (Exception ex)
+        {
+            this.ShowStatus(SyncLauncher.StatusOf(ex));
+            return;
+        }
+
+        await this.syncLauncher.SignOutAsync(
+            this.alarmService,
+#if ANDROID
+            () => Platform.SyncWorker.Cancel(global::Android.App.Application.Context),
+#else
+            () => { },
+#endif
+            this.cache);
+        this.ShowStatus(SyncStatus.Idle);
+    }
 }

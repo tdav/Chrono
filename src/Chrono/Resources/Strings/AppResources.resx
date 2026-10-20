@@ -118,4 +118,13 @@
   <data name="Icon_phone" xml:space="preserve"><value>Phone</value></data>
   <data name="Icon_walk" xml:space="preserve"><value>Walk</value></data>
   <data name="Icon_sleep" xml:space="preserve"><value>Sleep</value></data>
+  <data name="GoogleGroup" xml:space="preserve"><value>Google Calendar</value></data>
+  <data name="SignInGoogle" xml:space="preserve"><value>Sign in with Google</value></data>
+  <data name="GoogleAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="SyncedAt" xml:space="preserve"><value>Synced at {0}</value></data>
+  <data name="SyncNoNetwork" xml:space="preserve"><value>No network</value></data>
+  <data name="SyncSignInAgain" xml:space="preserve"><value>Sign in again</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Sync now</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Sync failed</value></data>
 </root>

@@ -43,6 +43,30 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!-- Синхронизация с Google Календарём: вход, состояние, выход. -->
+                <Label Text="{x:Static res:AppResources.GoogleGroup}" Style="{StaticResource SectionHeader}" />
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="8">
+                        <Button Text="{x:Static res:AppResources.SignInGoogle}" Style="{StaticResource CompactAccentButton}"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding IsSignedOut}" Command="{Binding SignInGoogleCommand}" />
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" IsVisible="{Binding IsSignedIn}">
+                            <Label Text="{x:Static res:AppResources.GoogleAccount}" Style="{StaticResource RowKey}" />
+                            <Label Grid.Column="1" Text="{Binding GoogleEmail}" Style="{StaticResource RowValue}"
+                                   HorizontalOptions="End" LineBreakMode="TailTruncation" />
+                        </Grid>
+                        <Label Text="{Binding SyncStatusText}" TextColor="{StaticResource GoldInk}" FontSize="13"
+                               IsVisible="{Binding HasSyncStatus}" />
+                        <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsSignedIn}">
+                            <Button Text="{x:Static res:AppResources.SyncNow}" Style="{StaticResource CompactAccentButton}"
+                                    Command="{Binding SyncNowCommand}" />
+                            <Button Text="{x:Static res:AppResources.SignOut}" Style="{StaticResource CompactAccentButton}"
+                                    BorderColor="{StaticResource Hairline}" TextColor="{StaticResource Text}"
+                                    Command="{Binding SignOutGoogleCommand}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
                 <!-- Переход к «Надёжности». -->
                 <Border Style="{StaticResource RowGroup}" Margin="0,14,0,0">
                     <Border.GestureRecognizers>

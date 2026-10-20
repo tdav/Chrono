@@ -65,6 +65,8 @@
 		<PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="122.0.0" />
 		<!-- Auth тянет Fragment 1.9.0, где Ktx влит в основную библиотеку; Ktx 1.8.9.4 от MAUI дублировал бы классы (D8: defined multiple times). -->
 		<PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.9.0" />
+		<!-- Периодическая синхронизация с Google Календарём в фоне (SyncWorker). -->
+		<PackageReference Include="Xamarin.AndroidX.Work.Runtime" Version="2.11.2.1" />
 	</ItemGroup>
 
 </Project>
