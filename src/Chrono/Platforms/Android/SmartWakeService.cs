@@ -167,7 +167,7 @@ public sealed class SmartWakeService : Service, ISensorEventListener
             // на следующее срабатывание. Затем звонит сразу — тем же путём, что и обычный:
             // точный будильник → AlarmReceiver → AlarmRingService.
             var service = new Services.AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System);
-            if (alarm.Repeat == RepeatKind.None)
+            if (alarm.IsOneShot())
             {
                 service.Toggle(this.alarmId, false);
             }

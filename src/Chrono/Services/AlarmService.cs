@@ -23,8 +23,12 @@ public sealed class AlarmService
     public Exception? SchedulingError { get; private set; }
 
     /// <summary>
-    /// Все будильники по времени. Сработавшие (включённые с At ≤ now): разовые выключаются,
-    /// повторяющиеся переходят на следующее срабатывание; изменения сохраняются.
+    /// Все будильники по времени. Для каждой записи по порядку:
+    /// 1) нет StartsOn (старый файл) — миграция: у разовой это день At, у повторяющейся не позже сегодняшнего дня;
+    /// 2) «Один раз и удалить» с истёкшим ExpiresAt — удаляется, включена она или нет;
+    /// 3) сработавшая (включённая с At ≤ now): разовая выключается, «Один раз и удалить» остаётся как есть,
+    /// повторяющаяся переходит на следующее срабатывание.
+    /// Изменения сохраняются.
     /// </summary>
     public IReadOnlyList<Alarm> GetAll()
     {
@@ -33,14 +37,37 @@ public sealed class AlarmService
 
         var now = this.time.GetLocalNow().DateTime;
         var changed = false;
-        for (var i = 0; i < alarms.Count; i++)
+        for (var i = alarms.Count - 1; i >= 0; i--)
         {
+            if (alarms[i].StartsOn is null)
+            {
+                // Миграция старых записей: у разовой днём начала считаем день срабатывания. У повторяющейся At мог
+                // уже уйти на завтра, а сегодня она срабатывала, поэтому не позже сегодняшнего дня.
+                var atDay = DateOnly.FromDateTime(alarms[i].At);
+                var today = DateOnly.FromDateTime(now);
+                alarms[i] = alarms[i] with { StartsOn = alarms[i].IsOneShot() || atDay < today ? atDay : today };
+                changed = true;
+            }
+
+            if (alarms[i].Repeat == RepeatKind.OnceThenDelete && alarms[i].ExpiresAt() <= now)
+            {
+                alarms.RemoveAt(i);
+                changed = true;
+                continue;
+            }
+
             if (alarms[i].IsEnabled && alarms[i].At <= now)
             {
-                alarms[i] = alarms[i].Repeat == RepeatKind.None
-                    ? alarms[i] with { IsEnabled = false }
-                    : alarms[i] with { At = alarms[i].NextAfter(now) };
-                changed = true;
+                if (alarms[i].Repeat == RepeatKind.None)
+                {
+                    alarms[i] = alarms[i] with { IsEnabled = false };
+                    changed = true;
+                }
+                else if (alarms[i].Repeat != RepeatKind.OnceThenDelete)
+                {
+                    alarms[i] = alarms[i] with { At = alarms[i].NextAfter(now) };
+                    changed = true;
+                }
             }
         }
 
@@ -58,7 +85,15 @@ public sealed class AlarmService
         // «Настенное» время храним без пояса: Kind=Local сериализуется со смещением,
         // и после смены часового пояса 06:30 превратилось бы в другой час.
         alarm = alarm with { At = DateTime.SpecifyKind(alarm.At, DateTimeKind.Unspecified) };
-        if (alarm.At <= this.time.GetLocalNow().DateTime)
+        alarm = alarm with { StartsOn = alarm.StartsOn ?? DateOnly.FromDateTime(alarm.At) };
+        var now = this.time.GetLocalNow().DateTime;
+        if (!alarm.IsOneShot() && alarm.At < alarm.StartsOn!.Value.ToDateTime(TimeOnly.MinValue))
+        {
+            // Планировщик Android берёт At как есть: без нормализации запись сработала бы раньше даты начала.
+            alarm = alarm with { At = alarm.NextAfter(now) };
+        }
+
+        if (alarm.At <= now)
         {
             return false;
         }
@@ -106,7 +141,7 @@ public sealed class AlarmService
         var now = this.time.GetLocalNow().DateTime;
         if (enabled && alarms[index].At <= now)
         {
-            if (alarms[index].Repeat == RepeatKind.None)
+            if (alarms[index].IsOneShot())
             {
                 return false;
             }
@@ -145,6 +180,29 @@ public sealed class AlarmService
         {
             this.SchedulingError = ex;
         }
+    }
+
+    public IReadOnlyDictionary<Guid, HashSet<DateOnly>> GetDone() => this.store.LoadDone();
+
+    /// <summary>Отметить запись сделанной (или снять отметку) на день. Планировщик не трогает.</summary>
+    public void SetDone(Guid id, DateOnly day, bool done)
+    {
+        var all = this.store.LoadDone();
+        if (!all.TryGetValue(id, out var days))
+        {
+            days = all[id] = [];
+        }
+
+        if (done)
+        {
+            days.Add(day);
+        }
+        else
+        {
+            days.Remove(day);
+        }
+
+        this.store.SaveDone(all);
     }
 
     /// <summary>Переустановить всё расписание (старт приложения, перезагрузка, смена времени/пояса).</summary>
