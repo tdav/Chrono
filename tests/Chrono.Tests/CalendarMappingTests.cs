@@ -128,11 +128,42 @@ public sealed class CalendarMappingTests
     }
 
     [Fact]
+    public void FromEvent_EchoOfDefaultSummary_KeepsEmptyLabel()
+    {
+        // Пустая подпись уходит в Google как «Будильник»; при приёме эха она не должна туда записаться.
+        var existing = new Alarm { Id = Guid.NewGuid(), At = new DateTime(2026, 10, 26, 7, 15, 0), GoogleEventId = "evt1" };
+        var ev = CalendarMapping.ToEvent(existing, Tashkent) with { Id = "evt1" };
+
+        var echo = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, existing));
+        Assert.Equal("", echo.Alarm.Label);
+
+        // Запись с непустой подписью или новая запись принимают summary как есть.
+        Assert.Equal("Будильник", Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, existing with { Label = "Зал" })).Alarm.Label);
+        Assert.Equal("Будильник", Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm.Label);
+    }
+
+    [Fact]
     public void ToEvent_WeeklyMonWed_ByDay()
     {
         var alarm = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), Repeat = RepeatKind.Weekly, Days = WeekDays.Wednesday | WeekDays.Monday };
 
         Assert.Equal(["RRULE:FREQ=WEEKLY;BYDAY=MO,WE"], CalendarMapping.ToEvent(alarm, Tashkent).Recurrence!);
+    }
+
+    [Fact]
+    public void ToEvent_Weekly_StartIsFirstMatchingDayNotEarlierThanStartsOn()
+    {
+        // 2026-10-26 — понедельник, а запись только по средам и пятницам: DTSTART — среда 28-го, иначе Google покажет лишнее событие в понедельник.
+        var alarm = new Alarm
+        {
+            At = new DateTime(2026, 10, 26, 7, 15, 0), StartsOn = new DateOnly(2026, 10, 26), DurationMinutes = 30,
+            Repeat = RepeatKind.Weekly, Days = WeekDays.Friday | WeekDays.Wednesday,
+        };
+
+        var ev = CalendarMapping.ToEvent(alarm, Tashkent);
+
+        Assert.Equal("2026-10-28T07:15:00+05:00", ev.Start!.DateTime);
+        Assert.Equal("2026-10-28T07:45:00+05:00", ev.End!.DateTime);
     }
 
     [Fact]

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Chrono.Models;
 
 public enum RepeatKind
@@ -77,11 +79,11 @@ public sealed record Alarm
     /// <summary>Запись создана из чужой повторяющейся серии Google, которую Chrono не умеет повторять: локальные правки в Google не уходят.</summary>
     public bool ForeignSeries { get; init; }
 
-    /// <summary>Напоминания из ReminderMinutes: мусор и неположительные числа пропускаются, повторы схлопываются, порядок по убыванию.</summary>
+    /// <summary>Напоминания из ReminderMinutes: мусор и числа вне 1..40320 (максимум Google для popup) пропускаются, повторы схлопываются, порядок по убыванию.</summary>
     public IReadOnlyList<int> Reminders() => this.ReminderMinutes
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-        .Select(s => int.TryParse(s, out var m) ? m : 0)
-        .Where(m => m > 0)
+        .Select(s => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var m) ? m : 0)
+        .Where(m => m is > 0 and <= 40320)
         .Distinct()
         .OrderDescending()
         .ToList();

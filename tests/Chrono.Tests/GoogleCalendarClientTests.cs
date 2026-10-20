@@ -198,7 +198,7 @@ public sealed class GoogleCalendarClientTests : IDisposable
     public async Task FindOrCreate_FindsExistingByName_ElseCreates()
     {
         this.handler.Respond = r => r.Uri.Query.Contains("pageToken=p2")
-            ? Json("{\"items\":[{\"id\":\"chrono-id\",\"summary\":\"Chrono\"}]}")
+            ? Json("{\"items\":[{\"id\":\"chrono-id\",\"summary\":\"Chrono\",\"accessRole\":\"owner\"}]}")
             : Json("{\"items\":[{\"id\":\"other\",\"summary\":\"Work\"}],\"nextPageToken\":\"p2\"}");
 
         Assert.Equal("chrono-id", await this.client.FindOrCreateCalendarAsync(CancellationToken.None));
@@ -215,6 +215,21 @@ public sealed class GoogleCalendarClientTests : IDisposable
         Assert.EndsWith("/calendars", create.Uri.AbsolutePath);
         Assert.Contains("\"summary\":\"Chrono\"", create.Body);
         Assert.Contains("\"timeZone\":", create.Body);
+    }
+
+    [Fact]
+    public async Task FindOrCreate_IgnoresSubscribedCalendarWithSameName()
+    {
+        // Чужой календарь «Chrono», на который пользователь подписан (не owner), брать нельзя.
+        this.handler.Respond = r => r.Method == HttpMethod.Get
+            ? Json("{\"items\":[{\"id\":\"foreign\",\"summary\":\"Chrono\",\"accessRole\":\"reader\"},{\"id\":\"mine\",\"summary\":\"Chrono\",\"accessRole\":\"owner\"}]}")
+            : Json("{\"id\":\"new-id\",\"summary\":\"Chrono\"}");
+        Assert.Equal("mine", await this.client.FindOrCreateCalendarAsync(CancellationToken.None));
+
+        this.handler.Respond = r => r.Method == HttpMethod.Get
+            ? Json("{\"items\":[{\"id\":\"foreign\",\"summary\":\"Chrono\",\"accessRole\":\"writer\"}]}")
+            : Json("{\"id\":\"new-id\",\"summary\":\"Chrono\"}");
+        Assert.Equal("new-id", await this.client.FindOrCreateCalendarAsync(CancellationToken.None));
     }
 
     [Fact]
@@ -248,9 +263,30 @@ public sealed class GoogleCalendarClientTests : IDisposable
     }
 
     [Fact]
+    public async Task NextInstance_SkipsInstanceThatAlreadyStarted()
+    {
+        // timeMin отбирает по концу события: первым приходит идущий сейчас экземпляр, нужен следующий.
+        var after = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.Zero);
+        this.handler.Respond = _ => Json("""
+            {"items":[
+              {"id":"running","start":{"dateTime":"2026-10-20T11:50:00+00:00"},"end":{"dateTime":"2026-10-20T12:20:00+00:00"}},
+              {"id":"next","start":{"dateTime":"2026-10-21T11:50:00+00:00"},"end":{"dateTime":"2026-10-21T12:20:00+00:00"}}]}
+            """);
+
+        var instance = await this.client.NextInstanceAsync("cal", "ev", after, CancellationToken.None);
+
+        Assert.Equal("next", instance?.Id);
+
+        this.handler.Respond = _ => Json("""
+            {"items":[{"id":"running","start":{"dateTime":"2026-10-20T11:50:00+00:00"},"end":{"dateTime":"2026-10-20T12:20:00+00:00"}}]}
+            """);
+        Assert.Null(await this.client.NextInstanceAsync("cal", "ev", after, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task NextInstance_AsksSingleInstanceAfterTime_NullWhenNone()
     {
-        this.handler.Respond = _ => Json("{\"items\":[{\"id\":\"ev_20261021\"}]}");
+        this.handler.Respond = _ => Json("{\"items\":[{\"id\":\"ev_20261021\",\"start\":{\"dateTime\":\"2026-10-21T10:00:00+05:00\"}}]}");
         var after = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.FromHours(5));
 
         var instance = await this.client.NextInstanceAsync("cal", "ev", after, CancellationToken.None);
@@ -258,7 +294,7 @@ public sealed class GoogleCalendarClientTests : IDisposable
         Assert.Equal("ev_20261021", instance?.Id);
         var uri = this.handler.Requests[0].Uri;
         Assert.EndsWith("/events/ev/instances", uri.AbsolutePath);
-        Assert.Contains("maxResults=1", uri.Query);
+        Assert.Contains("maxResults=2", uri.Query);
         Assert.Contains("timeMin=2026-10-20T12%3A00%3A00%2B05%3A00", uri.Query);
 
         this.handler.Respond = _ => Json("{\"items\":[]}");

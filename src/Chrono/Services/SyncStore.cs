@@ -37,7 +37,7 @@ public sealed class SyncStore
 
     public SyncStore(string directory) => this.path = Path.Combine(directory, "sync.json");
 
-    /// <summary>Нет файла или он повреждён — пустое состояние (следующая синхронизация загрузит всё заново).</summary>
+    /// <summary>Нет файла или он повреждён (тогда переименовывается в sync.json.bad) — пустое состояние (следующая синхронизация загрузит всё заново).</summary>
     public SyncState Load()
     {
         if (!File.Exists(this.path))
@@ -51,6 +51,8 @@ public sealed class SyncStore
         }
         catch (JsonException)
         {
+            // Повреждённый файл не удаляем: следующий Save иначе затёр бы его без следа.
+            File.Move(this.path, this.path + ".bad", overwrite: true);
             return new SyncState();
         }
     }

@@ -23,6 +23,9 @@ public static class CalendarMapping
 {
     public const string ChronoIdKey = "chronoId";
 
+    /// <summary>Заголовок события для записи без подписи; при приёме эха обратно в подпись не попадает.</summary>
+    public const string DefaultSummary = "Будильник";
+
     /// <summary>Коды дней в RRULE, с понедельника; индекс i соответствует (DayOfWeek)((i + 1) % 7).</summary>
     private static readonly string[] DayCodes = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"];
 
@@ -48,6 +51,15 @@ public static class CalendarMapping
             }
         }
 
+        if (alarm.Repeat == RepeatKind.Weekly && alarm.Days != WeekDays.None)
+        {
+            // DTSTART должен быть первым днём из маски не раньше startDay: Google считает DTSTART первым событием серии, даже если день не отмечен.
+            while (!alarm.Days.HasFlag((WeekDays)(1 << (int)startDay.DayOfWeek)))
+            {
+                startDay = startDay.AddDays(1);
+            }
+        }
+
         var start = startDay.ToDateTime(TimeOnly.FromDateTime(alarm.At));
         var end = start.AddMinutes(alarm.DurationMinutes);
 
@@ -63,7 +75,7 @@ public static class CalendarMapping
         return new GoogleEvent
         {
             Id = alarm.GoogleEventId,
-            Summary = alarm.Label.Length == 0 ? "Будильник" : alarm.Label,
+            Summary = alarm.Label.Length == 0 ? DefaultSummary : alarm.Label,
             Start = new GoogleEventTime
             {
                 DateTime = new DateTimeOffset(start, zone.GetUtcOffset(start)).ToString(TimeFormat, CultureInfo.InvariantCulture),
@@ -232,7 +244,8 @@ public static class CalendarMapping
         {
             Id = Guid.TryParse(props?.GetValueOrDefault(ChronoIdKey), out var chronoId) ? chronoId : existing?.Id ?? Guid.NewGuid(),
             At = start,
-            Label = ev.Summary ?? "",
+            // Эхо нашей отправки: подстановка для пустой подписи не должна стать подписью.
+            Label = ev.Summary == DefaultSummary && existing is { Label.Length: 0 } ? "" : ev.Summary ?? "",
             SoundEnabled = props?.GetValueOrDefault("soundEnabled") != "false",
             SoundId = props?.GetValueOrDefault("soundId") ?? Sounds.Default,
             VibrationEnabled = props?.GetValueOrDefault("vibration") != "false",

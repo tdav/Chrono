@@ -40,7 +40,7 @@ public sealed class GoogleCalendarClient
         this.http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
-    /// <summary>calendarList.list с отбором summary == "Chrono", иначе calendars.insert.</summary>
+    /// <summary>calendarList.list с отбором summary == "Chrono" и accessRole == "owner" (чужой подписанный календарь не берём), иначе calendars.insert.</summary>
     public async Task<string> FindOrCreateCalendarAsync(CancellationToken ct)
     {
         string? pageToken = null;
@@ -83,7 +83,7 @@ public sealed class GoogleCalendarClient
                 page = await response.Content.ReadFromJsonAsync<CalendarListPage>(Json, ct) ?? new CalendarListPage();
             }
 
-            var found = page.Items?.FirstOrDefault(c => c.Summary == CalendarName && c.Id is not null);
+            var found = page.Items?.FirstOrDefault(c => c.Summary == CalendarName && c.AccessRole == "owner" && c.Id is not null);
             if (found is not null)
             {
                 return found.Id!;
@@ -326,11 +326,14 @@ public sealed class GoogleCalendarClient
         }
     }
 
-    /// <summary>events.instances: ближайшее повторение серии после <paramref name="after"/> (timeMin), null — если нет.</summary>
+    /// <summary>
+    /// events.instances: ближайшее повторение серии, начало которого позже <paramref name="after"/>, null — если нет.
+    /// timeMin отбирает по концу события, поэтому первым может прийти идущий сейчас экземпляр; берём два и пропускаем начатый.
+    /// </summary>
     public async Task<GoogleEvent?> NextInstanceAsync(string calendarId, string eventId, DateTimeOffset after, CancellationToken ct)
     {
         var url = $"calendars/{Uri.EscapeDataString(calendarId)}/events/{Uri.EscapeDataString(eventId)}/instances"
-            + "?maxResults=1&timeMin="
+            + "?maxResults=2&timeMin="
             + Uri.EscapeDataString(after.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture));
         for (var attempt = 0; ; attempt++)
         {
@@ -365,7 +368,13 @@ public sealed class GoogleCalendarClient
             }
 
             var page = await response.Content.ReadFromJsonAsync<EventsPage>(Json, ct);
-            return page?.Items?.FirstOrDefault();
+            // Событие на весь день — полночь по смещению after (точность до часов достаточна: сравнение только с after).
+            return page?.Items?.FirstOrDefault(e =>
+                (e.Start?.DateTime is { } dateTime && DateTimeOffset.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start)
+                    ? start
+                    : DateOnly.TryParseExact(e.Start?.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+                        ? new DateTimeOffset(day.ToDateTime(TimeOnly.MinValue), after.Offset)
+                        : (DateTimeOffset?)null) > after);
         }
     }
 
@@ -415,7 +424,8 @@ public sealed class GoogleCalendarClient
 
     private sealed record CalendarListEntry(
         [property: JsonPropertyName("id")] string? Id,
-        [property: JsonPropertyName("summary")] string? Summary);
+        [property: JsonPropertyName("summary")] string? Summary,
+        [property: JsonPropertyName("accessRole")] string? AccessRole = null);
 
     private sealed record CalendarListPage
     {

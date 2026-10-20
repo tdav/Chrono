@@ -64,37 +64,10 @@ public sealed class CalendarSync
                 return null;
             }
 
-            // Начало первого экземпляра серии, который начинается позже now. timeMin в events.instances отбирает по концу
-            // события, поэтому может вернуться идущий сейчас экземпляр: за следующим идём с after = конец полученного.
+            // Начало первого экземпляра серии, который начинается позже now (идущий сейчас клиент пропускает сам).
             // null — будущих экземпляров нет.
-            async Task<DateTimeOffset?> NextInstanceStart(string calendarId, string eventId, DateTime now)
-            {
-                var after = this.time.GetLocalNow();
-                for (var step = 0; step < 32; step++)
-                {
-                    var instance = await this.client.NextInstanceAsync(calendarId, eventId, after, ct);
-                    var start = ParseTime(instance?.Start);
-                    if (start is null)
-                    {
-                        return null;
-                    }
-
-                    if (TimeZoneInfo.ConvertTime(start.Value, zone).DateTime > now)
-                    {
-                        return start;
-                    }
-
-                    var end = ParseTime(instance!.End);
-                    if (end is null || end <= after)
-                    {
-                        return null;
-                    }
-
-                    after = end.Value;
-                }
-
-                return null;
-            }
+            async Task<DateTimeOffset?> NextInstanceStart(string calendarId, string eventId) =>
+                ParseTime((await this.client.NextInstanceAsync(calendarId, eventId, this.time.GetLocalNow(), ct))?.Start);
 
             // 1. Календарь. Если id уже сохранён, поиск не нужен (на нём область calendar.app.created может ответить 403).
             var calendarId = this.store.Load().CalendarId;
@@ -175,7 +148,7 @@ public sealed class CalendarSync
                 var result = CalendarMapping.FromEvent(ev, zone, now, existing);
                 if (result is ImportNeedsInstance)
                 {
-                    result = await NextInstanceStart(calendarId, ev.Id, now) is { } found
+                    result = await NextInstanceStart(calendarId, ev.Id) is { } found
                         ? CalendarMapping.FromEvent(ev, zone, now, existing, found)
                         : new ImportSkip("no future instance");
                 }
@@ -226,7 +199,7 @@ public sealed class CalendarSync
             {
                 try
                 {
-                    if (await NextInstanceStart(calendarId, foreign.GoogleEventId!, foreignNow) is not { } next)
+                    if (await NextInstanceStart(calendarId, foreign.GoogleEventId!) is not { } next)
                     {
                         this.alarms.Delete(foreign.Id, fromSync: true);
                         deleted++;
@@ -240,9 +213,10 @@ public sealed class CalendarSync
                         pulled++;
                     }
                 }
-                catch (HttpRequestException)
+                catch (Exception ex) when (ex is HttpRequestException || (ex is OperationCanceledException && !ct.IsCancellationRequested))
                 {
-                    // Сеть или Google недоступны: запись останется как есть, следующий проход повторит.
+                    // Сеть или Google недоступны, в том числе таймаут HttpClient (TaskCanceledException без отмены ct):
+                    // запись останется как есть, следующий проход повторит.
                 }
             }
 
