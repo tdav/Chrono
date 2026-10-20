@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.Sheets.DurationSheet"
+             x:DataType="vm:DurationSheetModel">
+
+    <VerticalStackLayout Spacing="16">
+
+        <!-- Готовые значения: чипы переносятся на следующую строку; выбранный — металл. -->
+        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Chips}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChoiceOption">
+                    <Border Style="{StaticResource Chip}" Margin="0,0,8,8">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DurationSheetModel}}, Path=SelectPresetCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </FlexLayout>
+
+        <!-- Своё значение: только цифры 1…720. Код поле не переписывает (маски нет, курсор не трогаем); «Окей» активен только при корректной строке. -->
+        <Border Style="{StaticResource RowGroup}">
+            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowValue}" />
+                <Entry Grid.Column="1" Text="{Binding CustomText}" Keyboard="Numeric" MaxLength="3"
+                       HorizontalTextAlignment="End" WidthRequest="80" Placeholder="0"
+                       SemanticProperties.Description="{x:Static res:AppResources.DurationCustom}" />
+            </Grid>
+        </Border>
+
+        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
+            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CancelCommand}" />
+            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding OkCommand}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>
