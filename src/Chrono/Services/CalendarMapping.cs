@@ -33,6 +33,21 @@ public static class CalendarMapping
     {
         // Разовая начинается в день At; у повтора At — ближайшее срабатывание, а первое повторение — StartsOn.
         var startDay = alarm.IsOneShot() ? DateOnly.FromDateTime(alarm.At) : alarm.StartsOn ?? DateOnly.FromDateTime(alarm.At);
+        if (alarm.Repeat == RepeatKind.Yearly)
+        {
+            // Месяц и день берутся из At, год — первый, начиная с года StartsOn, где эта дата не раньше StartsOn
+            // (29 февраля — ближайший високосный год, как в NextAfter). StartsOn после миграции может не совпадать с датой At.
+            var floor = startDay;
+            for (var year = floor.Year; ; year++)
+            {
+                if (alarm.At.Day <= DateTime.DaysInMonth(year, alarm.At.Month) && new DateOnly(year, alarm.At.Month, alarm.At.Day) is var candidate && candidate >= floor)
+                {
+                    startDay = candidate;
+                    break;
+                }
+            }
+        }
+
         var start = startDay.ToDateTime(TimeOnly.FromDateTime(alarm.At));
         var end = start.AddMinutes(alarm.DurationMinutes);
 
@@ -128,7 +143,9 @@ public static class CalendarMapping
         var rules = (ev.Recurrence ?? []).Where(r => r.StartsWith("RRULE:", StringComparison.OrdinalIgnoreCase)).ToList();
         var repeat = RepeatKind.None;
         var days = WeekDays.None;
-        var supported = rules.Count <= 1;
+        // RDATE и EXRULE Chrono выразить не может (их повторы молча потерялись бы); EXDATE игнорируется (6.6).
+        var supported = rules.Count <= 1
+            && !(ev.Recurrence ?? []).Any(r => r.StartsWith("RDATE", StringComparison.OrdinalIgnoreCase) || r.StartsWith("EXRULE", StringComparison.OrdinalIgnoreCase));
         if (rules.Count == 1)
         {
             string? freq = null;
@@ -164,6 +181,8 @@ public static class CalendarMapping
                     break;
                 case "WEEKLY":
                     repeat = RepeatKind.Weekly;
+                    // Без BYDAY Google повторяет в день недели начала; Days = None в Chrono означало бы «каждый день».
+                    days = byDay is null ? (WeekDays)(1 << (int)start.DayOfWeek) : WeekDays.None;
                     foreach (var code in (byDay ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries))
                     {
                         var index = Array.IndexOf(DayCodes, code);
@@ -227,8 +246,8 @@ public static class CalendarMapping
                 : Enum.TryParse<AlertKind>(props?.GetValueOrDefault("alert"), out var alert) && Enum.IsDefined(alert) ? alert : AlertKind.Ring,
             StartsOn = DateOnly.FromDateTime(start),
             GoogleEventId = ev.Id,
-            // useDefault считается «без напоминаний»: у календаря «Chrono» нет напоминаний по умолчанию.
-            ReminderMinutes = ev.Reminders is { UseDefault: false, Overrides: { } overrides } ? string.Join(',', overrides.Select(o => o.Minutes)) : "",
+            // useDefault считается «без напоминаний»: у календаря «Chrono» нет напоминаний по умолчанию; email-напоминания — не звонок.
+            ReminderMinutes = ev.Reminders is { UseDefault: false, Overrides: { } overrides } ? string.Join(',', overrides.Where(o => o.Method == "popup").Select(o => o.Minutes)) : "",
             ForeignSeries = foreign,
         };
 

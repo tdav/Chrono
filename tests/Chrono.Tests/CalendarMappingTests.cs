@@ -416,6 +416,112 @@ public sealed class CalendarMappingTests
     }
 
     [Fact]
+    public void FromEvent_WeeklyWithoutByDay_StartWeekday()
+    {
+        // 28.10.2026 — среда: в Google «WEEKLY» без BYDAY значит «по средам», а не «каждый день».
+        var ev = Timed("2026-10-28T07:15:00+05:00", recurrence: ["RRULE:FREQ=WEEKLY"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(RepeatKind.Weekly, alarm.Repeat);
+        Assert.Equal(WeekDays.Wednesday, alarm.Days);
+    }
+
+    [Fact]
+    public void FromEvent_WeeklyWithoutByDay_WeekdayInLocalZone()
+    {
+        // 23:30 в воскресенье по +03:00 — уже понедельник 01:30 в Ташкенте.
+        var ev = Timed("2026-10-25T23:30:00+03:00", recurrence: ["RRULE:FREQ=WEEKLY"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(WeekDays.Monday, alarm.Days);
+    }
+
+    [Fact]
+    public void ToEvent_Yearly_StartsOnDiffersFromAt_UsesMonthDayOfAt()
+    {
+        var alarm = new Alarm { At = new DateTime(2027, 3, 8, 7, 0, 0), StartsOn = new DateOnly(2026, 10, 20), Repeat = RepeatKind.Yearly };
+
+        Assert.Equal("2027-03-08T07:00:00+05:00", CalendarMapping.ToEvent(alarm, Tashkent).Start!.DateTime);
+    }
+
+    [Fact]
+    public void ToEvent_Yearly_DateLaterInStartsOnYear_UsesThatYear()
+    {
+        var alarm = new Alarm { At = new DateTime(2027, 12, 31, 7, 0, 0), StartsOn = new DateOnly(2026, 10, 20), Repeat = RepeatKind.Yearly };
+
+        Assert.Equal("2026-12-31T07:00:00+05:00", CalendarMapping.ToEvent(alarm, Tashkent).Start!.DateTime);
+    }
+
+    [Fact]
+    public void ToEvent_Yearly_Feb29_NearestLeapYear()
+    {
+        var alarm = new Alarm { At = new DateTime(2028, 2, 29, 7, 0, 0), StartsOn = new DateOnly(2026, 10, 20), Repeat = RepeatKind.Yearly };
+
+        Assert.Equal("2028-02-29T07:00:00+05:00", CalendarMapping.ToEvent(alarm, Tashkent).Start!.DateTime);
+    }
+
+    [Fact]
+    public void FromEvent_RdateOnly_NeedsInstance()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RDATE;VALUE=DATE-TIME:20261101T020000Z"]);
+
+        Assert.IsType<ImportNeedsInstance>(CalendarMapping.FromEvent(ev, Tashkent, Now, null));
+    }
+
+    [Fact]
+    public void FromEvent_RruleWithRdate_NeedsInstance()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY", "RDATE;VALUE=DATE:20261101"]);
+
+        Assert.IsType<ImportNeedsInstance>(CalendarMapping.FromEvent(ev, Tashkent, Now, null));
+    }
+
+    [Fact]
+    public void FromEvent_ExruleWithRrule_NeedsInstance()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY", "EXRULE:FREQ=WEEKLY;BYDAY=SA"]);
+
+        Assert.IsType<ImportNeedsInstance>(CalendarMapping.FromEvent(ev, Tashkent, Now, null));
+    }
+
+    [Fact]
+    public void FromEvent_RruleWithExdate_IgnoresExdate()
+    {
+        // Закрепляем текущее поведение: исключения серии Chrono не отображает (спецификация 6.6).
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY", "EXDATE:20261101T020000Z"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(RepeatKind.Daily, alarm.Repeat);
+        Assert.False(alarm.ForeignSeries);
+    }
+
+    [Fact]
+    public void FromEvent_EmailReminder_Ignored()
+    {
+        var ev = Timed("2026-10-21T10:00:00+05:00") with
+        {
+            Reminders = new GoogleReminders { Overrides = [new GoogleReminder("email", 60), new GoogleReminder("popup", 30)] },
+        };
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal("30", alarm.ReminderMinutes);
+    }
+
+    [Fact]
+    public void FromEvent_IntervalOne_Supported()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;INTERVAL=1"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(RepeatKind.Daily, alarm.Repeat);
+    }
+
+    [Fact]
     public void FromEvent_UseDefaultReminders_None()
     {
         var ev = Timed("2026-10-21T10:00:00+05:00") with { Reminders = new GoogleReminders { UseDefault = true, Overrides = [new GoogleReminder("popup", 30)] } };
