@@ -20,8 +20,6 @@ public enum SyncStatus
 /// </summary>
 public sealed class SyncLauncher
 {
-    private const string TokenKey = "google-access-token";
-
     private static readonly TimeSpan Window = TimeSpan.FromSeconds(3);
 
     private readonly Func<CancellationToken, Task<SyncResult>> run;
@@ -46,7 +44,8 @@ public sealed class SyncLauncher
 
     public static SyncStatus StatusOf(Exception exception) => exception switch
     {
-        SignInRequiredException => SyncStatus.SignInRequired,
+        // Нехватка областей в тихом пути означает отозванный доступ: повторять бессмысленно, нужен новый вход.
+        SignInRequiredException or SyncScopesMissingException => SyncStatus.SignInRequired,
         HttpRequestException or OperationCanceledException => SyncStatus.NoNetwork,
         _ => SyncStatus.Failed,
     };
@@ -128,7 +127,10 @@ public sealed class SyncLauncher
     {
         await this.ResetAsync();
         cancelWorker();
-        cache.Remove(TokenKey);
+
+        // В sync.json.bad остались старый email и очередь прежнего аккаунта.
+        File.Delete(this.store.QuarantinePath);
+        cache.Remove(GoogleCalendarClient.TokenKey);
         this.store.Save(this.store.Load() with
         {
             Email = null,
@@ -153,6 +155,28 @@ public sealed class SyncLauncher
             // ForeignSeries сбрасывается вместе с id: иначе запись чужой серии не ушла бы и в новый аккаунт.
             alarms.Save(alarm with { GoogleEventId = null, ForeignSeries = false }, fromSync: true);
         }
+    }
+
+    /// <summary>
+    /// Завершение интерактивного входа. Тот же аккаунт (после «Нужно войти снова»): состояние не трогаем, очередь
+    /// и id событий остаются, сбрасывается только статус. Другой аккаунт: сначала та же очистка, что при выходе
+    /// (без отзыва доступа у Google), потом запись нового email. Запуск прохода — за вызывающим.
+    /// </summary>
+    public async Task CompleteSignInAsync(string email, AlarmService alarms, Action cancelWorker, IMemoryCache cache)
+    {
+        var current = this.store.Load().Email;
+        if (current is not null && string.Equals(current, email, StringComparison.OrdinalIgnoreCase))
+        {
+            await this.ResetAsync();
+            return;
+        }
+
+        if (current is not null)
+        {
+            await this.SignOutAsync(alarms, cancelWorker, cache);
+        }
+
+        this.store.Save(this.store.Load() with { Email = email });
     }
 
     private async Task RunAsync(CancellationToken ct)

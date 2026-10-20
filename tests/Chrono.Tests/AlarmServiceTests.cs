@@ -378,6 +378,32 @@ public sealed class AlarmServiceTests : IDisposable
     }
 
     [Fact]
+    public void Save_StaleSnapshotFromUser_KeepsLinkFromStore()
+    {
+        var linked = new Alarm { At = Now.AddHours(1), GoogleEventId = "g1", ForeignSeries = true };
+        this.syncService.Save(linked, fromSync: true);
+
+        // Редактор открыл запись до связывания и сохраняет устаревший снимок.
+        Assert.True(this.syncService.Save(linked with { GoogleEventId = null, ForeignSeries = false, Label = "правка" }));
+
+        var saved = Assert.Single(this.store.Load().Alarms);
+        Assert.Equal(("g1", true, "правка"), (saved.GoogleEventId, saved.ForeignSeries, saved.Label));
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((linked.Id, SyncOp.Upsert, "g1"), (change.AlarmId, change.Op, change.GoogleEventId));
+    }
+
+    [Fact]
+    public void Save_FromSync_WritesLinkAsIs()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "g1" };
+        this.syncService.Save(alarm, fromSync: true);
+
+        this.syncService.Save(alarm with { GoogleEventId = null }, fromSync: true);
+
+        Assert.Null(Assert.Single(this.store.Load().Alarms).GoogleEventId);
+    }
+
+    [Fact]
     public void Save_PastTime_NotQueued()
     {
         Assert.False(this.syncService.Save(new Alarm { At = Now.AddMinutes(-1) }));

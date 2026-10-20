@@ -58,6 +58,8 @@
                         <Label Text="{Binding SyncStatusText}" TextColor="{StaticResource GoldInk}" FontSize="13"
                                IsVisible="{Binding HasSyncStatus}" />
                         <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsSignedIn}">
+                            <Button Text="{x:Static res:AppResources.SignInAgainButton}" Style="{StaticResource CompactAccentButton}"
+                                    IsVisible="{Binding NeedsSignInAgain}" Command="{Binding SignInGoogleCommand}" />
                             <Button Text="{x:Static res:AppResources.SyncNow}" Style="{StaticResource CompactAccentButton}"
                                     Command="{Binding SyncNowCommand}" />
                             <Button Text="{x:Static res:AppResources.SignOut}" Style="{StaticResource CompactAccentButton}"

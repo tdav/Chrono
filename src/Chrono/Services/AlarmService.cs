@@ -111,6 +111,13 @@ public sealed class AlarmService
         var index = alarms.FindIndex(a => a.Id == alarm.Id);
         if (index >= 0)
         {
+            if (!fromSync)
+            {
+                // Редактор мог открыть запись до того, как проход синхронизации связал её с Google: связь берём из
+                // хранилища, иначе устаревший снимок затёр бы её и следующая отправка создала бы дубль события.
+                alarm = alarm with { GoogleEventId = alarms[index].GoogleEventId, ForeignSeries = alarms[index].ForeignSeries };
+            }
+
             alarms[index] = alarm;
         }
         else
