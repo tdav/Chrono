@@ -80,6 +80,7 @@ public sealed partial class AlarmListViewModel : ObservableObject
     {
         await RingLauncher.ShowPendingAsync();
         await SettingsLauncher.ShowPendingAsync();
+        await ScheduleLauncher.ShowPendingAsync();
 
         if (!Preferences.Default.Get(FirstRunKey, false))
         {
@@ -155,7 +156,4 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenReliabilityAsync() => Shell.Current.GoToAsync("reliability");
-
-    [RelayCommand]
-    private Task OpenSettingsAsync() => Shell.Current.GoToAsync("settings");
 }

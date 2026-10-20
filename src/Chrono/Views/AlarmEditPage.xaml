@@ -3,6 +3,7 @@
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
              xmlns:controls="clr-namespace:Chrono.Controls"
              xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
+             Shell.TabBarIsVisible="False"
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.SchedulePage">
+
+    <!-- Заглушка: полноценный экран появится в задаче 7. -->
+    <VerticalStackLayout Padding="20,12,20,16" SafeAreaEdges="Container">
+        <Label Text="{x:Static res:AppResources.Tab_Schedule}" Style="{StaticResource ScreenTitle}" Padding="0,6,0,0" />
+    </VerticalStackLayout>
+</ContentPage>

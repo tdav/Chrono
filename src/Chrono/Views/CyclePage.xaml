@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.CyclePage">
+
+    <VerticalStackLayout Padding="20,12,20,16" Spacing="8" SafeAreaEdges="Container">
+        <Label Text="{x:Static res:AppResources.Tab_Cycle}" Style="{StaticResource ScreenTitle}" Padding="0,6,0,0" />
+        <Label Text="{x:Static res:AppResources.CycleSoon}" Style="{StaticResource Muted}" FontSize="14" />
+    </VerticalStackLayout>
+</ContentPage>
