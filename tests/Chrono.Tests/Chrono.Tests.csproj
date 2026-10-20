@@ -23,6 +23,7 @@
     <Compile Include="..\..\src\Chrono\Services\IosNotificationPlan.cs" Link="Linked\IosNotificationPlan.cs" />
     <Compile Include="..\..\src\Chrono\Services\SleepPhaseEstimator.cs" Link="Linked\SleepPhaseEstimator.cs" />
     <Compile Include="..\..\src\Chrono\Services\AlarmSchedule.cs" Link="Linked\AlarmSchedule.cs" />
+    <Compile Include="..\..\src\Chrono\Services\DayPlan.cs" Link="Linked\DayPlan.cs" />
   </ItemGroup>
 
 </Project>
