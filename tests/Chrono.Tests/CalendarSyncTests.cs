@@ -603,6 +603,132 @@ public sealed class CalendarSyncTests : IDisposable
         Assert.Empty(this.Pending);
     }
 
+    [Fact]
+    public async Task Sync_ModifiedInstanceOfRecurringEvent_IsIgnored()
+    {
+        // «Только это событие» приходит отдельным событием с recurringEventId: отдельной записи из него быть не должно.
+        this.server.Add(Ev("g-d", Now.AddHours(2), "Ежедневно", recurrence: ["RRULE:FREQ=DAILY"]));
+        this.server.Add(Ev("g-d_inst", Now.AddDays(1).AddHours(2), "Завтра иначе") with { RecurringEventId = "g-d" });
+
+        await this.Sync();
+
+        var alarm = Assert.Single(this.Alarms);
+        Assert.Equal("g-d", alarm.GoogleEventId);
+        Assert.Equal(RepeatKind.Daily, alarm.Repeat);
+        Assert.Equal("Ежедневно", alarm.Label);
+        Assert.Equal(2, this.server.Live);
+        Assert.Equal(0, this.server.Count("POST calendars/cal-1/events"));
+    }
+
+    [Fact]
+    public async Task Sync_FullLoad_InstanceWithMasterChronoIdBeforeMaster_StillLoadsSeries()
+    {
+        // Экземпляр копирует chronoId мастера и приходит раньше него: не должен занять Id записи, иначе мастер сочтётся копией.
+        var chronoId = Guid.NewGuid();
+        this.server.Add(Ev("g-d_inst", Now.AddDays(1).AddHours(2), "Завтра иначе", chronoId) with { RecurringEventId = "g-d" });
+        this.server.Add(Ev("g-d", Now.AddHours(2), "Ежедневно", chronoId, ["RRULE:FREQ=DAILY"]));
+
+        await this.Sync();
+
+        var alarm = Assert.Single(this.Alarms);
+        Assert.Equal(chronoId, alarm.Id);
+        Assert.Equal("g-d", alarm.GoogleEventId);
+        Assert.Equal(RepeatKind.Daily, alarm.Repeat);
+        Assert.Equal(2, this.server.Live);
+        Assert.Equal(0, this.server.Count("POST calendars/cal-1/events"));
+    }
+
+    [Fact]
+    public async Task Sync_ForeignSeries_FiredMovesToNextInstanceOnEverySync()
+    {
+        var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
+        var second = new DateTimeOffset(Now.AddDays(35), TimeSpan.Zero);
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Instances["g-m"] = [(first, first.AddMinutes(30)), (second, second.AddMinutes(30))];
+        await this.Sync();
+        Assert.Equal(first.DateTime, Assert.Single(this.Alarms).At);
+
+        // Сработала и уже идёт (конец экземпляра впереди): GetAll выключает разовую запись, а в Google ничего не менялось.
+        this.time.Now = first.DateTime.AddMinutes(5);
+        var result = await this.Sync();
+
+        var alarm = Assert.Single(this.Alarms);
+        Assert.Equal(second.DateTime, alarm.At);
+        Assert.Equal(DateOnly.FromDateTime(second.DateTime), alarm.StartsOn);
+        Assert.True(alarm.IsEnabled);
+        Assert.True(alarm.ForeignSeries);
+        Assert.Equal("g-m", alarm.GoogleEventId);
+        Assert.Equal(1, result.Pulled);
+        Assert.Equal(1, this.server.Live);
+        Assert.Equal(0, this.server.Count("PUT"));
+        Assert.Equal(0, this.server.Count("POST calendars/cal-1/events"));
+        Assert.Empty(this.Pending);
+
+        // Следующий проход ничего не меняет.
+        var again = await this.Sync();
+        Assert.Equal(0, again.Pulled);
+        Assert.Equal(second.DateTime, Assert.Single(this.Alarms).At);
+    }
+
+    [Fact]
+    public async Task Sync_ForeignSeries_NoNextInstance_DeletesRecordOnly()
+    {
+        var only = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Последний раз", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Instances["g-m"] = [(only, only.AddMinutes(30))];
+        await this.Sync();
+        Assert.Single(this.Alarms);
+
+        this.time.Now = only.DateTime.AddHours(1);
+        var result = await this.Sync();
+
+        Assert.Equal(1, result.Deleted);
+        Assert.Empty(this.Alarms);
+        Assert.Equal(1, this.server.Live);
+        Assert.Equal(0, this.server.Count("DELETE"));
+
+        this.server.ExpireToken = true;
+        await this.Sync();
+        Assert.Empty(this.Alarms);
+    }
+
+    [Fact]
+    public async Task Sync_ForeignSeries_NextInstanceFails_SkipsRecordAndRestOfPassContinues()
+    {
+        var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
+        await this.Sync();
+
+        this.time.Now = first.DateTime.AddHours(1);
+        this.service.Save(new Alarm { At = this.time.Now.AddHours(1), Label = "Z" });
+        this.server.Fail = key => key.EndsWith("/instances", StringComparison.Ordinal);
+        await this.Sync();
+
+        Assert.Equal(["Z", "Раз в месяц"], this.Alarms.Select(a => a.Label).Order(StringComparer.Ordinal));
+        Assert.Equal(first.DateTime, this.Alarms.Single(a => a.ForeignSeries).At);
+        Assert.Equal(2, this.server.Live);
+        Assert.Empty(this.Pending);
+    }
+
+    [Fact]
+    public async Task Sync_PastGoogleEventWithChronoIdOfUnlinkedLocal_LinksInsteadOfDuplicating()
+    {
+        // Событие в прошлом FromEvent пропускает, но запись в будущем с тем же chronoId должна получить связь, а не второе событие.
+        var alarm = NewAlarm("Будущая");
+        this.plain.Save(alarm);
+        this.server.Add(Ev("g-old", Now.AddDays(-1), "Старая", alarm.Id));
+
+        await this.Sync();
+
+        var local = Assert.Single(this.Alarms);
+        Assert.Equal("g-old", local.GoogleEventId);
+        Assert.Equal("Будущая", local.Label);
+        Assert.Single(this.server.All);
+        Assert.Equal(0, this.server.Count("POST calendars/cal-1/events"));
+        Assert.Empty(this.Pending);
+    }
+
     private sealed class FakeAuth : IGoogleAuth
     {
         public bool NoToken { get; init; }

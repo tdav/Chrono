@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using Chrono.Models;
 
 namespace Chrono.Services;
@@ -62,6 +63,38 @@ public sealed class CalendarSync
                 return null;
             }
 
+            // Начало первого экземпляра серии, который начинается позже now. timeMin в events.instances отбирает по концу
+            // события, поэтому может вернуться идущий сейчас экземпляр: за следующим идём с after = конец полученного.
+            // null — будущих экземпляров нет.
+            async Task<DateTimeOffset?> NextInstanceStart(string calendarId, string eventId, DateTime now)
+            {
+                var after = this.time.GetLocalNow();
+                for (var step = 0; step < 32; step++)
+                {
+                    var instance = await this.client.NextInstanceAsync(calendarId, eventId, after, ct);
+                    var start = ParseTime(instance?.Start);
+                    if (start is null)
+                    {
+                        return null;
+                    }
+
+                    if (TimeZoneInfo.ConvertTime(start.Value, zone).DateTime > now)
+                    {
+                        return start;
+                    }
+
+                    var end = ParseTime(instance!.End);
+                    if (end is null || end <= after)
+                    {
+                        return null;
+                    }
+
+                    after = end.Value;
+                }
+
+                return null;
+            }
+
             // 1. Календарь. Если id уже сохранён, поиск не нужен (на нём область calendar.app.created может ответить 403).
             var calendarId = this.store.Load().CalendarId;
             if (calendarId is null)
@@ -85,6 +118,13 @@ public sealed class CalendarSync
 
             foreach (var ev in events)
             {
+                // Изменённый экземпляр серии («только это событие») отдельной записью не становится; Chrono исключения серии не хранит (6.6).
+                // Пропуск до любого сопоставления: экземпляр копирует chronoId мастера и занял бы Id его записи.
+                if (ev.RecurringEventId is not null)
+                {
+                    continue;
+                }
+
                 var snapshot = this.store.Load();
                 if (ev.Id is null || snapshot.IgnoredEventIds.Contains(ev.Id))
                 {
@@ -123,39 +163,20 @@ public sealed class CalendarSync
                     continue;
                 }
 
+                // Связь по chronoId ставим до разбора: прошедшее событие FromEvent пропустит, а запись без связи получила бы вторую вставку.
+                if (existing is not null && existing.GoogleEventId is null && ev.Status != "cancelled"
+                    && this.alarms.Save(existing with { GoogleEventId = ev.Id }, fromSync: true))
+                {
+                    existing = this.alarms.GetAll().First(a => a.Id == existing.Id);
+                }
+
                 var now = this.time.GetLocalNow().DateTime;
                 var result = CalendarMapping.FromEvent(ev, zone, now, existing);
                 if (result is ImportNeedsInstance)
                 {
-                    // timeMin в events.instances отбирает по концу события, поэтому может вернуться идущий сейчас экземпляр:
-                    // берём первый, чьё начало позже now, а за следующим идём с after = конец полученного.
-                    var after = this.time.GetLocalNow();
-                    DateTimeOffset? instanceStart = null;
-                    for (var step = 0; step < 32; step++)
-                    {
-                        var instance = await this.client.NextInstanceAsync(calendarId, ev.Id, after, ct);
-                        var start = ParseTime(instance?.Start);
-                        if (start is null)
-                        {
-                            break;
-                        }
-
-                        if (TimeZoneInfo.ConvertTime(start.Value, zone).DateTime > now)
-                        {
-                            instanceStart = start;
-                            break;
-                        }
-
-                        var end = ParseTime(instance!.End);
-                        if (end is null || end <= after)
-                        {
-                            break;
-                        }
-
-                        after = end.Value;
-                    }
-
-                    result = instanceStart is { } found ? CalendarMapping.FromEvent(ev, zone, now, existing, found) : new ImportSkip("no future instance");
+                    result = await NextInstanceStart(calendarId, ev.Id, now) is { } found
+                        ? CalendarMapping.FromEvent(ev, zone, now, existing, found)
+                        : new ImportSkip("no future instance");
                 }
 
                 switch (result)
@@ -197,6 +218,33 @@ public sealed class CalendarSync
 
             this.store.Save(this.store.Load() with { SyncToken = nextSyncToken });
 
+            // Чужая серия (6.2): сработавшая запись переходит на следующий повтор на каждом проходе, а не только когда
+            // событие пришло в дельте. Запрос упал — запись пропускается до следующего прохода, остальной проход идёт дальше.
+            var foreignNow = this.time.GetLocalNow().DateTime;
+            foreach (var foreign in this.alarms.GetAll().Where(a => a.ForeignSeries && a.GoogleEventId is not null && a.At <= foreignNow))
+            {
+                try
+                {
+                    if (await NextInstanceStart(calendarId, foreign.GoogleEventId!, foreignNow) is not { } next)
+                    {
+                        this.alarms.Delete(foreign.Id, fromSync: true);
+                        deleted++;
+                        continue;
+                    }
+
+                    // После звонка разовая запись выключена (AlarmService.GetAll), поэтому включаем.
+                    var nextAt = TimeZoneInfo.ConvertTime(next, zone).DateTime;
+                    if (this.alarms.Save(foreign with { At = nextAt, StartsOn = DateOnly.FromDateTime(nextAt), IsEnabled = true }, fromSync: true))
+                    {
+                        pulled++;
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    // Сеть или Google недоступны: запись останется как есть, следующий проход повторит.
+                }
+            }
+
             // 3. Отправка. Запись без GoogleEventId, не чужая серия и не прошедшая разовая (её связь с событием не
             // сохранить: Save отклоняет At <= now), считается Upsert, даже если её нет в очереди (первый вход).
             var queueNow = this.time.GetLocalNow().DateTime;
@@ -230,7 +278,7 @@ public sealed class CalendarSync
                             await this.client.UpdateAsync(calendarId, gev, ct);
                             pushed++;
                         }
-                        catch (HttpRequestException ex) when (ex.StatusCode is System.Net.HttpStatusCode.NotFound or System.Net.HttpStatusCode.Gone)
+                        catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
                         {
                             // Событие удалено в Google, а локальная правка новее: создаём заново, очередь не должна застрять.
                             created = await this.client.InsertAsync(calendarId, gev with { Id = null }, ct);
