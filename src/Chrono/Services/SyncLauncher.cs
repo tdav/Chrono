@@ -127,9 +127,6 @@ public sealed class SyncLauncher
     {
         await this.ResetAsync();
         cancelWorker();
-
-        // В sync.json.bad остались старый email и очередь прежнего аккаунта.
-        File.Delete(this.store.QuarantinePath);
         cache.Remove(GoogleCalendarClient.TokenKey);
         this.store.Save(this.store.Load() with
         {
@@ -140,6 +137,16 @@ public sealed class SyncLauncher
             Pending = [],
             IgnoredEventIds = [],
         });
+
+        // В sync.json.bad остались старый email и очередь прежнего аккаунта. Удаляем после очистки состояния:
+        // сбой ввода-вывода не должен прервать выход на середине.
+        try
+        {
+            File.Delete(this.store.QuarantinePath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
 
         // RequestSoon, вызванный во время ResetAsync или cancelWorker (Email тогда ещё был), успел завести таймер:
         // гасим его под замком уже после очистки, иначе он сработал бы в очищенном состоянии.
@@ -162,8 +169,14 @@ public sealed class SyncLauncher
     /// и id событий остаются, сбрасывается только статус. Другой аккаунт: сначала та же очистка, что при выходе
     /// (без отзыва доступа у Google), потом запись нового email. Запуск прохода — за вызывающим.
     /// </summary>
-    public async Task CompleteSignInAsync(string email, AlarmService alarms, Action cancelWorker, IMemoryCache cache)
+    public async Task CompleteSignInAsync(string? email, AlarmService alarms, Action cancelWorker, IMemoryCache cache)
     {
+        // Google не вернул email: аккаунт неизвестен, поэтому ничего не очищаем (иначе потеряли бы очередь).
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new InvalidOperationException("Google не вернул email аккаунта.");
+        }
+
         var current = this.store.Load().Email;
         if (current is not null && string.Equals(current, email, StringComparison.OrdinalIgnoreCase))
         {

@@ -386,6 +386,38 @@ public sealed class SyncLauncherTests : IDisposable
         Assert.Equal("a@b.c", this.store.Load().Email);
     }
 
+    [Fact]
+    public async Task CompleteSignInAsync_NullEmail_ThrowsAndKeepsState()
+    {
+        var launcher = this.Create();
+        var (alarms, alarmStore, linked, cache) = this.SeedLinkedState();
+        using var disposeCache = cache;
+        var cancelled = false;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => launcher.CompleteSignInAsync(null, alarms, () => cancelled = true, cache));
+
+        var state = this.store.Load();
+        Assert.Equal(("a@b.c", "cal", "tok"), (state.Email, state.CalendarId, state.SyncToken));
+        Assert.Single(state.Pending);
+        Assert.Equal("ev1", alarmStore.Load().Alarms.Single(a => a.Id == linked.Id).GoogleEventId);
+        Assert.False(cancelled);
+    }
+
+    [Fact]
+    public async Task SignOutAsync_QuarantineFileLocked_StillCompletesSignOut()
+    {
+        var launcher = this.Create();
+        // Каталог на месте файла: File.Delete бросает UnauthorizedAccessException.
+        Directory.CreateDirectory(this.store.QuarantinePath);
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarms = new AlarmService(new AlarmStore(this.directory.FullName), new FakeScheduler(), new FixedTime(now), this.store);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        await launcher.SignOutAsync(alarms, () => { }, cache);
+
+        Assert.Null(this.store.Load().Email);
+    }
+
     private static async Task WaitAsync(Func<bool> condition)
     {
         for (var i = 0; i < 200 && !condition(); i++)

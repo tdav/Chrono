@@ -287,28 +287,28 @@ public sealed class CalendarSyncTests : IDisposable
     }
 
     [Fact]
-    public async Task Sync_AutoDeletedOnceThenDelete_StaysInGoogleAndNotReimported()
+    public async Task Sync_AutoDeletedOnceThenDelete_IsDeletedInGoogleAndNotReimported()
     {
         this.service.Save(new Alarm { At = Now.AddHours(1), Label = "Разово", Repeat = RepeatKind.OnceThenDelete });
         await this.Sync();
         Assert.Equal(1, this.server.Live);
 
-        this.time.Now = Now.AddHours(3); // сработала и истекла: GetAll удалит её без очереди
+        this.time.Now = Now.AddHours(3); // сработала и истекла: GetAll удалит её и поставит Delete в очередь
         this.server.Clock = this.time.Now;
         var result = await this.Sync();
 
         Assert.Empty(this.Alarms);
-        Assert.Equal(1, this.server.Live);
-        Assert.Equal(0, this.server.Count("DELETE"));
+        Assert.Equal(0, this.server.Live);
+        Assert.Equal(1, this.server.Count("DELETE"));
         Assert.Equal(0, result.Pulled);
         Assert.Empty(this.Pending);
 
-        // Даже полная загрузка её не возвращает.
+        // Полная загрузка её не возвращает.
         this.server.ExpireToken = true;
         var reload = await this.Sync();
         Assert.True(reload.FullReload);
         Assert.Empty(this.Alarms);
-        Assert.Equal(1, this.server.Live);
+        Assert.Equal(0, this.server.Live);
         Assert.Equal(1, this.server.Count("POST calendars/cal-1/events"));
     }
 

@@ -31,7 +31,8 @@ public sealed class AlarmService
     /// <summary>
     /// Все будильники по времени. Для каждой записи по порядку:
     /// 1) нет StartsOn (старый файл) — миграция: у разовой это день At, у повторяющейся не позже сегодняшнего дня;
-    /// 2) «Один раз и удалить» с истёкшим ExpiresAt — удаляется, включена она или нет;
+    /// 2) «Один раз и удалить» с истёкшим ExpiresAt — удаляется, включена она или нет; отправленная в Google
+    /// запись уходит и из Google (Delete в очереди, Changed запускает синхронизацию);
     /// 3) сработавшая (включённая с At ≤ now): разовая выключается, «Один раз и удалить» остаётся как есть,
     /// повторяющаяся переходит на следующее срабатывание.
     /// Изменения сохраняются.
@@ -43,6 +44,7 @@ public sealed class AlarmService
 
         var now = this.time.GetLocalNow().DateTime;
         var changed = false;
+        var expired = false;
         for (var i = alarms.Count - 1; i >= 0; i--)
         {
             if (alarms[i].StartsOn is null)
@@ -57,6 +59,13 @@ public sealed class AlarmService
 
             if (alarms[i].Repeat == RepeatKind.OnceThenDelete && alarms[i].ExpiresAt() <= now)
             {
+                // Всё, что удаляется в Chrono, удаляется и в Google; чужая серия (ForeignSeries) в Google не трогается.
+                if (this.sync is not null && alarms[i].GoogleEventId is { } eventId && !alarms[i].ForeignSeries)
+                {
+                    this.sync.Enqueue(new PendingChange(alarms[i].Id, SyncOp.Delete, eventId, this.time.GetUtcNow().UtcDateTime));
+                    expired = true;
+                }
+
                 alarms.RemoveAt(i);
                 changed = true;
                 continue;
@@ -80,6 +89,12 @@ public sealed class AlarmService
         if (changed)
         {
             this.store.Save(alarms);
+        }
+
+        if (expired)
+        {
+            // Цикла нет: Changed лишь взводит таймер синхронизации, а на следующем GetAll истёкших записей уже нет.
+            this.Changed?.Invoke(this, EventArgs.Empty);
         }
 
         return alarms.OrderBy(a => a.At).ToList();

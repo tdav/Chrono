@@ -68,9 +68,9 @@ public sealed class SyncWorker : Worker
             // Нет сети или сбой сервера: следующая попытка по расписанию.
             return failed ? Result.InvokeRetry()! : Result.InvokeSuccess()!;
         }
-        catch (SignInRequiredException)
+        catch (Exception ex) when (ex is SignInRequiredException or SyncScopesMissingException)
         {
-            // Повторять бессмысленно: войти заново может только пользователь.
+            // Повторять бессмысленно (доступ отозван или сняты области): войти заново может только пользователь.
             return Result.InvokeSuccess()!;
         }
         catch (Exception)

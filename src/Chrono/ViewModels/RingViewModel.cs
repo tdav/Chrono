@@ -90,8 +90,7 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         // и заранее выключенная запись, открытая по устаревшему баннеру, её не трогают.
         if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
         {
-            // fromSync: событие остаётся в Google как история (§6.2), в очередь удаление не ставится.
-            this.alarmService.Delete(this.alarmId, fromSync: true);
+            this.alarmService.Delete(this.alarmId);
         }
         else
         {
@@ -110,7 +109,7 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
             this.scheduler.StopRinging(this.alarmId);
             if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
             {
-                this.alarmService.Delete(this.alarmId, fromSync: true);
+                this.alarmService.Delete(this.alarmId);
             }
             else
             {
