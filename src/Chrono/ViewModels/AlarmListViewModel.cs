@@ -114,14 +114,16 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
         this.IsEmpty = this.Alarms.Count == 0;
 
-        var next = alarms.Where(a => a.IsEnabled).Select(a => (DateTime?)a.At).FirstOrDefault();
+        // «Один раз и удалить» после срабатывания остаётся включённой с At <= now до конца звонка — ближайшей она не считается.
+        var now = DateTime.Now;
+        var next = alarms.Where(a => a.IsEnabled && a.At > now).Select(a => (DateTime?)a.At).FirstOrDefault();
         if (next is null)
         {
             this.NextAlarmText = AppResources.NoActiveAlarms;
             return;
         }
 
-        var left = next.Value - DateTime.Now;
+        var left = next.Value - now;
         this.NextAlarmText = left.TotalHours >= 1
             ? string.Format(AppResources.NextInHours, (int)left.TotalHours, left.Minutes)
             : string.Format(AppResources.NextInMinutes, Math.Max(1, (int)Math.Ceiling(left.TotalMinutes)));
