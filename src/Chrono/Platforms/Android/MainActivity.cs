@@ -31,7 +31,9 @@ public class MainActivity : MauiAppCompatActivity
         }
 
         // Нажатие на уведомление распорядка: день запоминается до создания Shell. Поверх блокировки не показываемся.
-        if (TryGetOpenDay(this.Intent, out var openDay))
+        if (DateOnly.TryParseExact(
+            this.Intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
+            "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var openDay))
         {
             ScheduleLauncher.Request(openDay);
         }
@@ -74,7 +76,9 @@ public class MainActivity : MauiAppCompatActivity
             return;
         }
 
-        if (TryGetOpenDay(intent, out var openDay))
+        if (DateOnly.TryParseExact(
+            intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
+            "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var openDay))
         {
             ScheduleLauncher.Request(openDay);
             return;
@@ -95,16 +99,5 @@ public class MainActivity : MauiAppCompatActivity
 
             RingLauncher.Request(alarmId);
         }
-    }
-
-    private static bool TryGetOpenDay(Intent? intent, out DateOnly day)
-    {
-        day = default;
-        return DateOnly.TryParseExact(
-            intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
-            "yyyy-MM-dd",
-            System.Globalization.CultureInfo.InvariantCulture,
-            System.Globalization.DateTimeStyles.None,
-            out day);
     }
 }
