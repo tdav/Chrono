@@ -33,14 +33,34 @@ public sealed class AlarmService
 
         var now = this.time.GetLocalNow().DateTime;
         var changed = false;
-        for (var i = 0; i < alarms.Count; i++)
+        for (var i = alarms.Count - 1; i >= 0; i--)
         {
+            if (alarms[i].StartsOn is null)
+            {
+                // Миграция старых записей: днём начала считаем день срабатывания.
+                alarms[i] = alarms[i] with { StartsOn = DateOnly.FromDateTime(alarms[i].At) };
+                changed = true;
+            }
+
+            if (alarms[i].Repeat == RepeatKind.OnceThenDelete && alarms[i].ExpiresAt() <= now)
+            {
+                alarms.RemoveAt(i);
+                changed = true;
+                continue;
+            }
+
             if (alarms[i].IsEnabled && alarms[i].At <= now)
             {
-                alarms[i] = alarms[i].Repeat == RepeatKind.None
-                    ? alarms[i] with { IsEnabled = false }
-                    : alarms[i] with { At = alarms[i].NextAfter(now) };
-                changed = true;
+                if (alarms[i].Repeat == RepeatKind.None)
+                {
+                    alarms[i] = alarms[i] with { IsEnabled = false };
+                    changed = true;
+                }
+                else if (alarms[i].Repeat != RepeatKind.OnceThenDelete)
+                {
+                    alarms[i] = alarms[i] with { At = alarms[i].NextAfter(now) };
+                    changed = true;
+                }
             }
         }
 
@@ -58,6 +78,7 @@ public sealed class AlarmService
         // «Настенное» время храним без пояса: Kind=Local сериализуется со смещением,
         // и после смены часового пояса 06:30 превратилось бы в другой час.
         alarm = alarm with { At = DateTime.SpecifyKind(alarm.At, DateTimeKind.Unspecified) };
+        alarm = alarm with { StartsOn = alarm.StartsOn ?? DateOnly.FromDateTime(alarm.At) };
         if (alarm.At <= this.time.GetLocalNow().DateTime)
         {
             return false;
@@ -106,7 +127,7 @@ public sealed class AlarmService
         var now = this.time.GetLocalNow().DateTime;
         if (enabled && alarms[index].At <= now)
         {
-            if (alarms[index].Repeat == RepeatKind.None)
+            if (alarms[index].IsOneShot())
             {
                 return false;
             }
@@ -145,6 +166,29 @@ public sealed class AlarmService
         {
             this.SchedulingError = ex;
         }
+    }
+
+    public IReadOnlyDictionary<Guid, HashSet<DateOnly>> GetDone() => this.store.LoadDone();
+
+    /// <summary>Отметить запись сделанной (или снять отметку) на день. Планировщик не трогает.</summary>
+    public void SetDone(Guid id, DateOnly day, bool done)
+    {
+        var all = this.store.LoadDone();
+        if (!all.TryGetValue(id, out var days))
+        {
+            days = all[id] = [];
+        }
+
+        if (done)
+        {
+            days.Add(day);
+        }
+        else
+        {
+            days.Remove(day);
+        }
+
+        this.store.SaveDone(all);
     }
 
     /// <summary>Переустановить всё расписание (старт приложения, перезагрузка, смена времени/пояса).</summary>

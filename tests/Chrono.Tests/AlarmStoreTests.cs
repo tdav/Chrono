@@ -68,4 +68,30 @@ public sealed class AlarmStoreTests : IDisposable
         var corrupt = Assert.Single(this.directory.GetFiles("alarms.corrupt-*.json"));
         Assert.Equal("{ это не json", File.ReadAllText(corrupt.FullName));
     }
+
+    [Fact]
+    public void LoadDone_MissingFile_ReturnsEmpty()
+    {
+        Assert.Empty(new AlarmStore(this.directory.FullName).LoadDone());
+    }
+
+    [Fact]
+    public void LoadDone_CorruptFile_ReturnsEmpty()
+    {
+        File.WriteAllText(Path.Combine(this.directory.FullName, "done.json"), "{ не json");
+
+        Assert.Empty(new AlarmStore(this.directory.FullName).LoadDone());
+    }
+
+    [Fact]
+    public void SaveDone_RoundTrip()
+    {
+        var store = new AlarmStore(this.directory.FullName);
+        var id = Guid.NewGuid();
+
+        store.SaveDone(new Dictionary<Guid, HashSet<DateOnly>> { [id] = [new DateOnly(2026, 10, 6), new DateOnly(2026, 10, 7)] });
+
+        Assert.Equal([new DateOnly(2026, 10, 6), new DateOnly(2026, 10, 7)], store.LoadDone()[id].Order());
+        Assert.Equal(["done.json"], this.directory.GetFiles().Select(f => f.Name));
+    }
 }

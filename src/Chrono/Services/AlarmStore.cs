@@ -13,11 +13,13 @@ public sealed class AlarmStore
 
     private readonly string directory;
     private readonly string path;
+    private readonly string donePath;
 
     public AlarmStore(string directory)
     {
         this.directory = directory;
         this.path = Path.Combine(directory, "alarms.json");
+        this.donePath = Path.Combine(directory, "done.json");
     }
 
     /// <summary>Читает список. Повреждённый файл переименовывается, возвращается пустой список и WasCorrupt = true.</summary>
@@ -47,5 +49,31 @@ public sealed class AlarmStore
         var tempPath = this.path + ".tmp";
         File.WriteAllText(tempPath, JsonSerializer.Serialize(alarms, JsonOptions));
         File.Move(tempPath, this.path, overwrite: true);
+    }
+
+    /// <summary>Отметки «сделано» по записям и дням (done.json). Нет файла или он повреждён — пустой словарь.</summary>
+    public Dictionary<Guid, HashSet<DateOnly>> LoadDone()
+    {
+        if (!File.Exists(this.donePath))
+        {
+            return [];
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<Guid, HashSet<DateOnly>>>(File.ReadAllText(this.donePath), JsonOptions) ?? [];
+        }
+        catch (JsonException)
+        {
+            // Отметки некритичны: повреждённый файл просто считаем пустым.
+            return [];
+        }
+    }
+
+    public void SaveDone(IReadOnlyDictionary<Guid, HashSet<DateOnly>> done)
+    {
+        var tempPath = this.donePath + ".tmp";
+        File.WriteAllText(tempPath, JsonSerializer.Serialize(done, JsonOptions));
+        File.Move(tempPath, this.donePath, overwrite: true);
     }
 }

@@ -40,7 +40,7 @@ public sealed class AlarmServiceTests : IDisposable
     [Fact]
     public void Save_Future_StoresAndSyncsSchedulerWithIt()
     {
-        var alarm = new Alarm { At = Now.AddHours(1), Label = "Встреча" };
+        var alarm = new Alarm { At = Now.AddHours(1), Label = "Встреча", StartsOn = DateOnly.FromDateTime(Now) };
 
         var saved = this.service.Save(alarm);
 
@@ -137,8 +137,8 @@ public sealed class AlarmServiceTests : IDisposable
     [Fact]
     public void Delete_CancelsAndRemoves()
     {
-        var keep = new Alarm { At = Now.AddHours(1) };
-        var remove = new Alarm { At = Now.AddHours(2) };
+        var keep = new Alarm { At = Now.AddHours(1), StartsOn = DateOnly.FromDateTime(Now) };
+        var remove = new Alarm { At = Now.AddHours(2), StartsOn = DateOnly.FromDateTime(Now) };
         this.service.Save(keep);
         this.service.Save(remove);
 
@@ -153,7 +153,7 @@ public sealed class AlarmServiceTests : IDisposable
     public void Save_SchedulerThrows_AlarmIsStillSavedAndErrorExposed()
     {
         this.scheduler.ThrowOnSync = true;
-        var alarm = new Alarm { At = Now.AddHours(1) };
+        var alarm = new Alarm { At = Now.AddHours(1), StartsOn = DateOnly.FromDateTime(Now) };
 
         var saved = this.service.Save(alarm);
 
@@ -183,5 +183,127 @@ public sealed class AlarmServiceTests : IDisposable
 
         Assert.Empty(all);
         Assert.True(this.service.RecoveredFromCorruptFile);
+    }
+
+    [Fact]
+    public void GetAll_LegacyJsonWithoutNewFields_IsRingWithStartDate()
+    {
+        var id = Guid.NewGuid();
+        File.WriteAllText(
+            Path.Combine(this.directory.FullName, "alarms.json"),
+            $$"""[{"Id":"{{id}}","At":"2026-10-07T07:00:00","Label":"","SoundEnabled":true,"SoundId":"{{Sounds.Default}}","VibrationEnabled":true,"IsEnabled":true,"Repeat":1,"Days":0}]""");
+
+        var alarm = Assert.Single(this.service.GetAll());
+
+        Assert.Equal(AlertKind.Ring, alarm.Alert);
+        Assert.Equal(0, alarm.DurationMinutes);
+        Assert.Equal("bell", alarm.Icon);
+        Assert.Equal(new DateOnly(2026, 10, 7), alarm.StartsOn);
+        Assert.Equal(RepeatKind.Daily, alarm.Repeat);
+        Assert.Equal(new DateOnly(2026, 10, 7), this.store.Load().Alarms.Single().StartsOn);
+    }
+
+    [Fact]
+    public void GetAll_FiredOnceThenDelete_BeforeExpiry_StaysEnabledAndUnmoved()
+    {
+        var at = Now.AddMinutes(-10);
+        this.store.Save([new Alarm { At = at, Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30 }]);
+
+        var alarm = Assert.Single(this.service.GetAll());
+
+        Assert.Equal(at, alarm.At);
+        Assert.True(alarm.IsEnabled);
+    }
+
+    [Fact]
+    public void GetAll_OnceThenDeleteAfterExpiry_IsRemoved()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30 }]);
+
+        Assert.Empty(this.service.GetAll());
+        Assert.Empty(this.store.Load().Alarms);
+    }
+
+    [Fact]
+    public void GetAll_OnceThenDeleteDisabledAfterExpiry_IsRemoved()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, IsEnabled = false }]);
+
+        Assert.Empty(this.service.GetAll());
+    }
+
+    [Fact]
+    public void GetAll_RingOnceThenDelete_KeptForRingTimeout()
+    {
+        var kept = new Alarm { At = Now.AddMinutes(-9), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Ring };
+        var gone = new Alarm { At = Now.AddMinutes(-10), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Ring };
+        this.store.Save([kept, gone]);
+
+        Assert.Equal([kept.Id], this.service.GetAll().Select(a => a.Id));
+    }
+
+    [Fact]
+    public void Save_WithoutStartsOn_SetsDateOfAt()
+    {
+        this.service.Save(new Alarm { At = Now.AddDays(3) });
+
+        Assert.Equal(DateOnly.FromDateTime(Now.AddDays(3)), this.store.Load().Alarms.Single().StartsOn);
+    }
+
+    [Fact]
+    public void Save_WithStartsOn_KeepsIt()
+    {
+        var start = DateOnly.FromDateTime(Now.AddDays(1));
+        this.service.Save(new Alarm { At = Now.AddDays(3), Repeat = RepeatKind.Daily, StartsOn = start });
+
+        Assert.Equal(start, this.store.Load().Alarms.Single().StartsOn);
+    }
+
+    [Fact]
+    public void Toggle_EnableDailyWithFutureStart_MovesAtToStartDay()
+    {
+        var startsOn = DateOnly.FromDateTime(Now).AddDays(6);
+        var alarm = new Alarm
+        {
+            At = new DateTime(2026, 10, 6, 7, 15, 0),
+            Repeat = RepeatKind.Daily,
+            IsEnabled = false,
+            StartsOn = startsOn,
+        };
+        this.store.Save([alarm]);
+
+        var toggled = this.service.Toggle(alarm.Id, enabled: true);
+
+        Assert.True(toggled);
+        Assert.Equal(startsOn.ToDateTime(new TimeOnly(7, 15)), this.store.Load().Alarms.Single().At);
+    }
+
+    [Fact]
+    public void Toggle_EnablePassedOnceThenDelete_Rejected()
+    {
+        var alarm = new Alarm { At = Now.AddMinutes(5), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30 };
+        this.service.Save(alarm);
+        this.service.Toggle(alarm.Id, enabled: false);
+        this.time.Now = Now.AddMinutes(10);
+
+        Assert.False(this.service.Toggle(alarm.Id, enabled: true));
+        Assert.False(this.store.Load().Alarms.Single().IsEnabled);
+    }
+
+    [Fact]
+    public void SetDone_PersistsAndDoesNotCallScheduler()
+    {
+        var id = Guid.NewGuid();
+        var day = new DateOnly(2026, 10, 6);
+
+        this.service.SetDone(id, day, true);
+
+        Assert.Contains(day, this.service.GetDone()[id]);
+        Assert.Empty(this.scheduler.Synced);
+
+        this.service.SetDone(id, day, false);
+
+        Assert.DoesNotContain(day, this.service.GetDone()[id]);
+        Assert.Empty(this.scheduler.Synced);
     }
 }
