@@ -52,7 +52,7 @@ public sealed class GoogleAuth : IGoogleAuth
             .SetRequestedScopes(ScopeNames.Select(s => new Scope(s)).ToList())
             .Build();
 
-        var result = (AuthorizationResult)(await client.Authorize(request).AsAsync<AuthorizationResult>())!;
+        var result = (await client.Authorize(request).AsAsync<AuthorizationResult>())!;
         if (result.HasResolution)
         {
             // Нужно окно согласия: из фона его не показать, и без активности тоже.
@@ -62,7 +62,11 @@ public sealed class GoogleAuth : IGoogleAuth
                 return null;
             }
 
-            var waiting = new TaskCompletionSource<Intent?>();
+            // Отменённый вызов не должен открывать окно, которого никто не ждёт.
+            ct.ThrowIfCancellationRequested();
+
+            // RunContinuationsAsynchronously: продолжение вызывающего не выполняется внутри OnActivityResult.
+            var waiting = new TaskCompletionSource<Intent?>(TaskCreationOptions.RunContinuationsAsynchronously);
             pending?.TrySetResult(null);
             pending = waiting;
             using var registration = ct.Register(() => waiting.TrySetCanceled(ct));
@@ -87,7 +91,8 @@ public sealed class GoogleAuth : IGoogleAuth
         if (result.ToGoogleSignInAccount()?.Email is { Length: > 0 } email)
 #pragma warning restore CS0618
         {
-            Preferences.Default.Set(EmailKey, email);
+            // SecureStorage, а не Preferences: Preferences попадает в резервную копию.
+            await SecureStorage.Default.SetAsync(EmailKey, email);
         }
 
         return new GoogleToken(token, TokenLifetime);
@@ -96,8 +101,7 @@ public sealed class GoogleAuth : IGoogleAuth
     public async Task SignOutAsync()
     {
         // Без отзыва доступа неинтерактивный Authorize продолжил бы молча выдавать токен.
-        var email = Preferences.Default.Get<string?>(EmailKey, null);
-        Preferences.Default.Remove(EmailKey);
+        var email = await SecureStorage.Default.GetAsync(EmailKey);
         if (email is null)
         {
             return;
@@ -108,6 +112,10 @@ public sealed class GoogleAuth : IGoogleAuth
             .SetAccount(new Account(email, "com.google"))
             .SetScopes(ScopeNames.Select(s => new Scope(s)).ToList())
             .Build();
+
+        // Email удаляется только после успешного отзыва: без сети RevokeAccess бросит исключение,
+        // email останется, и выход можно повторить (иначе Google продолжил бы молча выдавать токен).
         await client.RevokeAccess(request).AsAsync();
+        SecureStorage.Default.Remove(EmailKey);
     }
 }
