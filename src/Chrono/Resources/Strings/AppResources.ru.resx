@@ -127,4 +127,5 @@
   <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
   <data name="SignOut" xml:space="preserve"><value>Выйти</value></data>
   <data name="SyncFailed" xml:space="preserve"><value>Ошибка синхронизации</value></data>
+  <data name="SyncScopesMissing" xml:space="preserve"><value>Разрешите доступ к календарю для синхронизации</value></data>
 </root>

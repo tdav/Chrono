@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 и выше: то же исключение для облачной копии и для переноса с устройства на устройство. -->
+<data-extraction-rules>
+	<cloud-backup>
+		<exclude domain="sharedpref" path="com.chrono.alarm.microsoft.maui.essentials.preferences.xml" />
+	</cloud-backup>
+	<device-transfer>
+		<exclude domain="sharedpref" path="com.chrono.alarm.microsoft.maui.essentials.preferences.xml" />
+	</device-transfer>
+</data-extraction-rules>

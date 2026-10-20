@@ -26,8 +26,8 @@ public sealed class GoogleAuth : IGoogleAuth
 
     private static readonly string[] ScopeNames =
     [
-        "https://www.googleapis.com/auth/calendar.app.created",
-        "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
+        GoogleScopes.CalendarAppCreated,
+        GoogleScopes.CalendarListReadonly,
         "openid",
         "email",
     ];
@@ -86,13 +86,24 @@ public sealed class GoogleAuth : IGoogleAuth
             return null;
         }
 
+        // Окно согласия позволяет снять галочку с области: токен без неё не отдаём, «Настройки» покажут причину.
+        GoogleScopes.RequireCalendar(result.GrantedScopes);
+
         // Email нужен для RevokeAccess при выходе; хранится, потому что выход возможен после перезапуска приложения.
 #pragma warning disable CS0618 // ToGoogleSignInAccount помечен deprecated, но другого способа узнать аккаунт у результата нет
         if (result.ToGoogleSignInAccount()?.Email is { Length: > 0 } email)
 #pragma warning restore CS0618
         {
             // SecureStorage, а не Preferences: Preferences попадает в резервную копию.
-            await SecureStorage.Default.SetAsync(EmailKey, email);
+            try
+            {
+                await SecureStorage.Default.SetAsync(EmailKey, email);
+            }
+            catch (Exception)
+            {
+                // Хранилище ключей Android бывает сломано (смена блокировки экрана, восстановление из копии).
+                // Токен уже получен; без email не сработает лишь отзыв доступа при выходе.
+            }
         }
 
         return new GoogleToken(token, TokenLifetime);
@@ -101,7 +112,17 @@ public sealed class GoogleAuth : IGoogleAuth
     public async Task SignOutAsync()
     {
         // Без отзыва доступа неинтерактивный Authorize продолжил бы молча выдавать токен.
-        var email = await SecureStorage.Default.GetAsync(EmailKey);
+        string? email;
+        try
+        {
+            email = await SecureStorage.Default.GetAsync(EmailKey);
+        }
+        catch (Exception)
+        {
+            // Нечитаемое хранилище (ключ Keystore потерян) — как будто email не сохранён.
+            email = null;
+        }
+
         if (email is null)
         {
             return;

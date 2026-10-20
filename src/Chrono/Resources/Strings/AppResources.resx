@@ -127,4 +127,5 @@
   <data name="SyncNow" xml:space="preserve"><value>Sync now</value></data>
   <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="SyncFailed" xml:space="preserve"><value>Sync failed</value></data>
+  <data name="SyncScopesMissing" xml:space="preserve"><value>Allow calendar access to sync</value></data>
 </root>
