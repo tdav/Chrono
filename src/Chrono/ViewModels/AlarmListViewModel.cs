@@ -32,6 +32,7 @@ public sealed partial class AlarmItem : ObservableObject
                 .Select(d => culture.TextInfo.ToUpper(format.AbbreviatedDayNames[d][0]) + format.AbbreviatedDayNames[d][1..])),
             RepeatKind.Weekly => AppResources.Repeat_Daily,
             RepeatKind.Yearly => $"{AppResources.Repeat_Yearly}, {alarm.At.ToString("d MMM", CultureInfo.CurrentUICulture)}",
+            RepeatKind.OnceThenDelete => $"{alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture)} · {AppResources.Repeat_OnceThenDelete}",
             _ => alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture),
         };
         this.Details = $"{when} · {label}";
@@ -103,7 +104,8 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
     public void Load()
     {
-        var alarms = this.alarmService.GetAll();
+        // Вкладка «Будильники» — только записи со звонком; «Уведомление» живёт в «Распорядке».
+        var alarms = this.alarmService.GetAll().Where(a => a.Alert == AlertKind.Ring).ToList();
         this.Alarms.Clear();
         foreach (var alarm in alarms)
         {
