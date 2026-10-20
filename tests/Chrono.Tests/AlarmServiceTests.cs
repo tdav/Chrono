@@ -198,9 +198,32 @@ public sealed class AlarmServiceTests : IDisposable
         Assert.Equal(AlertKind.Ring, alarm.Alert);
         Assert.Equal(0, alarm.DurationMinutes);
         Assert.Equal("bell", alarm.Icon);
-        Assert.Equal(new DateOnly(2026, 10, 7), alarm.StartsOn);
+        Assert.Equal(new DateOnly(2026, 10, 6), alarm.StartsOn);
         Assert.Equal(RepeatKind.Daily, alarm.Repeat);
-        Assert.Equal(new DateOnly(2026, 10, 7), this.store.Load().Alarms.Single().StartsOn);
+        Assert.Equal(new DateOnly(2026, 10, 6), this.store.Load().Alarms.Single().StartsOn);
+    }
+
+    [Fact]
+    public void GetAll_LegacyRepeatingWithAtMovedToTomorrow_StartsOnToday()
+    {
+        // Старая ежедневная запись: At уже передвинут на завтра, но сегодня она срабатывала — день начала не позже сегодняшнего.
+        File.WriteAllText(
+            Path.Combine(this.directory.FullName, "alarms.json"),
+            $$"""[{"Id":"{{Guid.NewGuid()}}","At":"2026-10-07T07:00:00","Label":"","SoundEnabled":true,"SoundId":"{{Sounds.Default}}","VibrationEnabled":true,"IsEnabled":true,"Repeat":1,"Days":0}]""");
+
+        var alarm = Assert.Single(this.service.GetAll());
+
+        Assert.Equal(DateOnly.FromDateTime(Now), alarm.StartsOn);
+    }
+
+    [Fact]
+    public void GetAll_LegacyOneShot_StartsOnDateOfAt()
+    {
+        File.WriteAllText(
+            Path.Combine(this.directory.FullName, "alarms.json"),
+            $$"""[{"Id":"{{Guid.NewGuid()}}","At":"2026-10-07T07:00:00","Label":"","SoundEnabled":true,"SoundId":"{{Sounds.Default}}","VibrationEnabled":true,"IsEnabled":true,"Repeat":0,"Days":0}]""");
+
+        Assert.Equal(new DateOnly(2026, 10, 7), Assert.Single(this.service.GetAll()).StartsOn);
     }
 
     [Fact]
@@ -257,6 +280,17 @@ public sealed class AlarmServiceTests : IDisposable
         this.service.Save(new Alarm { At = Now.AddDays(3), Repeat = RepeatKind.Daily, StartsOn = start });
 
         Assert.Equal(start, this.store.Load().Alarms.Single().StartsOn);
+    }
+
+    [Fact]
+    public void Save_RepeatingAtBeforeStart_NormalizesAtToStartDay()
+    {
+        var startsOn = DateOnly.FromDateTime(Now).AddDays(6);
+
+        var saved = this.service.Save(new Alarm { At = Now.AddHours(1), Repeat = RepeatKind.Daily, StartsOn = startsOn });
+
+        Assert.True(saved);
+        Assert.Equal(startsOn.ToDateTime(TimeOnly.FromDateTime(Now.AddHours(1))), this.store.Load().Alarms.Single().At);
     }
 
     [Fact]

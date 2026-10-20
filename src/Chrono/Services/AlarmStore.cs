@@ -4,7 +4,7 @@ using Chrono.Models;
 namespace Chrono.Services;
 
 /// <summary>
-/// Хранение будильников в alarms.json. Запись атомарная: временный файл + File.Move.
+/// Хранение будильников в alarms.json и отметок «сделано» в done.json. Запись атомарная: временный файл + File.Move.
 /// Все вызовы — с главного потока (UI, receiver'ы и сервис Android работают на нём же).
 /// </summary>
 public sealed class AlarmStore

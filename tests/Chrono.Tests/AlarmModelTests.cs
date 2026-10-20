@@ -21,6 +21,27 @@ public sealed class AlarmModelTests
     }
 
     [Fact]
+    public void NextAfter_WeeklyWithFutureStart_FirstMatchingDayOnOrAfterStart()
+    {
+        // 26.10.2026 — понедельник; начало во вторник 27.10 пропускает понедельник, первым подходит среда 28.10.
+        var moment = new DateTime(2026, 10, 20, 12, 0, 0);
+        var a = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), Repeat = RepeatKind.Weekly, Days = WeekDays.Monday | WeekDays.Wednesday, StartsOn = new DateOnly(2026, 10, 27) };
+
+        Assert.Equal(new DateTime(2026, 10, 28, 7, 15, 0), a.NextAfter(moment));
+        // Начало в подходящий день (среда 28.10) — этот же день и срабатывает.
+        Assert.Equal(new DateTime(2026, 10, 28, 7, 15, 0), (a with { StartsOn = new DateOnly(2026, 10, 28) }).NextAfter(moment));
+    }
+
+    [Fact]
+    public void NextAfter_YearlyWithFutureStart_SkipsYearBeforeStart()
+    {
+        // Без StartsOn ближайшим было бы 15.03.2027; начало 01.04.2027 пропускает его, остаётся 15.03.2028.
+        var a = new Alarm { At = new DateTime(2026, 3, 15, 7, 15, 0), Repeat = RepeatKind.Yearly, StartsOn = new DateOnly(2027, 4, 1) };
+
+        Assert.Equal(new DateTime(2028, 3, 15, 7, 15, 0), a.NextAfter(new DateTime(2026, 10, 20, 12, 0, 0)));
+    }
+
+    [Fact]
     public void OccursOn_DailyBeforeStart_False()
     {
         var a = new Alarm { At = new DateTime(2026, 10, 20, 7, 15, 0), Repeat = RepeatKind.Daily, StartsOn = new DateOnly(2026, 10, 26) };
