@@ -52,7 +52,15 @@ public sealed class SyncStore
         catch (JsonException)
         {
             // Повреждённый файл не удаляем: следующий Save иначе затёр бы его без следа.
-            File.Move(this.path, this.path + ".bad", overwrite: true);
+            try
+            {
+                File.Move(this.path, this.path + ".bad", overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Карантин не удался: пустое состояние всё равно возвращаем, иначе упадёт и сохранение записи пользователя (Enqueue).
+            }
+
             return new SyncState();
         }
     }

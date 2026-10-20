@@ -328,54 +328,77 @@ public sealed class GoogleCalendarClient
 
     /// <summary>
     /// events.instances: ближайшее повторение серии, начало которого позже <paramref name="after"/>, null — если нет.
-    /// timeMin отбирает по концу события, поэтому первым может прийти идущий сейчас экземпляр; берём два и пропускаем начатый.
+    /// timeMin отбирает по концу события, поэтому первым может прийти идущий сейчас экземпляр; берём два и пропускаем начатые.
+    /// Если начались оба (длительность больше периода), запрос повторяется от конца последнего полученного (не более 32 раз).
     /// </summary>
     public async Task<GoogleEvent?> NextInstanceAsync(string calendarId, string eventId, DateTimeOffset after, CancellationToken ct)
     {
-        var url = $"calendars/{Uri.EscapeDataString(calendarId)}/events/{Uri.EscapeDataString(eventId)}/instances"
-            + "?maxResults=2&timeMin="
-            + Uri.EscapeDataString(after.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture));
-        for (var attempt = 0; ; attempt++)
+        // Событие на весь день — полночь по смещению after (точность до часов достаточна: сравнение только с after).
+        DateTimeOffset? Parse(GoogleEventTime? t) =>
+            t?.DateTime is { } dateTime && DateTimeOffset.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)
+                ? parsed
+                : DateOnly.TryParseExact(t?.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
+                    ? new DateTimeOffset(day.ToDateTime(TimeOnly.MinValue), after.Offset)
+                    : null;
+
+        var from = after;
+        for (var step = 0; step < 32; step++)
         {
-            if (!this.cache.TryGetValue(TokenKey, out string? token))
+            var url = $"calendars/{Uri.EscapeDataString(calendarId)}/events/{Uri.EscapeDataString(eventId)}/instances"
+                + "?maxResults=2&timeMin="
+                + Uri.EscapeDataString(from.ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture));
+            EventsPage? page = null;
+            for (var attempt = 0; page is null; attempt++)
             {
-                var fresh = await this.auth.GetTokenAsync(false, ct) ?? throw new SignInRequiredException();
-                token = fresh.AccessToken;
-                if (fresh.ExpiresIn > TokenMargin)
+                if (!this.cache.TryGetValue(TokenKey, out string? token))
                 {
-                    this.cache.Set(TokenKey, token, fresh.ExpiresIn - TokenMargin);
+                    var fresh = await this.auth.GetTokenAsync(false, ct) ?? throw new SignInRequiredException();
+                    token = fresh.AccessToken;
+                    if (fresh.ExpiresIn > TokenMargin)
+                    {
+                        this.cache.Set(TokenKey, token, fresh.ExpiresIn - TokenMargin);
+                    }
                 }
-            }
 
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-            using var response = await this.http.SendAsync(request, ct);
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                this.cache.Remove(TokenKey);
-                if (attempt == 0)
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                using var response = await this.http.SendAsync(request, ct);
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    continue;
+                    this.cache.Remove(TokenKey);
+                    if (attempt == 0)
+                    {
+                        continue;
+                    }
                 }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException(
+                        $"Google API {(int)response.StatusCode} GET {url}: {await response.Content.ReadAsStringAsync(ct)}",
+                        null,
+                        response.StatusCode);
+                }
+
+                page = await response.Content.ReadFromJsonAsync<EventsPage>(Json, ct) ?? new EventsPage();
             }
 
-            if (!response.IsSuccessStatusCode)
+            var items = page.Items ?? [];
+            if (items.FirstOrDefault(e => Parse(e.Start) > after) is { } next)
             {
-                throw new HttpRequestException(
-                    $"Google API {(int)response.StatusCode} GET {url}: {await response.Content.ReadAsStringAsync(ct)}",
-                    null,
-                    response.StatusCode);
+                return next;
             }
 
-            var page = await response.Content.ReadFromJsonAsync<EventsPage>(Json, ct);
-            // Событие на весь день — полночь по смещению after (точность до часов достаточна: сравнение только с after).
-            return page?.Items?.FirstOrDefault(e =>
-                (e.Start?.DateTime is { } dateTime && DateTimeOffset.TryParse(dateTime, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start)
-                    ? start
-                    : DateOnly.TryParseExact(e.Start?.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day)
-                        ? new DateTimeOffset(day.ToDateTime(TimeOnly.MinValue), after.Offset)
-                        : (DateTimeOffset?)null) > after);
+            // Меньше двух — экземпляров больше нет; иначе продолжаем с конца последнего (он строго дальше from, иначе выходим).
+            if (items.Count < 2 || Parse(items[^1].End) is not { } end || end <= from)
+            {
+                return null;
+            }
+
+            from = end;
         }
+
+        return null;
     }
 
     /// <summary>Адрес почты аккаунта из userinfo (области openid и email).</summary>

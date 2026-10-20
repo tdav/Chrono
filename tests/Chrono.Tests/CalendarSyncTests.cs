@@ -671,6 +671,32 @@ public sealed class CalendarSyncTests : IDisposable
     }
 
     [Fact]
+    public async Task Sync_WeeklyStartingOutsideMask_EchoKeepsStartsOn_AddedStartDayNotSkipped()
+    {
+        // Now — вторник 20-го. Запись начинается во вторник, маска Ср+Пт: DTSTART в Google — среда 21-го.
+        var startsOn = new DateOnly(2026, 10, 20);
+        this.service.Save(new Alarm
+        {
+            At = new DateTime(2026, 10, 21, 7, 0, 0), StartsOn = startsOn, Repeat = RepeatKind.Weekly,
+            Days = WeekDays.Wednesday | WeekDays.Friday, Label = "Зал",
+        });
+        await this.Sync();
+        Assert.StartsWith("2026-10-21T07:00", Assert.Single(this.server.All).Start!.DateTime);
+
+        var echo = await this.Sync();
+
+        Assert.Equal(0, echo.Pulled);
+        Assert.Equal(startsOn, Assert.Single(this.Alarms).StartsOn);
+
+        // Во вторник добавили вторник в маску: он не должен быть пропущен (DTSTART — вторник 20-го).
+        this.service.Save(Assert.Single(this.Alarms) with { Days = WeekDays.Tuesday | WeekDays.Wednesday | WeekDays.Friday });
+        await this.Sync();
+
+        Assert.StartsWith("2026-10-20T07:00", Assert.Single(this.server.All).Start!.DateTime);
+        Assert.Equal(startsOn, Assert.Single(this.Alarms).StartsOn);
+    }
+
+    [Fact]
     public async Task Sync_EmptyLabel_EchoDoesNotFillLabel()
     {
         this.service.Save(new Alarm { At = Now.AddHours(1) });

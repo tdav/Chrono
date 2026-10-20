@@ -51,10 +51,12 @@ public static class CalendarMapping
             }
         }
 
-        if (alarm.Repeat == RepeatKind.Weekly && alarm.Days != WeekDays.None)
+        // Только семь определённых битов: маска из одних лишних битов (повреждённый файл) иначе не нашла бы дня никогда.
+        var mask = alarm.Days & (WeekDays)127;
+        if (alarm.Repeat == RepeatKind.Weekly && mask != WeekDays.None)
         {
             // DTSTART должен быть первым днём из маски не раньше startDay: Google считает DTSTART первым событием серии, даже если день не отмечен.
-            while (!alarm.Days.HasFlag((WeekDays)(1 << (int)startDay.DayOfWeek)))
+            while (!mask.HasFlag((WeekDays)(1 << (int)startDay.DayOfWeek)))
             {
                 startDay = startDay.AddDays(1);
             }
@@ -240,6 +242,19 @@ public static class CalendarMapping
             ? Math.Max(0, (int)(endAt - startAt).TotalMinutes)
             : 0;
 
+        // ToEvent сдвигает DTSTART Weekly на первый день маски; если он совпал с событием, StartsOn записи (он мог быть днём вне маски) не трогаем.
+        var startsOn = DateOnly.FromDateTime(start);
+        if (repeat == RepeatKind.Weekly && days != WeekDays.None && existing?.StartsOn is { } kept)
+        {
+            var first = kept;
+            while (!days.HasFlag((WeekDays)(1 << (int)first.DayOfWeek)))
+            {
+                first = first.AddDays(1);
+            }
+
+            startsOn = first == startsOn ? kept : startsOn;
+        }
+
         var alarm = new Alarm
         {
             Id = Guid.TryParse(props?.GetValueOrDefault(ChronoIdKey), out var chronoId) ? chronoId : existing?.Id ?? Guid.NewGuid(),
@@ -257,7 +272,7 @@ public static class CalendarMapping
             // Событие, созданное в Google (без свойств Chrono), звонит как Ring; на весь день — без оповещения.
             Alert = allDay ? AlertKind.None
                 : Enum.TryParse<AlertKind>(props?.GetValueOrDefault("alert"), out var alert) && Enum.IsDefined(alert) ? alert : AlertKind.Ring,
-            StartsOn = DateOnly.FromDateTime(start),
+            StartsOn = startsOn,
             GoogleEventId = ev.Id,
             // useDefault считается «без напоминаний»: у календаря «Chrono» нет напоминаний по умолчанию; email-напоминания — не звонок.
             ReminderMinutes = ev.Reminders is { UseDefault: false, Overrides: { } overrides } ? string.Join(',', overrides.Where(o => o.Method == "popup").Select(o => o.Minutes)) : "",

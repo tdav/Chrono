@@ -284,7 +284,37 @@ public sealed class GoogleCalendarClientTests : IDisposable
     }
 
     [Fact]
-    public async Task NextInstance_AsksSingleInstanceAfterTime_NullWhenNone()
+    public async Task NextInstance_BothStarted_ContinuesFromEndOfLastReceived()
+    {
+        // Длительность больше периода повтора: оба полученных экземпляра уже идут. Запрос повторяется от конца последнего.
+        var after = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.Zero);
+        this.handler.Respond = r => r.Uri.Query.Contains("timeMin=2026-10-21T10%3A00%3A00")
+            ? Json("""{"items":[{"id":"third","start":{"dateTime":"2026-10-22T09:00:00+00:00"},"end":{"dateTime":"2026-10-23T10:00:00+00:00"}}]}""")
+            : Json("""
+                {"items":[
+                  {"id":"first","start":{"dateTime":"2026-10-19T09:00:00+00:00"},"end":{"dateTime":"2026-10-20T13:00:00+00:00"}},
+                  {"id":"second","start":{"dateTime":"2026-10-20T09:00:00+00:00"},"end":{"dateTime":"2026-10-21T10:00:00+00:00"}}]}
+                """);
+
+        var instance = await this.client.NextInstanceAsync("cal", "ev", after, CancellationToken.None);
+
+        Assert.Equal("third", instance?.Id);
+        Assert.Equal(2, this.handler.Requests.Count);
+
+        // Экземпляров больше нет: вторая страница пуста.
+        this.handler.Requests.Clear();
+        this.handler.Respond = r => r.Uri.Query.Contains("timeMin=2026-10-21T10%3A00%3A00")
+            ? Json("""{"items":[]}""")
+            : Json("""
+                {"items":[
+                  {"id":"first","start":{"dateTime":"2026-10-19T09:00:00+00:00"},"end":{"dateTime":"2026-10-20T13:00:00+00:00"}},
+                  {"id":"second","start":{"dateTime":"2026-10-20T09:00:00+00:00"},"end":{"dateTime":"2026-10-21T10:00:00+00:00"}}]}
+                """);
+        Assert.Null(await this.client.NextInstanceAsync("cal", "ev", after, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task NextInstance_AsksTwoInstancesAfterTime_NullWhenNone()
     {
         this.handler.Respond = _ => Json("{\"items\":[{\"id\":\"ev_20261021\",\"start\":{\"dateTime\":\"2026-10-21T10:00:00+05:00\"}}]}");
         var after = new DateTimeOffset(2026, 10, 20, 12, 0, 0, TimeSpan.FromHours(5));

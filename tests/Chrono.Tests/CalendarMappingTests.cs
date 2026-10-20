@@ -143,6 +143,24 @@ public sealed class CalendarMappingTests
     }
 
     [Fact]
+    public void FromEvent_WeeklyEcho_KeepsStartsOnWhileFirstMaskDayMatchesStart()
+    {
+        // StartsOn — вторник, маска Ср+Пт: ToEvent кладёт DTSTART на среду, но StartsOn записи не должен уехать на среду.
+        var existing = new Alarm
+        {
+            Id = Guid.NewGuid(), At = new DateTime(2026, 10, 28, 7, 15, 0), StartsOn = new DateOnly(2026, 10, 27),
+            Repeat = RepeatKind.Weekly, Days = WeekDays.Wednesday | WeekDays.Friday, GoogleEventId = "evt1",
+        };
+        var ev = CalendarMapping.ToEvent(existing, Tashkent) with { Id = "evt1" };
+
+        Assert.Equal(new DateOnly(2026, 10, 27), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, existing)).Alarm.StartsOn);
+
+        // Событие изменили в Google: его начало теперь не совпадает с первым днём маски от старого StartsOn, StartsOn берётся из события.
+        var moved = existing with { StartsOn = new DateOnly(2026, 10, 29) };
+        Assert.Equal(new DateOnly(2026, 10, 28), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, moved)).Alarm.StartsOn);
+    }
+
+    [Fact]
     public void ToEvent_WeeklyMonWed_ByDay()
     {
         var alarm = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), Repeat = RepeatKind.Weekly, Days = WeekDays.Wednesday | WeekDays.Monday };
@@ -164,6 +182,17 @@ public sealed class CalendarMappingTests
 
         Assert.Equal("2026-10-28T07:15:00+05:00", ev.Start!.DateTime);
         Assert.Equal("2026-10-28T07:45:00+05:00", ev.End!.DateTime);
+    }
+
+    [Fact]
+    public void ToEvent_WeeklyMaskOfUndefinedBitsOnly_DoesNotLoopAndKeepsStartDay()
+    {
+        // Повреждённый alarms.json: в маске нет ни одного из семи дней.
+        var alarm = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), Repeat = RepeatKind.Weekly, Days = (WeekDays)128 };
+
+        var ev = CalendarMapping.ToEvent(alarm, Tashkent);
+
+        Assert.Equal("2026-10-26T07:15:00+05:00", ev.Start!.DateTime);
     }
 
     [Fact]
