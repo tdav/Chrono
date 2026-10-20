@@ -10,7 +10,7 @@ public sealed class AlarmService
     private readonly TimeProvider time;
     private readonly SyncStore? sync;
 
-    /// <param name="sync">Очередь изменений для Google; null — экземпляры без синхронизации (receiver'ы, SmartWake).</param>
+    /// <param name="sync">Очередь изменений для Google; все экземпляры приложения (UI, receiver'ы, сервисы) передают её, null — только тесты.</param>
     public AlarmService(AlarmStore store, IAlarmScheduler scheduler, TimeProvider time, SyncStore? sync = null)
     {
         this.store = store;
@@ -19,7 +19,7 @@ public sealed class AlarmService
         this.sync = sync;
     }
 
-    /// <summary>Запись изменена пользователем (Save/Toggle/Delete без fromSync): повод запустить синхронизацию.</summary>
+    /// <summary>Запись изменена пользователем (Save/Toggle/Delete без fromSync) или GetAll удалил сработавшую «Один раз и удалить»: повод запустить синхронизацию.</summary>
     public event EventHandler? Changed;
 
     /// <summary>true, если при последнем чтении файл оказался повреждён и был отложен в сторону.</summary>
