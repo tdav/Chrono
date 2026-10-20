@@ -166,7 +166,7 @@ public sealed class SmartWakeService : Service, ISensorEventListener
             // Сигнал на срок снимается: разовый будильник выключается, повторяющийся переходит
             // на следующее срабатывание. Затем звонит сразу — тем же путём, что и обычный:
             // точный будильник → AlarmReceiver → AlarmRingService.
-            var service = new Services.AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System);
+            var service = new Services.AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System, new SyncStore(FileSystem.AppDataDirectory));
             if (alarm.IsOneShot())
             {
                 service.Toggle(this.alarmId, false);

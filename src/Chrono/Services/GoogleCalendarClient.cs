@@ -15,7 +15,8 @@ namespace Chrono.Services;
 /// </summary>
 public sealed class GoogleCalendarClient
 {
-    private const string TokenKey = "google-access-token";
+    /// <summary>Ключ кэша токена доступа; им же пользуется SyncLauncher при выходе и смене аккаунта.</summary>
+    public const string TokenKey = "google-access-token";
     private const string UserInfoUrl = "https://openidconnect.googleapis.com/v1/userinfo";
     private const string CalendarName = "Chrono";
 

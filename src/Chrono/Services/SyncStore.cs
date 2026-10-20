@@ -37,6 +37,9 @@ public sealed class SyncStore
 
     public SyncStore(string directory) => this.path = Path.Combine(directory, "sync.json");
 
+    /// <summary>Куда уходит повреждённый файл (sync.json.bad).</summary>
+    public string QuarantinePath => this.path + ".bad";
+
     /// <summary>Нет файла или он повреждён (тогда переименовывается в sync.json.bad) — пустое состояние (следующая синхронизация загрузит всё заново).</summary>
     public SyncState Load()
     {
@@ -54,7 +57,7 @@ public sealed class SyncStore
             // Повреждённый файл не удаляем: следующий Save иначе затёр бы его без следа.
             try
             {
-                File.Move(this.path, this.path + ".bad", overwrite: true);
+                File.Move(this.path, this.QuarantinePath, overwrite: true);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

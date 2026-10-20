@@ -13,7 +13,7 @@ public sealed class BootReceiver : BroadcastReceiver
     {
         // .NET кэширует TimeZoneInfo.Local: без сброса после смены пояса время пересчиталось бы по старому.
         TimeZoneInfo.ClearCachedData();
-        var service = new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System);
+        var service = new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System, new SyncStore(FileSystem.AppDataDirectory));
         service.RescheduleAll();
 
         // WorkManager сохраняет работы и после перезагрузки, но после обновления или очистки данных перестраховываемся.

@@ -57,6 +57,9 @@
                         </Grid>
                         <Label Text="{Binding SyncStatusText}" TextColor="{StaticResource GoldInk}" FontSize="13"
                                IsVisible="{Binding HasSyncStatus}" />
+                        <Button Text="{x:Static res:AppResources.SignInAgainButton}" Style="{StaticResource CompactAccentButton}"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding NeedsSignInAgain}" Command="{Binding SignInGoogleCommand}" />
                         <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsSignedIn}">
                             <Button Text="{x:Static res:AppResources.SyncNow}" Style="{StaticResource CompactAccentButton}"
                                     Command="{Binding SyncNowCommand}" />

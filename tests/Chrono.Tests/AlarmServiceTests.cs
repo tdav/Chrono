@@ -252,6 +252,45 @@ public sealed class AlarmServiceTests : IDisposable
     }
 
     [Fact]
+    public void GetAll_ExpiredOnceThenDeleteWithEventId_EnqueuesDeleteAndRaisesChangedOnce()
+    {
+        var gone = new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, GoogleEventId = "ev1" };
+        this.store.Save([gone]);
+        var changed = 0;
+        this.syncService.Changed += (_, _) => changed++;
+
+        Assert.Empty(this.syncService.GetAll());
+        Assert.Empty(this.syncService.GetAll());
+
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((gone.Id, SyncOp.Delete, "ev1"), (change.AlarmId, change.Op, change.GoogleEventId));
+        Assert.Equal(1, changed);
+    }
+
+    [Fact]
+    public void GetAll_ExpiredOnceThenDeleteWithoutEventId_NotQueued()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30 }]);
+        var changed = 0;
+        this.syncService.Changed += (_, _) => changed++;
+
+        Assert.Empty(this.syncService.GetAll());
+
+        Assert.Empty(this.sync.Load().Pending);
+        Assert.Equal(0, changed);
+    }
+
+    [Fact]
+    public void GetAll_ExpiredOnceThenDeleteForeignSeries_NotQueued()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, GoogleEventId = "ev1", ForeignSeries = true }]);
+
+        Assert.Empty(this.syncService.GetAll());
+
+        Assert.Empty(this.sync.Load().Pending);
+    }
+
+    [Fact]
     public void GetAll_OnceThenDeleteDisabledAfterExpiry_IsRemoved()
     {
         this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, IsEnabled = false }]);
@@ -378,6 +417,32 @@ public sealed class AlarmServiceTests : IDisposable
     }
 
     [Fact]
+    public void Save_StaleSnapshotFromUser_KeepsLinkFromStore()
+    {
+        var linked = new Alarm { At = Now.AddHours(1), GoogleEventId = "g1", ForeignSeries = true };
+        this.syncService.Save(linked, fromSync: true);
+
+        // Редактор открыл запись до связывания и сохраняет устаревший снимок.
+        Assert.True(this.syncService.Save(linked with { GoogleEventId = null, ForeignSeries = false, Label = "правка" }));
+
+        var saved = Assert.Single(this.store.Load().Alarms);
+        Assert.Equal(("g1", true, "правка"), (saved.GoogleEventId, saved.ForeignSeries, saved.Label));
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((linked.Id, SyncOp.Upsert, "g1"), (change.AlarmId, change.Op, change.GoogleEventId));
+    }
+
+    [Fact]
+    public void Save_FromSync_WritesLinkAsIs()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "g1" };
+        this.syncService.Save(alarm, fromSync: true);
+
+        this.syncService.Save(alarm with { GoogleEventId = null }, fromSync: true);
+
+        Assert.Null(Assert.Single(this.store.Load().Alarms).GoogleEventId);
+    }
+
+    [Fact]
     public void Save_PastTime_NotQueued()
     {
         Assert.False(this.syncService.Save(new Alarm { At = Now.AddMinutes(-1) }));
@@ -444,16 +509,6 @@ public sealed class AlarmServiceTests : IDisposable
         this.syncService.Save(alarm, fromSync: true);
 
         this.syncService.Delete(alarm.Id);
-
-        Assert.Empty(this.sync.Load().Pending);
-    }
-
-    [Fact]
-    public void GetAll_AutoDeletedOnceThenDelete_NotQueued()
-    {
-        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, GoogleEventId = "ev1" }]);
-
-        Assert.Empty(this.syncService.GetAll());
 
         Assert.Empty(this.sync.Load().Pending);
     }

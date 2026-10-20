@@ -85,7 +85,7 @@ public sealed class ScheduleReceiver : BroadcastReceiver
         finally
         {
             // Повторяющаяся запись встаёт на следующее срабатывание сразу, не дожидаясь открытия приложения.
-            new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System).RescheduleAll();
+            new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System, new SyncStore(FileSystem.AppDataDirectory)).RescheduleAll();
         }
     }
 }

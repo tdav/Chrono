@@ -67,6 +67,12 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public bool HasSyncStatus => this.SyncStatusText.Length > 0;
 
+    /// <summary>
+    /// Вход выполнен, но доступ отозван: нужна кнопка входа без потери очереди (выход её очистил бы).
+    /// Зависит от статуса лаунчера, а не от последнего показанного текста: неудачный вход кнопку не прячет.
+    /// </summary>
+    public bool NeedsSignInAgain => this.GoogleEmail is not null && this.syncLauncher.Status == SyncStatus.SignInRequired;
+
     /// <summary>Подписка на состояние синхронизации; идемпотентна, снимается в Detach (лаунчер живёт дольше страницы).</summary>
     public void Attach()
     {
@@ -94,6 +100,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                 string.Format(AppResources.SyncedAt, DateTime.SpecifyKind(last, DateTimeKind.Utc).ToLocalTime().ToString("HH:mm")),
             _ => "",
         };
+        this.OnPropertyChanged(nameof(this.NeedsSignInAgain));
     }
 
     public async Task RefreshAsync()
@@ -165,7 +172,17 @@ public sealed partial class SettingsViewModel : ObservableObject
             }
 
             var email = await this.google.GetEmailAsync(CancellationToken.None);
-            this.syncStore.Save(this.syncStore.Load() with { Email = email });
+
+            // Тот же аккаунт после «Нужно войти снова» сохраняет очередь; другой аккаунт очищается как при выходе.
+            await this.syncLauncher.CompleteSignInAsync(
+                email,
+                this.alarmService,
+#if ANDROID
+                () => Platform.SyncWorker.Cancel(global::Android.App.Application.Context),
+#else
+                () => { },
+#endif
+                this.cache);
         }
         catch (SyncScopesMissingException)
         {

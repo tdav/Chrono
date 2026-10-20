@@ -116,6 +116,7 @@ public sealed class SyncLauncherTests : IDisposable
 
     [Theory]
     [InlineData(typeof(SignInRequiredException), SyncStatus.SignInRequired)]
+    [InlineData(typeof(SyncScopesMissingException), SyncStatus.SignInRequired)]
     [InlineData(typeof(HttpRequestException), SyncStatus.NoNetwork)]
     [InlineData(typeof(TaskCanceledException), SyncStatus.NoNetwork)]
     [InlineData(typeof(InvalidOperationException), SyncStatus.Failed)]
@@ -295,6 +296,126 @@ public sealed class SyncLauncherTests : IDisposable
         var saved = Assert.Single(alarmStore.Load().Alarms);
         Assert.Null(saved.GoogleEventId);
         Assert.False(saved.ForeignSeries);
+    }
+
+    [Fact]
+    public async Task SignOutAsync_RemovesQuarantinedSyncFile()
+    {
+        var launcher = this.Create();
+        var bad = Path.Combine(this.directory.FullName, "sync.json.bad");
+        File.WriteAllText(bad, "{ старый email и очередь");
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarms = new AlarmService(new AlarmStore(this.directory.FullName), new FakeScheduler(), new FixedTime(now), this.store);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        await launcher.SignOutAsync(alarms, () => { }, cache);
+
+        Assert.False(File.Exists(bad));
+    }
+
+    private (AlarmService Alarms, AlarmStore AlarmStore, Alarm Linked, MemoryCache Cache) SeedLinkedState()
+    {
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarmStore = new AlarmStore(this.directory.FullName);
+        var alarms = new AlarmService(alarmStore, new FakeScheduler(), new FixedTime(now), this.store);
+        var linked = new Alarm { At = now.AddHours(1), GoogleEventId = "ev1" };
+        alarmStore.Save([linked]);
+        this.store.Save(this.store.Load() with
+        {
+            CalendarId = "cal",
+            SyncToken = "tok",
+            Pending = [new PendingChange(linked.Id, SyncOp.Upsert, "ev1", now)],
+            IgnoredEventIds = ["ev2"],
+        });
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        cache.Set(GoogleCalendarClient.TokenKey, "secret");
+        return (alarms, alarmStore, linked, cache);
+    }
+
+    [Fact]
+    public async Task CompleteSignInAsync_SameAccountAfterSignInRequired_KeepsQueueAndLinks()
+    {
+        var launcher = this.Create();
+        var (alarms, alarmStore, linked, cache) = this.SeedLinkedState();
+        using var disposeCache = cache;
+        this.action = _ => throw new SignInRequiredException();
+        await launcher.RunNowAsync();
+        Assert.Equal(SyncStatus.SignInRequired, launcher.Status);
+        var cancelled = false;
+
+        await launcher.CompleteSignInAsync("A@B.C", alarms, () => cancelled = true, cache);
+
+        var state = this.store.Load();
+        Assert.Equal(("a@b.c", "cal", "tok"), (state.Email, state.CalendarId, state.SyncToken));
+        Assert.Single(state.Pending);
+        Assert.Equal(["ev2"], state.IgnoredEventIds);
+        Assert.Equal("ev1", alarmStore.Load().Alarms.Single(a => a.Id == linked.Id).GoogleEventId);
+        Assert.False(cancelled);
+        Assert.Equal(SyncStatus.Idle, launcher.Status);
+    }
+
+    [Fact]
+    public async Task CompleteSignInAsync_OtherAccount_ClearsStateAndLinksAndSavesNewEmail()
+    {
+        var launcher = this.Create();
+        var (alarms, alarmStore, linked, cache) = this.SeedLinkedState();
+        using var disposeCache = cache;
+        var cancelled = false;
+
+        await launcher.CompleteSignInAsync("new@b.c", alarms, () => cancelled = true, cache);
+
+        var state = this.store.Load();
+        Assert.Equal(("new@b.c", null, null), (state.Email, state.CalendarId, state.SyncToken));
+        Assert.Empty(state.Pending);
+        Assert.Empty(state.IgnoredEventIds);
+        Assert.Null(alarmStore.Load().Alarms.Single(a => a.Id == linked.Id).GoogleEventId);
+        Assert.False(cache.TryGetValue(GoogleCalendarClient.TokenKey, out _));
+        Assert.True(cancelled);
+    }
+
+    [Fact]
+    public async Task CompleteSignInAsync_FirstSignIn_SavesEmail()
+    {
+        var launcher = this.Create(signedIn: false);
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarms = new AlarmService(new AlarmStore(this.directory.FullName), new FakeScheduler(), new FixedTime(now), this.store);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        await launcher.CompleteSignInAsync("a@b.c", alarms, () => { }, cache);
+
+        Assert.Equal("a@b.c", this.store.Load().Email);
+    }
+
+    [Fact]
+    public async Task CompleteSignInAsync_NullEmail_ThrowsAndKeepsState()
+    {
+        var launcher = this.Create();
+        var (alarms, alarmStore, linked, cache) = this.SeedLinkedState();
+        using var disposeCache = cache;
+        var cancelled = false;
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => launcher.CompleteSignInAsync(null, alarms, () => cancelled = true, cache));
+
+        var state = this.store.Load();
+        Assert.Equal(("a@b.c", "cal", "tok"), (state.Email, state.CalendarId, state.SyncToken));
+        Assert.Single(state.Pending);
+        Assert.Equal("ev1", alarmStore.Load().Alarms.Single(a => a.Id == linked.Id).GoogleEventId);
+        Assert.False(cancelled);
+    }
+
+    [Fact]
+    public async Task SignOutAsync_QuarantineFileLocked_StillCompletesSignOut()
+    {
+        var launcher = this.Create();
+        // Каталог на месте файла: File.Delete бросает UnauthorizedAccessException.
+        Directory.CreateDirectory(this.store.QuarantinePath);
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarms = new AlarmService(new AlarmStore(this.directory.FullName), new FakeScheduler(), new FixedTime(now), this.store);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        await launcher.SignOutAsync(alarms, () => { }, cache);
+
+        Assert.Null(this.store.Load().Email);
     }
 
     private static async Task WaitAsync(Func<bool> condition)
