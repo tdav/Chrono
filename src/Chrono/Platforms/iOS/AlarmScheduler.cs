@@ -30,17 +30,19 @@ public sealed class AlarmScheduler : IAlarmScheduler
         foreach (var planned in IosNotificationPlan.Build(alarms, DateTime.Now))
         {
             var isNotify = planned.Alarm.Alert == AlertKind.Notify;
+            // Начало срабатывания: у напоминания FireAt раньше него на ReminderMinutes.
+            var occurrence = planned.FireAt.AddMinutes(planned.ReminderMinutes);
             var content = new UNMutableNotificationContent
             {
                 Title = string.IsNullOrWhiteSpace(planned.Alarm.Label) ? AppResources.DefaultLabel : planned.Alarm.Label,
-                Body = (isNotify ? planned.FireAt : planned.Alarm.At).ToString("HH:mm"),
+                Body = (isNotify ? occurrence : planned.Alarm.At).ToString("HH:mm"),
                 // Notify — обычное уведомление без прорыва через фокус: Active2, а не Active
                 // (устаревший Active имеет значение 0 = Passive на стороне iOS).
                 // Ring — TimeSensitive2, а не TimeSensitive: устаревший член имеет значение 3 = Critical на стороне iOS.
                 InterruptionLevel = isNotify ? UNNotificationInterruptionLevel.Active2 : UNNotificationInterruptionLevel.TimeSensitive2,
                 UserInfo = isNotify
                     ? NSDictionary.FromObjectsAndKeys(
-                        [new NSString(planned.Alarm.Id.ToString()), new NSString(DateOnly.FromDateTime(planned.FireAt).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
+                        [new NSString(planned.Alarm.Id.ToString()), new NSString(DateOnly.FromDateTime(occurrence).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
                         [new NSString(AlarmIdKey), new NSString(OpenDayKey)])
                     : NSDictionary.FromObjectAndKey(new NSString(planned.Alarm.Id.ToString()), new NSString(AlarmIdKey)),
             };

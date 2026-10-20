@@ -63,6 +63,8 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         if (this.alarmId != Guid.Empty && this.alarmId != id)
         {
             this.scheduler.Cancel(this.alarmId);
+            // Предыдущим мог быть звонок по напоминанию: Cancel снял и основной звонок той записи, ставим заново.
+            this.alarmService.RescheduleAll();
         }
 
         this.alarmId = id;
@@ -84,9 +86,15 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     private async Task StopAsync()
     {
         this.scheduler.StopRinging(this.alarmId);
-        if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete)
+        // «Один раз и удалить» удаляется только после начала: «Стоп» звонка по напоминанию (At ещё впереди) её не трогает.
+        if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && (this.ringingAlarm.At <= DateTime.Now || !this.ringingAlarm.IsEnabled))
         {
             this.alarmService.Delete(this.alarmId);
+        }
+        else
+        {
+            // iOS: StopRinging снимает цепочку начала, а при звонке по напоминанию она ещё не сработала.
+            this.alarmService.RescheduleAll();
         }
 
         await Shell.Current.GoToAsync("..");
@@ -98,9 +106,13 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         if (answer == this.expectedAnswer)
         {
             this.scheduler.StopRinging(this.alarmId);
-            if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete)
+            if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && (this.ringingAlarm.At <= DateTime.Now || !this.ringingAlarm.IsEnabled))
             {
                 this.alarmService.Delete(this.alarmId);
+            }
+            else
+            {
+                this.alarmService.RescheduleAll();
             }
 
             await Shell.Current.GoToAsync("..");

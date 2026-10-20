@@ -32,7 +32,9 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
         {
             var services = IPlatformApplication.Current!.Services;
             var alarm = services.GetRequiredService<AlarmStore>().Load().Alarms.FirstOrDefault(a => a.Id == alarmId);
-            var ids = IosNotificationPlan.ChainIds(alarmId).ToArray();
+            // Напоминание снимает только свою цепочку: цепочка начала ещё должна сработать.
+            var identifier = notification.Request.Identifier;
+            var ids = (IosNotificationPlan.IsReminder(identifier) ? IosNotificationPlan.ReminderChainIds(identifier) : IosNotificationPlan.ChainIds(alarmId)).ToArray();
             center.RemovePendingNotificationRequests(ids);
             center.RemoveDeliveredNotifications(ids);
 
@@ -71,7 +73,8 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
 
         if (Guid.TryParse(response.Notification.Request.Content.UserInfo[AlarmScheduler.AlarmIdKey]?.ToString(), out var alarmId))
         {
-            var ids = IosNotificationPlan.ChainIds(alarmId).ToArray();
+            var identifier = response.Notification.Request.Identifier;
+            var ids = (IosNotificationPlan.IsReminder(identifier) ? IosNotificationPlan.ReminderChainIds(identifier) : IosNotificationPlan.ChainIds(alarmId)).ToArray();
             center.RemovePendingNotificationRequests(ids);
             center.RemoveDeliveredNotifications(ids);
             RingLauncher.Request(alarmId);
