@@ -264,6 +264,39 @@ public sealed class SyncLauncherTests : IDisposable
         await running;
     }
 
+    [Fact]
+    public async Task SignOutAsync_TimerArmedDuringSignOut_IsDisposed()
+    {
+        var launcher = this.Create();
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarms = new AlarmService(new AlarmStore(this.directory.FullName), new FakeScheduler(), new FixedTime(now), this.store);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        // Правка пользователя в момент выхода: Email ещё не очищен, поэтому RequestSoon заводит таймер уже после ResetAsync.
+        await launcher.SignOutAsync(alarms, launcher.RequestSoon, cache);
+
+        Assert.True(Assert.Single(this.time.Timers).Disposed);
+        Assert.Equal(0, this.runs);
+    }
+
+    [Fact]
+    public async Task SignOutAsync_ResetsForeignSeriesTogetherWithEventId()
+    {
+        var launcher = this.Create();
+        var now = new DateTime(2026, 10, 6, 12, 0, 0);
+        var alarmStore = new AlarmStore(this.directory.FullName);
+        var alarms = new AlarmService(alarmStore, new FakeScheduler(), new FixedTime(now), this.store);
+        var foreign = new Alarm { At = now.AddHours(1), GoogleEventId = "ev1", ForeignSeries = true };
+        alarmStore.Save([foreign]);
+        using var cache = new MemoryCache(new MemoryCacheOptions());
+
+        await launcher.SignOutAsync(alarms, () => { }, cache);
+
+        var saved = Assert.Single(alarmStore.Load().Alarms);
+        Assert.Null(saved.GoogleEventId);
+        Assert.False(saved.ForeignSeries);
+    }
+
     private static async Task WaitAsync(Func<bool> condition)
     {
         for (var i = 0; i < 200 && !condition(); i++)

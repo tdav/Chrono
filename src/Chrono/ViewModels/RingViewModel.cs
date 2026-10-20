@@ -86,8 +86,9 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     private async Task StopAsync()
     {
         this.scheduler.StopRinging(this.alarmId);
-        // «Один раз и удалить» удаляется только после начала: «Стоп» звонка по напоминанию (At ещё впереди) её не трогает.
-        if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && (this.ringingAlarm.At <= DateTime.Now || !this.ringingAlarm.IsEnabled))
+        // «Один раз и удалить» удаляется только после начала (At <= now): «Стоп» звонка по напоминанию (At ещё впереди)
+        // и заранее выключенная запись, открытая по устаревшему баннеру, её не трогают.
+        if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
         {
             this.alarmService.Delete(this.alarmId);
         }
@@ -106,7 +107,7 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         if (answer == this.expectedAnswer)
         {
             this.scheduler.StopRinging(this.alarmId);
-            if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && (this.ringingAlarm.At <= DateTime.Now || !this.ringingAlarm.IsEnabled))
+            if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
             {
                 this.alarmService.Delete(this.alarmId);
             }

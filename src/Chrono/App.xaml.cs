@@ -30,8 +30,13 @@ public partial class App : Application
             : this.services.GetRequiredService<AppShell>();
         var window = new Window(first);
         // Синхронизация при старте интерфейса, а не процесса: процесс, поднятый воркером, BootReceiver или сигналом
-        // будильника, второй проход не запускает. Без входа RequestSoon ничего не делает.
-        this.syncLauncher.RequestSoon();
+        // будильника, второй проход не запускает. Окно, созданное ради звонка (PendingId), её не заводит: звонок
+        // не должен ждать сети, синхронизация начнётся при следующем Resumed. Без входа RequestSoon ничего не делает.
+        if (RingLauncher.PendingId is null)
+        {
+            this.syncLauncher.RequestSoon();
+        }
+
         // Возврат в приложение: подтянуть изменения, сделанные в Google Календаре.
         window.Resumed += (_, _) => this.syncLauncher.RequestSoon();
         return window;

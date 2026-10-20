@@ -11,9 +11,9 @@ namespace Chrono.Platform;
 /// </summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
-    // ponytail: Cancel(id) не знает, какие напоминания были у записи, поэтому снимает эти типичные значения;
-    // нетипичное (45 мин) после смены в Google останется таймером, но AlarmRingService/ScheduleReceiver сверяют
-    // минуты с записью и не звонят. Полный учёт — хранить прошлые минуты.
+    // ponytail: Cancel(id) и Sync снимают таймеры напоминаний только для этих типичных значений (Sync — ещё и для
+    // текущих минут записи). Нетипичное значение (45 мин), убранное из записи, останется таймером, но AlarmReceiver
+    // и ScheduleReceiver сверяют минуты с записью в хранилище и не звонят. Полный учёт — хранить прошлые минуты.
     private static readonly int[] KnownReminderMinutes = [5, 10, 15, 30, 60, 120, 1440];
 
     public void Sync(IReadOnlyList<Alarm> alarms)
