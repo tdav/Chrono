@@ -212,7 +212,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [NotifyPropertyChangedFor(nameof(AlertText), nameof(IsSoundRowsVisible))]
     public partial AlertKind Alert { get; set; } = AlertKind.Ring;
 
-    /// <summary>Первый день действия записи; при сохранении его перекрывает Date, если дата выбрана.</summary>
+    /// <summary>Первый день действия записи; задаётся только при загрузке, поэтому правкой не считается.</summary>
     [ObservableProperty]
     public partial DateOnly StartsOn { get; set; } = DateOnly.FromDateTime(DateTime.Now);
 
@@ -462,9 +462,10 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             Icon = this.Icon,
             DurationMinutes = this.DurationMinutes,
             Alert = this.Alert,
-            // Разовая без даты («Ближайшее») начинается в день срабатывания: иначе StartsOn из ленты, ушедший вперёд,
-            // скрыл бы запись в её собственном дне.
-            StartsOn = this.Date ?? (this.IsOneShot ? DateOnly.FromDateTime(at) : this.StartsOn),
+            // Разовая начинается в день срабатывания (At уже равен Date + время; без даты StartsOn из ленты,
+            // ушедший вперёд, скрыл бы запись в её дне). Ежегодная — с выбранной даты. У ежедневной и «по дням
+            // недели» строка даты скрыта, поэтому оставшийся от прежнего выбора Date не сдвигает начало.
+            StartsOn = this.IsOneShot ? DateOnly.FromDateTime(at) : this.Date is { } start && this.IsDateRowVisible ? start : this.StartsOn,
         };
 
         if (!this.alarmService.Save(alarm))
@@ -505,7 +506,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     // Четыре вызывающих (PlateTitle, RelText, TimeHint, сохранение). Повтор — ближайшее по правилу не раньше StartsOn;
     // разовый с датой — ровно эта дата (может быть в прошлом: сохранение откажет); разовый без даты — «Ближайшее».
     private DateTime Target(TimeOnly time) => !this.IsOneShot
-        ? new Alarm { At = (this.Date ?? DateOnly.FromDateTime(DateTime.Now)).ToDateTime(time), Repeat = this.Repeat, Days = this.Days, StartsOn = this.Date ?? this.StartsOn }.NextAfter(DateTime.Now)
+        ? new Alarm { At = (this.Date ?? DateOnly.FromDateTime(DateTime.Now)).ToDateTime(time), Repeat = this.Repeat, Days = this.Days, StartsOn = this.Date is { } start && this.IsDateRowVisible ? start : this.StartsOn }.NextAfter(DateTime.Now)
         : this.Date is { } date
             ? date.ToDateTime(time)
             : AlarmSchedule.ResolveNearest(time, DateTime.Now);
@@ -555,9 +556,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     partial void OnAlertChanged(AlertKind value) => this.MarkDirty();
 
-    partial void OnStartsOnChanged(DateOnly value) => this.MarkDirty();
-
-    // Двенадцать вызывающих (по одному на каждое сохраняемое значение).
+    // Одиннадцать вызывающих (по одному на каждое сохраняемое значение).
     private void MarkDirty()
     {
         this.IsDirty = true;
