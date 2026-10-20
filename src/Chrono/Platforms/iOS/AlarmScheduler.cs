@@ -6,10 +6,13 @@ using UserNotifications;
 
 namespace Chrono.Platform;
 
-/// <summary>Планирование цепочкой time-sensitive уведомлений (IosNotificationPlan).</summary>
+/// <summary>Планирование уведомлений (IosNotificationPlan): цепочка time-sensitive для Ring, одно обычное для Notify.</summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
     public const string AlarmIdKey = "alarm_id";
+
+    /// <summary>День (yyyy-MM-dd), который открывает нажатие на уведомление Notify; признак уведомления распорядка.</summary>
+    public const string OpenDayKey = "open_day";
 
     private readonly ISoundPlayer soundPlayer;
 
@@ -25,15 +28,26 @@ public sealed class AlarmScheduler : IAlarmScheduler
 
         foreach (var planned in IosNotificationPlan.Build(alarms, DateTime.Now))
         {
+            var isNotify = planned.Alarm.Alert == AlertKind.Notify;
             var content = new UNMutableNotificationContent
             {
                 Title = string.IsNullOrWhiteSpace(planned.Alarm.Label) ? AppResources.DefaultLabel : planned.Alarm.Label,
-                Body = planned.Alarm.At.ToString("HH:mm"),
-                // TimeSensitive2, а не TimeSensitive: устаревший член имеет значение 3 = Critical на стороне iOS.
-                InterruptionLevel = UNNotificationInterruptionLevel.TimeSensitive2,
-                UserInfo = NSDictionary.FromObjectAndKey(new NSString(planned.Alarm.Id.ToString()), new NSString(AlarmIdKey)),
+                Body = (isNotify ? planned.FireAt : planned.Alarm.At).ToString("HH:mm"),
+                // Notify — обычное уведомление без прорыва через фокус: Active2, а не Active
+                // (устаревший Active имеет значение 0 = Passive на стороне iOS).
+                // Ring — TimeSensitive2, а не TimeSensitive: устаревший член имеет значение 3 = Critical на стороне iOS.
+                InterruptionLevel = isNotify ? UNNotificationInterruptionLevel.Active2 : UNNotificationInterruptionLevel.TimeSensitive2,
+                UserInfo = isNotify
+                    ? NSDictionary.FromObjectsAndKeys(
+                        [new NSString(planned.Alarm.Id.ToString()), new NSString($"{DateOnly.FromDateTime(planned.FireAt):yyyy-MM-dd}")],
+                        [new NSString(AlarmIdKey), new NSString(OpenDayKey)])
+                    : NSDictionary.FromObjectAndKey(new NSString(planned.Alarm.Id.ToString()), new NSString(AlarmIdKey)),
             };
-            if (planned.Alarm.SoundEnabled)
+            if (isNotify)
+            {
+                content.Sound = UNNotificationSound.Default;
+            }
+            else if (planned.Alarm.SoundEnabled)
             {
                 content.Sound = UNNotificationSound.GetSound($"{planned.Alarm.SoundId}.wav");
             }

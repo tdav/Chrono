@@ -44,4 +44,57 @@ public sealed class IosNotificationPlanTests
         Assert.Equal(64, plan.Count);
         Assert.Equal(Now.AddHours(16).AddSeconds(90), plan.Max(p => p.FireAt));
     }
+
+    [Fact]
+    public void Build_NoneAlert_NotPlanned()
+    {
+        var none = new Alarm { At = Now.AddHours(1), Alert = AlertKind.None };
+
+        Assert.Empty(IosNotificationPlan.Build([none], Now));
+    }
+
+    [Fact]
+    public void Build_Notify_SingleNotification()
+    {
+        var notify = new Alarm { At = Now.AddHours(1), Alert = AlertKind.Notify };
+
+        var plan = IosNotificationPlan.Build([notify], Now);
+
+        var single = Assert.Single(plan);
+        Assert.Equal(notify.At, single.FireAt);
+        Assert.Equal(IosNotificationPlan.ChainIds(notify.Id)[0], single.Id);
+    }
+
+    [Fact]
+    public void Build_OnceThenDelete_SingleOccurrence()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Ring };
+
+        var plan = IosNotificationPlan.Build([alarm], Now);
+
+        Assert.Equal(4, plan.Count);
+        Assert.Equal(IosNotificationPlan.ChainIds(alarm.Id), plan.Select(p => p.Id));
+    }
+
+    [Fact]
+    public void Build_ChainIdsUnchangedForRing()
+    {
+        var daily = new Alarm { At = Now.AddHours(1), Repeat = RepeatKind.Daily, Alert = AlertKind.Ring };
+
+        var plan = IosNotificationPlan.Build([daily], Now);
+
+        Assert.Equal(IosNotificationPlan.ChainIds(daily.Id), plan.Take(4).Select(p => p.Id));
+        Assert.Equal($"{daily.Id}-4", plan[4].Id);
+    }
+
+    [Fact]
+    public void Build_NotifyDaily_UsesSharedSixteenLimitWithStableIds()
+    {
+        var notify = new Alarm { At = Now.AddHours(1), Repeat = RepeatKind.Daily, Alert = AlertKind.Notify };
+
+        var plan = IosNotificationPlan.Build([notify], Now);
+
+        Assert.Equal(16, plan.Count);
+        Assert.Equal($"{notify.Id}-4", plan[1].Id);
+    }
 }

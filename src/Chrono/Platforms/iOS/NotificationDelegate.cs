@@ -5,7 +5,8 @@ using UserNotifications;
 namespace Chrono.Platform;
 
 /// <summary>
-/// Нажатие на уведомление и уведомление при открытом приложении → RingPage.
+/// Нажатие на уведомление и уведомление при открытом приложении → RingPage;
+/// уведомление Notify (есть open_day) показывается баннером и открывает «Распорядок» на нужном дне.
 /// Назначается в FinishedLaunching, чтобы ловить и запуск приложения нажатием.
 /// </summary>
 public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
@@ -15,6 +16,12 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
         UNNotification notification,
         Action<UNNotificationPresentationOptions> completionHandler)
     {
+        if (DateOnly.TryParseExact(notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString(), "yyyy-MM-dd", out _))
+        {
+            completionHandler(UNNotificationPresentationOptions.Banner | UNNotificationPresentationOptions.Sound | UNNotificationPresentationOptions.List);
+            return;
+        }
+
         // Приложение на экране: баннер не показываем, сразу экран сигнала с мелодией в цикле.
         if (Guid.TryParse(notification.Request.Content.UserInfo[AlarmScheduler.AlarmIdKey]?.ToString(), out var alarmId))
         {
@@ -45,6 +52,13 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
         UNNotificationResponse response,
         Action completionHandler)
     {
+        if (DateOnly.TryParseExact(response.Notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString(), "yyyy-MM-dd", out var openDay))
+        {
+            ScheduleLauncher.Request(openDay);
+            completionHandler();
+            return;
+        }
+
         if (Guid.TryParse(response.Notification.Request.Content.UserInfo[AlarmScheduler.AlarmIdKey]?.ToString(), out var alarmId))
         {
             var ids = IosNotificationPlan.ChainIds(alarmId).ToArray();
