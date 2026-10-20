@@ -85,4 +85,34 @@
   <data name="Back" xml:space="preserve"><value>Назад</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Предыдущий месяц</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Следующий месяц</value></data>
+  <data name="Tab_Alarms" xml:space="preserve"><value>Будильники</value></data>
+  <data name="Tab_Schedule" xml:space="preserve"><value>Распорядок</value></data>
+  <data name="Tab_Cycle" xml:space="preserve"><value>Цикл</value></data>
+  <data name="CycleSoon" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Один раз и удалить</value></data>
+  <data name="RowIcon" xml:space="preserve"><value>Иконка</value></data>
+  <data name="RowDuration" xml:space="preserve"><value>Длительность</value></data>
+  <data name="RowAlert" xml:space="preserve"><value>Оповещение</value></data>
+  <data name="Alert_None" xml:space="preserve"><value>Без уведомления</value></data>
+  <data name="Alert_Notify" xml:space="preserve"><value>Уведомление</value></data>
+  <data name="Alert_Ring" xml:space="preserve"><value>Звонить как будильник</value></data>
+  <data name="DurationNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="DurationCustom" xml:space="preserve"><value>Своё, мин</value></data>
+  <data name="ScheduleEmpty" xml:space="preserve"><value>На этот день ничего нет</value></data>
+  <data name="ScheduleLeft" xml:space="preserve"><value>осталось {0} мин</value></data>
+  <data name="ChannelSchedule" xml:space="preserve"><value>Распорядок</value></data>
+  <data name="MarkDone" xml:space="preserve"><value>Отметить выполненным</value></data>
+  <data name="Icon_bell" xml:space="preserve"><value>Будильник</value></data>
+  <data name="Icon_yoga" xml:space="preserve"><value>Йога</value></data>
+  <data name="Icon_shower" xml:space="preserve"><value>Душ</value></data>
+  <data name="Icon_coffee" xml:space="preserve"><value>Кофе</value></data>
+  <data name="Icon_food" xml:space="preserve"><value>Еда</value></data>
+  <data name="Icon_bike" xml:space="preserve"><value>Велосипед</value></data>
+  <data name="Icon_work" xml:space="preserve"><value>Работа</value></data>
+  <data name="Icon_book" xml:space="preserve"><value>Книга</value></data>
+  <data name="Icon_pill" xml:space="preserve"><value>Лекарство</value></data>
+  <data name="Icon_phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Icon_walk" xml:space="preserve"><value>Прогулка</value></data>
+  <data name="Icon_sleep" xml:space="preserve"><value>Сон</value></data>
 </root>

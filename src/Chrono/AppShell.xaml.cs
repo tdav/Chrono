@@ -11,7 +11,6 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("edit", typeof(AlarmEditPage));
         Routing.RegisterRoute("ring", typeof(RingPage));
         Routing.RegisterRoute("reliability", typeof(ReliabilityPage));
-        Routing.RegisterRoute("settings", typeof(SettingsPage));
     }
 
     public AppShell()

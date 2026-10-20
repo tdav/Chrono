@@ -6,17 +6,7 @@
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" SafeAreaEdges="Container">
 
-        <!-- Шапка: название и шестерёнка «Надёжность». -->
-        <Grid ColumnDefinitions="*,Auto">
-            <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeExtraBold" FontSize="28" VerticalOptions="Center" />
-            <Border Grid.Column="1" Style="{StaticResource IconWell}"
-                    SemanticProperties.Description="{x:Static res:AppResources.SettingsTitle}">
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenSettingsCommand}" />
-                </Border.GestureRecognizers>
-                <Image Source="icon_gear.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
-            </Border>
-        </Grid>
+        <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeExtraBold" FontSize="28" VerticalOptions="Center" />
 
         <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource TextMuted}" FontSize="13" Margin="0,2,0,12" />
 

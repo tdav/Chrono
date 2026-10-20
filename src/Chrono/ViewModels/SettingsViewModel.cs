@@ -87,7 +87,4 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenReliabilityAsync() => Shell.Current.GoToAsync("reliability");
-
-    [RelayCommand]
-    private Task CloseAsync() => Shell.Current.GoToAsync("..");
 }
