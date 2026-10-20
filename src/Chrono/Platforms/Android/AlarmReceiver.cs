@@ -30,9 +30,23 @@ public sealed class AlarmReceiver : BroadcastReceiver
 
     public override void OnReceive(Context? context, Intent? intent)
     {
+        // Таймер напоминания, которого в записи уже нет (поменяли в Google, перевели в Notify, выключили, удалили),
+        // не запускает сервис вовсе: иначе он открыл бы беззвучный экран сигнала и оборвал бы другой звонок.
+        // Основной звонок (reminder_minutes = 0) идёт прежним путём без чтения записи.
+        var reminderMinutes = intent?.GetIntExtra(ExtraReminderMinutes, 0) ?? 0;
+        if (reminderMinutes > 0)
+        {
+            var alarm = Guid.TryParse(intent?.GetStringExtra(ExtraAlarmId), out var alarmId)
+                ? new Chrono.Services.AlarmStore(Microsoft.Maui.Storage.FileSystem.AppDataDirectory).Load().Alarms.FirstOrDefault(a => a.Id == alarmId)
+                : null;
+            if (alarm is not { IsEnabled: true, Alert: Chrono.Models.AlertKind.Ring } || !alarm.Reminders().Contains(reminderMinutes))
+            {
+                return;
+            }
+        }
+
         var service = new Intent(context!, typeof(AlarmRingService))
-            .PutExtra(ExtraAlarmId, intent?.GetStringExtra(ExtraAlarmId))
-            .PutExtra(ExtraReminderMinutes, intent?.GetIntExtra(ExtraReminderMinutes, 0) ?? 0);
+            .PutExtra(ExtraAlarmId, intent?.GetStringExtra(ExtraAlarmId));
         context!.StartForegroundService(service);
     }
 }
