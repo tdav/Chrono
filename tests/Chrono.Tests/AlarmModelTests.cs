@@ -136,6 +136,15 @@ public sealed class AlarmModelTests
     }
 
     [Fact]
+    public void Reminders_OutOfGoogleRange_Dropped()
+    {
+        // 40320 минут (4 недели) — максимум Google для popup; больше, ноль и отрицательные отбрасываются.
+        var a = new Alarm { ReminderMinutes = "40321,40320,1,0,-5" };
+
+        Assert.Equal([40320, 1], a.Reminders());
+    }
+
+    [Fact]
     public void AlertTimes_ReminderAndStart()
     {
         var a = new Alarm { ReminderMinutes = "30" };

@@ -41,6 +41,32 @@ public sealed class SyncStoreTests : IDisposable
     }
 
     [Fact]
+    public void Load_CorruptFile_MovedToBadSoSaveDoesNotLoseIt()
+    {
+        var path = Path.Combine(this.directory.FullName, "sync.json");
+        File.WriteAllText(path + ".bad", "старый брак");
+        File.WriteAllText(path, "{ не json");
+
+        Assert.Null(this.store.Load().CalendarId);
+        this.store.Save(new SyncState { CalendarId = "cal" });
+
+        Assert.Equal("{ не json", File.ReadAllText(path + ".bad"));
+        Assert.Equal("cal", this.store.Load().CalendarId);
+    }
+
+    [Fact]
+    public void Load_CorruptFile_CannotMoveToBad_ReturnsEmptyWithoutThrowing()
+    {
+        // На месте .bad каталог: File.Move бросает, но Load (а с ним Enqueue из сохранения записи) падать не должен.
+        var path = Path.Combine(this.directory.FullName, "sync.json");
+        Directory.CreateDirectory(path + ".bad");
+        File.WriteAllText(path, "{ не json");
+
+        Assert.Null(this.store.Load().CalendarId);
+        this.store.Enqueue(new PendingChange(Guid.NewGuid(), SyncOp.Upsert, null, DateTime.UtcNow));
+    }
+
+    [Fact]
     public void Enqueue_ReplacesSameAlarm()
     {
         var id = Guid.NewGuid();

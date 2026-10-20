@@ -398,7 +398,7 @@ public sealed class CalendarSyncTests : IDisposable
     [Fact]
     public async Task Sync_NextInstance_RunningInstanceSkippedToNextOne()
     {
-        // timeMin фильтрует по концу события: первым приходит идущий сейчас экземпляр, его начало позади.
+        // timeMin фильтрует по концу события: первым приходит идущий сейчас экземпляр, его начало позади; клиент берёт два и пропускает его.
         var running = new DateTimeOffset(Now.AddMinutes(-10), TimeSpan.Zero);
         var next = new DateTimeOffset(Now.AddDays(1), TimeSpan.Zero);
         this.server.Add(Ev("g-m", Now.AddDays(-30), "Ежемесячно", recurrence: ["RRULE:FREQ=MONTHLY"]));
@@ -409,7 +409,7 @@ public sealed class CalendarSyncTests : IDisposable
         var alarm = Assert.Single(this.Alarms);
         Assert.Equal(next.DateTime, alarm.At);
         Assert.True(alarm.ForeignSeries);
-        Assert.Equal(2, this.server.Count("GET calendars/cal-1/events/g-m/instances"));
+        Assert.Equal(1, this.server.Count("GET calendars/cal-1/events/g-m/instances"));
         Assert.Equal(1, this.server.Live);
     }
 
@@ -671,6 +671,88 @@ public sealed class CalendarSyncTests : IDisposable
     }
 
     [Fact]
+    public async Task Sync_WeeklyStartingOutsideMask_EchoKeepsStartsOn_AddedStartDayNotSkipped()
+    {
+        // Now — вторник 20-го. Запись начинается во вторник, маска Ср+Пт: DTSTART в Google — среда 21-го.
+        var startsOn = new DateOnly(2026, 10, 20);
+        this.service.Save(new Alarm
+        {
+            At = new DateTime(2026, 10, 21, 7, 0, 0), StartsOn = startsOn, Repeat = RepeatKind.Weekly,
+            Days = WeekDays.Wednesday | WeekDays.Friday, Label = "Зал",
+        });
+        await this.Sync();
+        Assert.StartsWith("2026-10-21T07:00", Assert.Single(this.server.All).Start!.DateTime);
+
+        var echo = await this.Sync();
+
+        Assert.Equal(0, echo.Pulled);
+        Assert.Equal(startsOn, Assert.Single(this.Alarms).StartsOn);
+
+        // Во вторник добавили вторник в маску: он не должен быть пропущен (DTSTART — вторник 20-го).
+        this.service.Save(Assert.Single(this.Alarms) with { Days = WeekDays.Tuesday | WeekDays.Wednesday | WeekDays.Friday });
+        await this.Sync();
+
+        Assert.StartsWith("2026-10-20T07:00", Assert.Single(this.server.All).Start!.DateTime);
+        Assert.Equal(startsOn, Assert.Single(this.Alarms).StartsOn);
+    }
+
+    [Fact]
+    public async Task Sync_EmptyLabel_EchoDoesNotFillLabel()
+    {
+        this.service.Save(new Alarm { At = Now.AddHours(1) });
+        await this.Sync();
+        Assert.Equal("Будильник", Assert.Single(this.server.All).Summary);
+
+        var again = await this.Sync();
+
+        Assert.Equal(0, again.Pulled);
+        Assert.Equal("", Assert.Single(this.Alarms).Label);
+    }
+
+    [Fact]
+    public async Task Sync_ForeignSeries_InstanceRequestTimesOut_SkipsRecordLikeNetworkError()
+    {
+        var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
+        await this.Sync();
+
+        this.time.Now = first.DateTime.AddHours(1);
+        this.service.Save(new Alarm { At = this.time.Now.AddHours(1), Label = "Z" });
+        // Таймаут HttpClient: TaskCanceledException при том, что токен вызывающего не отменён.
+        this.server.Hook = key => key.EndsWith("/instances", StringComparison.Ordinal) ? throw new TaskCanceledException("таймаут") : Task.CompletedTask;
+        await this.Sync();
+
+        Assert.Equal(["Z", "Раз в месяц"], this.Alarms.Select(a => a.Label).Order(StringComparer.Ordinal));
+        Assert.Equal(2, this.server.Live);
+        Assert.Empty(this.Pending);
+    }
+
+    [Fact]
+    public async Task Sync_ForeignSeries_CallerCancelled_PropagatesCancellation()
+    {
+        var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
+        await this.Sync();
+
+        this.time.Now = first.DateTime.AddHours(1);
+        using var cts = new CancellationTokenSource();
+        this.server.Hook = key =>
+        {
+            if (!key.EndsWith("/instances", StringComparison.Ordinal))
+            {
+                return Task.CompletedTask;
+            }
+
+            cts.Cancel();
+            throw new TaskCanceledException("отмена", null, cts.Token);
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => this.calendarSync.SyncAsync(cts.Token));
+    }
+
+    [Fact]
     public async Task Sync_ForeignSeries_NoNextInstance_DeletesRecordOnly()
     {
         var only = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
@@ -823,7 +905,7 @@ public sealed class CalendarSyncTests : IDisposable
             HttpResponseMessage response;
             if (request.Method == HttpMethod.Get && path == "users/me/calendarList")
             {
-                response = Reply(new { items = this.Exists ? new[] { new { id = CalendarId, summary = "Chrono" } } : [] });
+                response = Reply(new { items = this.Exists ? new[] { new { id = CalendarId, summary = "Chrono", accessRole = "owner" } } : [] });
             }
             else if (request.Method == HttpMethod.Post && path == "calendars")
             {
@@ -839,7 +921,7 @@ public sealed class CalendarSyncTests : IDisposable
                     3 => this.Insert(JsonSerializer.Deserialize<GoogleEvent>(body!, Json)!),
                     4 when request.Method == HttpMethod.Put => this.Update(parts[3], JsonSerializer.Deserialize<GoogleEvent>(body!, Json)!),
                     4 => this.Remove(parts[3]),
-                    _ => this.ListInstances(parts[3], DateTimeOffset.Parse(query["timeMin"]!)),
+                    _ => this.ListInstances(parts[3], DateTimeOffset.Parse(query["timeMin"]!), int.Parse(query["maxResults"]!)),
                 };
             }
             else
@@ -902,10 +984,10 @@ public sealed class CalendarSyncTests : IDisposable
             return new HttpResponseMessage(HttpStatusCode.NoContent);
         }
 
-        private HttpResponseMessage ListInstances(string id, DateTimeOffset timeMin)
+        private HttpResponseMessage ListInstances(string id, DateTimeOffset timeMin, int maxResults)
         {
             // Как в настоящем API: timeMin отбирает по КОНЦУ экземпляра.
-            var first = this.Instances.GetValueOrDefault(id, []).Where(i => i.End > timeMin).Take(1)
+            var first = this.Instances.GetValueOrDefault(id, []).Where(i => i.End > timeMin).Take(maxResults)
                 .Select(i => new GoogleEvent
                 {
                     Id = id + "_inst",
