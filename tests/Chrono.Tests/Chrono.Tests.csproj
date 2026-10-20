@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0-*" />
     <Using Include="Xunit" />
   </ItemGroup>
 
@@ -27,6 +28,8 @@
     <Compile Include="..\..\src\Chrono\Services\DayPlan.cs" Link="Linked\DayPlan.cs" />
     <Compile Include="..\..\src\Chrono\Services\GoogleCalendarModels.cs" Link="Linked\GoogleCalendarModels.cs" />
     <Compile Include="..\..\src\Chrono\Services\CalendarMapping.cs" Link="Linked\CalendarMapping.cs" />
+    <Compile Include="..\..\src\Chrono\Services\IGoogleAuth.cs" Link="Linked\IGoogleAuth.cs" />
+    <Compile Include="..\..\src\Chrono\Services\GoogleCalendarClient.cs" Link="Linked\GoogleCalendarClient.cs" />
   </ItemGroup>
 
 </Project>
