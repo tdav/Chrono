@@ -2,6 +2,7 @@ using Chrono.Platform;
 using Chrono.Services;
 using Chrono.ViewModels;
 using Chrono.Views;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -62,7 +63,32 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAlarmScheduler, AlarmScheduler>();
         builder.Services.AddSingleton<IReliabilityChecks, ReliabilityChecks>();
         builder.Services.AddSingleton<ISmartWake, SmartWake>();
-        builder.Services.AddSingleton<AlarmService>();
+        builder.Services.AddSingleton(_ => new SyncStore(FileSystem.AppDataDirectory));
+        builder.Services.AddMemoryCache();
+        // Явная фабрика: SyncStore в AlarmService необязательный, и без неё очередь изменений для Google не наполнялась бы.
+        builder.Services.AddSingleton(sp => new AlarmService(
+            sp.GetRequiredService<AlarmStore>(),
+            sp.GetRequiredService<IAlarmScheduler>(),
+            sp.GetRequiredService<TimeProvider>(),
+            sp.GetRequiredService<SyncStore>()));
+#if ANDROID
+        builder.Services.AddSingleton<IGoogleAuth>(_ => new GoogleAuth());
+#elif IOS
+        builder.Services.AddSingleton<IGoogleAuth>(_ => new GoogleAuth(new HttpClient()));
+#endif
+        // Свой HttpClient: GoogleCalendarClient задаёт ему BaseAddress и заголовки. AddHttpClient не используем (нет пакета).
+        builder.Services.AddSingleton(sp => new GoogleCalendarClient(
+            new HttpClient(), sp.GetRequiredService<IMemoryCache>(), sp.GetRequiredService<IGoogleAuth>()));
+        builder.Services.AddSingleton<CalendarSync>();
+        builder.Services.AddSingleton(sp =>
+        {
+            var sync = sp.GetRequiredService<CalendarSync>();
+            // CalendarSync рассчитывает на продолжения на главном потоке, а запуск идёт с таймера: переносим на главный.
+            return new SyncLauncher(
+                ct => MainThread.InvokeOnMainThreadAsync(() => sync.SyncAsync(ct)),
+                sp.GetRequiredService<SyncStore>(),
+                sp.GetRequiredService<TimeProvider>());
+        });
 
         // Transient: новый Shell для каждого окна (см. AppShell).
         builder.Services.AddTransient<AppShell>();

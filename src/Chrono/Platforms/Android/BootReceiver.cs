@@ -15,5 +15,11 @@ public sealed class BootReceiver : BroadcastReceiver
         TimeZoneInfo.ClearCachedData();
         var service = new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System);
         service.RescheduleAll();
+
+        // WorkManager сохраняет работы и после перезагрузки, но после обновления или очистки данных перестраховываемся.
+        if (context is not null && new SyncStore(FileSystem.AppDataDirectory).Load().Email is not null)
+        {
+            SyncWorker.Schedule(context);
+        }
     }
 }

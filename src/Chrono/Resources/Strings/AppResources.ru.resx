@@ -118,4 +118,12 @@
   <data name="Icon_phone" xml:space="preserve"><value>Телефон</value></data>
   <data name="Icon_walk" xml:space="preserve"><value>Прогулка</value></data>
   <data name="Icon_sleep" xml:space="preserve"><value>Сон</value></data>
+  <data name="GoogleGroup" xml:space="preserve"><value>Google Календарь</value></data>
+  <data name="SignInGoogle" xml:space="preserve"><value>Войти через Google</value></data>
+  <data name="GoogleAccount" xml:space="preserve"><value>Аккаунт</value></data>
+  <data name="SyncedAt" xml:space="preserve"><value>Синхронизировано в {0}</value></data>
+  <data name="SyncNoNetwork" xml:space="preserve"><value>Нет сети</value></data>
+  <data name="SyncSignInAgain" xml:space="preserve"><value>Нужно войти снова</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Выйти</value></data>
 </root>

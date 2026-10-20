@@ -37,6 +37,7 @@ public partial class SettingsPage : ContentPage
             this.window.Resumed -= this.OnWindowResumed;
         }
 
+        this.viewModel.Detach();
         base.OnDisappearing();
     }
 

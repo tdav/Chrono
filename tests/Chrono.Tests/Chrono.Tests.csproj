@@ -31,6 +31,7 @@
     <Compile Include="..\..\src\Chrono\Services\IGoogleAuth.cs" Link="Linked\IGoogleAuth.cs" />
     <Compile Include="..\..\src\Chrono\Services\GoogleCalendarClient.cs" Link="Linked\GoogleCalendarClient.cs" />
     <Compile Include="..\..\src\Chrono\Services\CalendarSync.cs" Link="Linked\CalendarSync.cs" />
+    <Compile Include="..\..\src\Chrono\Services\SyncLauncher.cs" Link="Linked\SyncLauncher.cs" />
   </ItemGroup>
 
 </Project>

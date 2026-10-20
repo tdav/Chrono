@@ -21,7 +21,8 @@ public sealed class CalendarSync
     private readonly AlarmService alarms;
     private readonly SyncStore store;
     private readonly TimeProvider time;
-    private readonly SemaphoreSlim gate = new(1, 1);
+    // static: воркер WorkManager собирает свой CalendarSync, и два экземпляра в одном процессе не должны идти одновременно.
+    private static readonly SemaphoreSlim gate = new(1, 1);
 
     public CalendarSync(GoogleCalendarClient client, AlarmService alarms, SyncStore store, TimeProvider time)
     {
@@ -39,7 +40,7 @@ public sealed class CalendarSync
     /// </summary>
     public async Task<SyncResult> SyncAsync(CancellationToken ct)
     {
-        await this.gate.WaitAsync(ct);
+        await gate.WaitAsync(ct);
         try
         {
             var zone = this.time.LocalTimeZone;
@@ -319,7 +320,7 @@ public sealed class CalendarSync
         {
             // Звонки должны соответствовать данным и после неудачного прохода.
             this.alarms.RescheduleAll();
-            this.gate.Release();
+            gate.Release();
         }
     }
 }
