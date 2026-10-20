@@ -12,11 +12,15 @@ public sealed class AlarmServiceTests : IDisposable
     private readonly FixedTime time = new(Now);
     private readonly AlarmStore store;
     private readonly AlarmService service;
+    private readonly SyncStore sync;
+    private readonly AlarmService syncService;
 
     public AlarmServiceTests()
     {
         this.store = new AlarmStore(this.directory.FullName);
         this.service = new AlarmService(this.store, this.scheduler, this.time);
+        this.sync = new SyncStore(this.directory.FullName);
+        this.syncService = new AlarmService(this.store, this.scheduler, this.time, this.sync);
     }
 
     public void Dispose() => this.directory.Delete(recursive: true);
@@ -339,5 +343,166 @@ public sealed class AlarmServiceTests : IDisposable
 
         Assert.DoesNotContain(day, this.service.GetDone()[id]);
         Assert.Empty(this.scheduler.Synced);
+    }
+
+    [Fact]
+    public void GetAll_LegacyJsonWithoutSyncFields_Defaults()
+    {
+        // Файл прошлой версии: ни GoogleEventId, ни ReminderMinutes, ни ForeignSeries.
+        File.WriteAllText(
+            Path.Combine(this.directory.FullName, "alarms.json"),
+            """[{"Id":"11111111-1111-1111-1111-111111111111","At":"2026-10-07T07:00:00","Label":"Старая","StartsOn":"2026-10-07"}]""");
+
+        var alarm = Assert.Single(this.service.GetAll());
+
+        Assert.Equal("Старая", alarm.Label);
+        Assert.Null(alarm.GoogleEventId);
+        Assert.Equal("", alarm.ReminderMinutes);
+        Assert.False(alarm.ForeignSeries);
+    }
+
+    [Fact]
+    public void Save_EnqueuesUpsert_UnlessFromSync()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1" };
+
+        Assert.True(this.syncService.Save(alarm, fromSync: true));
+        Assert.Empty(this.sync.Load().Pending);
+
+        Assert.True(this.syncService.Save(alarm));
+
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((alarm.Id, SyncOp.Upsert, "ev1"), (change.AlarmId, change.Op, change.GoogleEventId));
+        Assert.Equal(Now, change.ChangedAtUtc);
+        Assert.Equal(DateTimeKind.Utc, change.ChangedAtUtc.Kind);
+    }
+
+    [Fact]
+    public void Save_PastTime_NotQueued()
+    {
+        Assert.False(this.syncService.Save(new Alarm { At = Now.AddMinutes(-1) }));
+        Assert.Empty(this.sync.Load().Pending);
+    }
+
+    [Fact]
+    public void Toggle_EnqueuesUpsert_OnlyOnSuccess()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1" };
+        this.syncService.Save(alarm, fromSync: true);
+
+        Assert.False(this.syncService.Toggle(Guid.NewGuid(), enabled: false));
+        Assert.Empty(this.sync.Load().Pending);
+
+        Assert.True(this.syncService.Toggle(alarm.Id, enabled: false));
+
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((alarm.Id, SyncOp.Upsert, "ev1"), (change.AlarmId, change.Op, change.GoogleEventId));
+    }
+
+    [Fact]
+    public void Delete_WithEventId_EnqueuesDelete()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1" };
+        this.syncService.Save(alarm);
+
+        this.syncService.Delete(alarm.Id);
+
+        var change = Assert.Single(this.sync.Load().Pending);
+        Assert.Equal((alarm.Id, SyncOp.Delete, "ev1"), (change.AlarmId, change.Op, change.GoogleEventId));
+        Assert.Empty(this.store.Load().Alarms);
+    }
+
+    [Fact]
+    public void Delete_FromSync_NotQueued()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1" };
+        this.syncService.Save(alarm, fromSync: true);
+
+        this.syncService.Delete(alarm.Id, fromSync: true);
+
+        Assert.Empty(this.sync.Load().Pending);
+        Assert.Empty(this.sync.Load().IgnoredEventIds);
+    }
+
+    [Fact]
+    public void Delete_ForeignSeries_AddsIgnoredAndNoQueue()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1", ForeignSeries = true };
+        this.syncService.Save(alarm, fromSync: true);
+
+        this.syncService.Delete(alarm.Id);
+
+        var state = this.sync.Load();
+        Assert.Empty(state.Pending);
+        Assert.Equal(["ev1"], state.IgnoredEventIds);
+    }
+
+    [Fact]
+    public void Delete_WithoutEventId_NoQueue()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1) };
+        this.syncService.Save(alarm, fromSync: true);
+
+        this.syncService.Delete(alarm.Id);
+
+        Assert.Empty(this.sync.Load().Pending);
+    }
+
+    [Fact]
+    public void GetAll_AutoDeletedOnceThenDelete_NotQueued()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-31), Repeat = RepeatKind.OnceThenDelete, Alert = AlertKind.Notify, DurationMinutes = 30, GoogleEventId = "ev1" }]);
+
+        Assert.Empty(this.syncService.GetAll());
+
+        Assert.Empty(this.sync.Load().Pending);
+    }
+
+    [Fact]
+    public void GetAll_FiredRepeating_ShiftNotQueued()
+    {
+        this.store.Save([new Alarm { At = Now.AddMinutes(-1), Repeat = RepeatKind.Daily, GoogleEventId = "ev1" }]);
+
+        this.syncService.GetAll();
+
+        Assert.Empty(this.sync.Load().Pending);
+    }
+
+    [Fact]
+    public void Changed_RaisedOnlyWithoutFromSync()
+    {
+        var raised = 0;
+        this.syncService.Changed += (_, _) => raised++;
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1" };
+
+        this.syncService.Save(alarm, fromSync: true);
+        this.syncService.Delete(alarm.Id, fromSync: true);
+        Assert.Equal(0, raised);
+
+        this.syncService.Save(alarm);
+        Assert.Equal(1, raised);
+        this.syncService.Toggle(alarm.Id, enabled: false);
+        Assert.Equal(2, raised);
+        this.syncService.Delete(alarm.Id);
+        Assert.Equal(3, raised);
+
+        this.syncService.Save(new Alarm { At = Now.AddMinutes(-1) });
+        Assert.Equal(3, raised);
+    }
+
+    [Fact]
+    public void Service_WithoutSyncStore_WorksAsBefore()
+    {
+        var raised = 0;
+        this.service.Changed += (_, _) => raised++;
+        var alarm = new Alarm { At = Now.AddHours(1), GoogleEventId = "ev1", ForeignSeries = true };
+
+        Assert.True(this.service.Save(alarm));
+        Assert.True(this.service.Toggle(alarm.Id, enabled: false));
+        this.service.Delete(alarm.Id);
+
+        Assert.Empty(this.store.Load().Alarms);
+        Assert.False(File.Exists(Path.Combine(this.directory.FullName, "sync.json")));
+        Assert.Equal(3, raised);
     }
 }

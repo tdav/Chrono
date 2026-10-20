@@ -68,6 +68,32 @@ public sealed record Alarm
     /// <summary>Первый день действия записи; null только у ещё не промигрированных старых записей.</summary>
     public DateOnly? StartsOn { get; init; }
 
+    /// <summary>Id события в календаре Google; null — запись ещё не отправлена. В старых файлах поля нет.</summary>
+    public string? GoogleEventId { get; init; }
+
+    /// <summary>Напоминания до начала, минуты через запятую ("30,10"); пусто — без напоминаний. Строка, а не массив: иначе record теряет равенство.</summary>
+    public string ReminderMinutes { get; init; } = "";
+
+    /// <summary>Запись создана из чужой повторяющейся серии Google, которую Chrono не умеет повторять: локальные правки в Google не уходят.</summary>
+    public bool ForeignSeries { get; init; }
+
+    /// <summary>Напоминания из ReminderMinutes: мусор и неположительные числа пропускаются, повторы схлопываются, порядок по убыванию.</summary>
+    public IReadOnlyList<int> Reminders() => this.ReminderMinutes
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(s => int.TryParse(s, out var m) ? m : 0)
+        .Where(m => m > 0)
+        .Distinct()
+        .OrderDescending()
+        .ToList();
+
+    /// <summary>Моменты оповещений для срабатывания: напоминания и само начало, по возрастанию.</summary>
+    public IReadOnlyList<DateTime> AlertTimes(DateTime occurrence) => this.Reminders()
+        .Select(m => occurrence.AddMinutes(-m))
+        .Append(occurrence)
+        .Distinct()
+        .Order()
+        .ToList();
+
     /// <summary>Сколько звонок звонит до автоматической остановки (единый источник).</summary>
     public static readonly TimeSpan RingTimeout = TimeSpan.FromMinutes(10);
 

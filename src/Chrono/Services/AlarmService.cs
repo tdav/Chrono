@@ -8,13 +8,19 @@ public sealed class AlarmService
     private readonly AlarmStore store;
     private readonly IAlarmScheduler scheduler;
     private readonly TimeProvider time;
+    private readonly SyncStore? sync;
 
-    public AlarmService(AlarmStore store, IAlarmScheduler scheduler, TimeProvider time)
+    /// <param name="sync">Очередь изменений для Google; null — экземпляры без синхронизации (receiver'ы, SmartWake).</param>
+    public AlarmService(AlarmStore store, IAlarmScheduler scheduler, TimeProvider time, SyncStore? sync = null)
     {
         this.store = store;
         this.scheduler = scheduler;
         this.time = time;
+        this.sync = sync;
     }
+
+    /// <summary>Запись изменена пользователем (Save/Toggle/Delete без fromSync): повод запустить синхронизацию.</summary>
+    public event EventHandler? Changed;
 
     /// <summary>true, если при последнем чтении файл оказался повреждён и был отложен в сторону.</summary>
     public bool RecoveredFromCorruptFile { get; private set; }
@@ -79,8 +85,11 @@ public sealed class AlarmService
         return alarms.OrderBy(a => a.At).ToList();
     }
 
-    /// <summary>Создать или заменить будильник. false — время уже прошло, ничего не сохранено.</summary>
-    public bool Save(Alarm alarm)
+    /// <summary>
+    /// Создать или заменить будильник. false — время уже прошло, ничего не сохранено.
+    /// fromSync = true — запись пришла из Google: в очередь не ставится, Changed не вызывается.
+    /// </summary>
+    public bool Save(Alarm alarm, bool fromSync = false)
     {
         // «Настенное» время храним без пояса: Kind=Local сериализуется со смещением,
         // и после смены часового пояса 06:30 превратилось бы в другой час.
@@ -120,6 +129,13 @@ public sealed class AlarmService
         {
             // Будильник уже сохранён; UI покажет плашку «Будильник может не сработать».
             this.SchedulingError = ex;
+        }
+
+        if (!fromSync)
+        {
+            // Очередь пишем после планировщика: её сбой не должен мешать звонку.
+            this.sync?.Enqueue(new PendingChange(alarm.Id, SyncOp.Upsert, alarm.GoogleEventId, this.time.GetUtcNow().UtcDateTime));
+            this.Changed?.Invoke(this, EventArgs.Empty);
         }
 
         return true;
@@ -162,12 +178,20 @@ public sealed class AlarmService
             this.SchedulingError = ex;
         }
 
+        this.sync?.Enqueue(new PendingChange(id, SyncOp.Upsert, alarms[index].GoogleEventId, this.time.GetUtcNow().UtcDateTime));
+        this.Changed?.Invoke(this, EventArgs.Empty);
         return true;
     }
 
-    public void Delete(Guid id)
+    /// <summary>
+    /// Удалить. Без fromSync: у чужой серии id события попадает в IgnoredEventIds (чтобы не загрузить снова),
+    /// у отправленной в Google записи в очередь ставится Delete. fromSync = true — только локальное удаление.
+    /// </summary>
+    public void Delete(Guid id, bool fromSync = false)
     {
-        var alarms = this.GetAll().Where(a => a.Id != id).ToList();
+        var all = this.GetAll();
+        var removed = all.FirstOrDefault(a => a.Id == id);
+        var alarms = all.Where(a => a.Id != id).ToList();
         this.store.Save(alarms);
 
         try
@@ -180,6 +204,30 @@ public sealed class AlarmService
         {
             this.SchedulingError = ex;
         }
+
+        if (fromSync || removed is null)
+        {
+            return;
+        }
+
+        if (this.sync is not null && removed.GoogleEventId is { } eventId)
+        {
+            if (removed.ForeignSeries)
+            {
+                var state = this.sync.Load();
+                if (!state.IgnoredEventIds.Contains(eventId))
+                {
+                    state.IgnoredEventIds.Add(eventId);
+                    this.sync.Save(state);
+                }
+            }
+            else
+            {
+                this.sync.Enqueue(new PendingChange(id, SyncOp.Delete, eventId, this.time.GetUtcNow().UtcDateTime));
+            }
+        }
+
+        this.Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public IReadOnlyDictionary<Guid, HashSet<DateOnly>> GetDone() => this.store.LoadDone();
