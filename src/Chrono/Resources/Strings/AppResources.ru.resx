@@ -126,4 +126,5 @@
   <data name="SyncSignInAgain" xml:space="preserve"><value>Нужно войти снова</value></data>
   <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
   <data name="SignOut" xml:space="preserve"><value>Выйти</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Ошибка синхронизации</value></data>
 </root>

@@ -84,16 +84,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         var state = this.syncStore.Load();
         this.GoogleEmail = state.Email;
-        this.SyncStatusText = state.Email is null
-            ? ""
-            : status switch
-            {
-                SyncStatus.NoNetwork => AppResources.SyncNoNetwork,
-                SyncStatus.SignInRequired => AppResources.SyncSignInAgain,
-                _ when state.LastSyncUtc is { } last =>
-                    string.Format(AppResources.SyncedAt, DateTime.SpecifyKind(last, DateTimeKind.Utc).ToLocalTime().ToString("HH:mm")),
-                _ => "",
-            };
+        // Ошибки видны и без входа: иначе неудачная попытка войти ничего бы не показала.
+        this.SyncStatusText = status switch
+        {
+            SyncStatus.NoNetwork => AppResources.SyncNoNetwork,
+            SyncStatus.SignInRequired => AppResources.SyncSignInAgain,
+            SyncStatus.Failed => AppResources.SyncFailed,
+            _ when state.Email is not null && state.LastSyncUtc is { } last =>
+                string.Format(AppResources.SyncedAt, DateTime.SpecifyKind(last, DateTimeKind.Utc).ToLocalTime().ToString("HH:mm")),
+            _ => "",
+        };
     }
 
     public async Task RefreshAsync()
@@ -190,14 +190,25 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SignOutGoogleAsync()
     {
-        await this.auth.SignOutAsync();
+        try
+        {
+            // Без сети отзыв доступа не проходит и бросает: выход можно повторить, ничего не очищаем.
+            await this.auth.SignOutAsync();
+        }
+        catch (Exception ex)
+        {
+            this.ShowStatus(SyncLauncher.StatusOf(ex));
+            return;
+        }
+
+        await this.syncLauncher.SignOutAsync(
+            this.alarmService,
 #if ANDROID
-        Platform.SyncWorker.Cancel(global::Android.App.Application.Context);
+            () => Platform.SyncWorker.Cancel(global::Android.App.Application.Context),
+#else
+            () => { },
 #endif
-        // Записи остаются; очередь и GoogleEventId прежнего аккаунта сохраняются как есть (решение плана).
-        this.syncStore.Save(this.syncStore.Load() with { Email = null, SyncToken = null, CalendarId = null });
-        this.cache.Remove("google-access-token");
-        this.syncLauncher.Reset();
+            this.cache);
         this.ShowStatus(SyncStatus.Idle);
     }
 }

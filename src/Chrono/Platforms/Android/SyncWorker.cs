@@ -1,4 +1,5 @@
 using Android.Content;
+using Android.Runtime;
 using AndroidX.Work;
 using Chrono.Services;
 using Microsoft.Extensions.Caching.Memory;
@@ -7,8 +8,10 @@ namespace Chrono.Platform;
 
 /// <summary>
 /// Периодическая синхронизация с Google Календарём в фоне (раз в 15 мин, только при сети). Ставится после входа
-/// и после перезагрузки (BootReceiver), снимается при выходе.
+/// и после перезагрузки (BootReceiver), снимается при выходе. Имя Java-класса задано явно: WorkManager хранит его
+/// в своей базе, и сгенерированное имя с хэшем сломало бы сохранённую работу при переименовании типа или сборки.
 /// </summary>
+[Register("com.chrono.alarm.SyncWorker")]
 public sealed class SyncWorker : Worker
 {
     private const string UniqueName = "chrono-sync";

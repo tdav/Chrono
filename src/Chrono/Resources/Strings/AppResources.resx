@@ -126,4 +126,5 @@
   <data name="SyncSignInAgain" xml:space="preserve"><value>Sign in again</value></data>
   <data name="SyncNow" xml:space="preserve"><value>Sync now</value></data>
   <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Sync failed</value></data>
 </root>
