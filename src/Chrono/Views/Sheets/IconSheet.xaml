@@ -13,29 +13,31 @@
 
     <VerticalStackLayout Spacing="16">
 
-        <!-- Сетка 4×3: кружок 56. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
-        <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" BindableLayout.ItemsSource="{Binding Options}">
+        <!-- Сетка 4×3: ячейка занимает 25% ширины (Basis), кружок 56 по центру ячейки, поэтому колонок ровно 4 при любой ширине экрана. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
+        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChoiceOption">
-                    <Border WidthRequest="56" HeightRequest="56" Padding="5" Margin="0,0,0,12"
-                            StrokeThickness="0" StrokeShape="RoundRectangle 28"
-                            Background="{StaticResource Surface2}"
-                            SemanticProperties.Description="{Binding Name}">
-                        <Border.Triggers>
-                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
-                                CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <Border StrokeThickness="0" StrokeShape="RoundRectangle 23" Background="{StaticResource Surface2}">
-                            <Image Source="{Binding Id, Converter={StaticResource IconImage}}"
-                                   WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Grid FlexLayout.Basis="25%" Margin="0,0,0,12">
+                        <Border WidthRequest="56" HeightRequest="56" Padding="5" HorizontalOptions="Center"
+                                StrokeThickness="0" StrokeShape="RoundRectangle 28"
+                                Background="{StaticResource Surface2}"
+                                SemanticProperties.Description="{Binding Name}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 23" Background="{StaticResource Surface2}">
+                                <Image Source="{Binding Id, Converter={StaticResource IconImage}}"
+                                       WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
                         </Border>
-                    </Border>
+                    </Grid>
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </FlexLayout>
