@@ -64,6 +64,7 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnActivityResult(requestCode, resultCode, data);
         SmartWake.OnActivityResult(requestCode);
+        GoogleAuth.OnActivityResult(requestCode, resultCode, data);
     }
 
     protected override void OnNewIntent(Intent? intent)
