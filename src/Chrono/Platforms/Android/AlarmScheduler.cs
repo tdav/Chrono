@@ -5,7 +5,10 @@ using Chrono.Services;
 
 namespace Chrono.Platform;
 
-/// <summary>Планирование через AlarmManager.SetAlarmClock: точный, не ограничивается Doze.</summary>
+/// <summary>
+/// Планирование через AlarmManager по уровню оповещения: Ring — SetAlarmClock (точный, не ограничивается Doze),
+/// Notify — точный будильник с уведомлением, None — ничего.
+/// </summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
     public void Sync(IReadOnlyList<Alarm> alarms)
@@ -16,8 +19,13 @@ public sealed class AlarmScheduler : IAlarmScheduler
 
         foreach (var alarm in alarms)
         {
+            var upcoming = alarm.IsEnabled && alarm.At > now;
+            var ring = upcoming && alarm.Alert == AlertKind.Ring;
+            var notify = upcoming && alarm.Alert == AlertKind.Notify;
+
+            // Каждый уровень снимает чужой PendingIntent: запись, сменившая Ring на Notify, не должна звонить на весь экран.
             var operation = AlarmReceiver.CreatePendingIntent(context, alarm.Id);
-            if (alarm.IsEnabled && alarm.At > now)
+            if (ring)
             {
                 // Локальное «настенное» время → абсолютное по текущему поясу.
                 var triggerAtMs = new DateTimeOffset(DateTime.SpecifyKind(alarm.At, DateTimeKind.Local)).ToUnixTimeMilliseconds();
@@ -32,11 +40,23 @@ public sealed class AlarmScheduler : IAlarmScheduler
                 manager.Cancel(operation);
             }
 
+            // Уведомление без звонка: обычный точный будильник, SetAlarmClock занял бы значок будильника в статус-баре.
+            var notifyOperation = ScheduleReceiver.CreatePendingIntent(context, alarm.Id);
+            if (notify)
+            {
+                var notifyAtMs = new DateTimeOffset(DateTime.SpecifyKind(alarm.At, DateTimeKind.Local)).ToUnixTimeMilliseconds();
+                manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, notifyAtMs, notifyOperation);
+            }
+            else
+            {
+                manager.Cancel(notifyOperation);
+            }
+
             // Начало окна умного пробуждения — обычный точный будильник: SetAlarmClock показал бы
-            // в статус-баре время окна вместо времени будильника.
+            // в статус-баре время окна вместо времени будильника. Окно нужно только звонящим записям.
             var smartOperation = SmartWakeReceiver.CreatePendingIntent(context, alarm.Id);
             var windowStart = alarm.At - SleepPhaseEstimator.Window;
-            if (alarm.IsEnabled && SmartWakeSettings.Enabled && windowStart > now)
+            if (ring && SmartWakeSettings.Enabled && windowStart > now)
             {
                 var windowStartMs = new DateTimeOffset(DateTime.SpecifyKind(windowStart, DateTimeKind.Local)).ToUnixTimeMilliseconds();
                 manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, windowStartMs, smartOperation);
@@ -53,6 +73,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
         var context = global::Android.App.Application.Context;
         var manager = (AlarmManager)context.GetSystemService(Context.AlarmService)!;
         manager.Cancel(AlarmReceiver.CreatePendingIntent(context, id));
+        manager.Cancel(ScheduleReceiver.CreatePendingIntent(context, id));
         manager.Cancel(SmartWakeReceiver.CreatePendingIntent(context, id));
     }
 

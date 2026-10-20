@@ -30,6 +30,12 @@ public class MainActivity : MauiAppCompatActivity
             RingLauncher.Request(alarmId);
         }
 
+        // Нажатие на уведомление распорядка: день запоминается до создания Shell. Поверх блокировки не показываемся.
+        if (TryGetOpenDay(this.Intent, out var openDay))
+        {
+            ScheduleLauncher.Request(openDay);
+        }
+
         base.OnCreate(savedInstanceState);
 
         // Светлая тема «Кость»: тёмные значки статус-бара и панели навигации (иначе белые значки пропадают на светлом фоне).
@@ -68,6 +74,12 @@ public class MainActivity : MauiAppCompatActivity
             return;
         }
 
+        if (TryGetOpenDay(intent, out var openDay))
+        {
+            ScheduleLauncher.Request(openDay);
+            return;
+        }
+
         // Активити уже запущена (SingleTop): тот же сценарий, что и в OnCreate.
         if (Guid.TryParse(intent?.GetStringExtra(AlarmReceiver.ExtraAlarmId), out var alarmId))
         {
@@ -83,5 +95,16 @@ public class MainActivity : MauiAppCompatActivity
 
             RingLauncher.Request(alarmId);
         }
+    }
+
+    private static bool TryGetOpenDay(Intent? intent, out DateOnly day)
+    {
+        day = default;
+        return DateOnly.TryParseExact(
+            intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
+            "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out day);
     }
 }
