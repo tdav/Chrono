@@ -354,8 +354,8 @@ public sealed partial class DurationSheetModel : ObservableObject
 
 - Новые свойства VM: `Icon`, `DurationMinutes`, `Alert`, `StartsOn`; `IsSoundRowsVisible => Alert == Ring`; тексты `IconImage`, `DurationText`, `AlertText`. Все новые — в `MarkDirty` по образцу существующих.
 - Создание: `Alert` из параметра (`Notify` из ленты), иначе `Ring`; `StartsOn = day ?? сегодня`; `Date = day`, только если `day > сегодня` (для сегодня — «Ближайшее»). Редактирование: значения из записи.
-- Решение 4: `IsDateRowVisible`, `PlateTitle`, `Target`, загрузка `Date` — через «разовый» (`None` или `OnceThenDelete`). `Target` для повтора передаёт `StartsOn = this.Date ?? this.StartsOn` в `new Alarm { … }.NextAfter(…)`.
-- `SaveAsync`: новые поля; `StartsOn = this.Date ?? this.StartsOn`.
+- Решение 4: `IsDateRowVisible`, `PlateTitle`, `Target`, загрузка `Date` — через «разовый» (`None` или `OnceThenDelete`). `Target` для повтора передаёт `StartsOn = IsDateRowVisible ? this.Date ?? this.StartsOn : this.StartsOn` (скрытая дата не сдвигает начало — Ruling 9) в `new Alarm { … }.NextAfter(…)`.
+- `SaveAsync`: новые поля; разовая — `StartsOn = DateOnly.FromDateTime(At)`, повтор — как в `Target`.
 - Разметка: группа строк сверху вниз — **«Повтор»** (первым), «Время», «Дата»; вторая группа — «Название», «Иконка», «Длительность», «Оповещение», «Звук» и «Вибрация» (последние две — `IsVisible="{Binding IsSoundRowsVisible}"`). Три новые шторки — `BottomSheet` по образцу существующих; `CloseSheet` и `IsAnySheetOpen` учитывают их.
 
 - [ ] **Шаг 1:** реализовать; сборка Android и iOS — 0 ошибок; `dotnet test` — зелёный.
