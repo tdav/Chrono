@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
+             x:Class="Chrono.Views.Sheets.IconSheet"
+             x:DataType="vm:OptionsSheetModel">
+
+    <ContentView.Resources>
+        <sheets:IconImageConverter x:Key="IconImage" />
+    </ContentView.Resources>
+
+    <VerticalStackLayout Spacing="16">
+
+        <!-- Сетка 4×3: кружок 56. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
+        <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" BindableLayout.ItemsSource="{Binding Options}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChoiceOption">
+                    <Border WidthRequest="56" HeightRequest="56" Padding="5" Margin="0,0,0,12"
+                            StrokeThickness="0" StrokeShape="RoundRectangle 28"
+                            Background="{StaticResource Surface2}"
+                            SemanticProperties.Description="{Binding Name}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Border StrokeThickness="0" StrokeShape="RoundRectangle 23" Background="{StaticResource Surface2}">
+                            <Image Source="{Binding Id, Converter={StaticResource IconImage}}"
+                                   WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </FlexLayout>
+
+        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
+            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"
+                    Command="{Binding CancelCommand}" />
+            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}"
+                    Command="{Binding OkCommand}" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>
