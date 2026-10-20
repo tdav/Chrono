@@ -36,9 +36,18 @@ public sealed class AlarmReceiver : BroadcastReceiver
         var reminderMinutes = intent?.GetIntExtra(ExtraReminderMinutes, 0) ?? 0;
         if (reminderMinutes > 0)
         {
-            var alarm = Guid.TryParse(intent?.GetStringExtra(ExtraAlarmId), out var alarmId)
-                ? new Chrono.Services.AlarmStore(Microsoft.Maui.Storage.FileSystem.AppDataDirectory).Load().Alarms.FirstOrDefault(a => a.Id == alarmId)
-                : null;
+            Chrono.Models.Alarm? alarm = null;
+            try
+            {
+                alarm = Guid.TryParse(intent?.GetStringExtra(ExtraAlarmId), out var alarmId)
+                    ? new Chrono.Services.AlarmStore(Microsoft.Maui.Storage.FileSystem.AppDataDirectory).Load().Alarms.FirstOrDefault(a => a.Id == alarmId)
+                    : null;
+            }
+            catch (Exception)
+            {
+                // Файл не прочитался (повреждён, занят): записи для сверки нет — как и «записи уже нет», напоминание не звонит.
+            }
+
             if (alarm is not { IsEnabled: true, Alert: Chrono.Models.AlertKind.Ring } || !alarm.Reminders().Contains(reminderMinutes))
             {
                 return;

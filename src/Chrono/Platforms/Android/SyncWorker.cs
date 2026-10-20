@@ -34,12 +34,22 @@ public sealed class SyncWorker : Worker
 
     public override Result DoWork()
     {
+        var failed = false;
         try
         {
             // SyncStore и AlarmStore не потокобезопасны, а CalendarSync рассчитывает на продолжения на главном потоке,
             // поэтому всё, включая чтение состояния, идёт на главном потоке, а поток WorkManager ждёт синхронно.
             MainThread.InvokeOnMainThreadAsync(async () =>
             {
+                // Через SyncLauncher проход виден выходу (SignOutAsync отменяет его и ждёт конца), а в обход — дописал бы
+                // SyncToken и CalendarId уже после очистки. Статус SyncLauncher не бросает, а превращает в SyncStatus.
+                if (IPlatformApplication.Current?.Services.GetService<SyncLauncher>() is { } launcher)
+                {
+                    await launcher.RunNowAsync();
+                    failed = launcher.Status is SyncStatus.NoNetwork or SyncStatus.Failed;
+                    return;
+                }
+
                 var store = new SyncStore(FileSystem.AppDataDirectory);
                 if (store.Load().Email is null)
                 {
@@ -47,17 +57,16 @@ public sealed class SyncWorker : Worker
                     return;
                 }
 
-                // Процесс приложения уже поднят MauiApplication.OnCreate — берём его зависимости. Ручная сборка — на случай,
-                // если контейнера нет (как в BootReceiver).
-                var sync = IPlatformApplication.Current?.Services.GetService<CalendarSync>()
-                    ?? new CalendarSync(
-                        new GoogleCalendarClient(new HttpClient(), new MemoryCache(new MemoryCacheOptions()), new GoogleAuth()),
-                        new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System, store),
-                        store,
-                        TimeProvider.System);
+                // Контейнера нет (как в BootReceiver): ручная сборка; выход такой проход не отменяет.
+                var sync = new CalendarSync(
+                    new GoogleCalendarClient(new HttpClient(), new MemoryCache(new MemoryCacheOptions()), new GoogleAuth()),
+                    new AlarmService(new AlarmStore(FileSystem.AppDataDirectory), new AlarmScheduler(), TimeProvider.System, store),
+                    store,
+                    TimeProvider.System);
                 await sync.SyncAsync(CancellationToken.None);
             }).GetAwaiter().GetResult();
-            return Result.InvokeSuccess()!;
+            // Нет сети или сбой сервера: следующая попытка по расписанию.
+            return failed ? Result.InvokeRetry()! : Result.InvokeSuccess()!;
         }
         catch (SignInRequiredException)
         {

@@ -114,9 +114,10 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
         this.IsEmpty = this.Alarms.Count == 0;
 
-        // «Один раз и удалить» после срабатывания остаётся включённой с At <= now до конца звонка — ближайшей она не считается.
+        // Ближайший момент оповещения: напоминание звонит раньше At. Сработавшие, но не истёкшие записи
+        // («Один раз и удалить» с At <= now до конца звонка) не считаются: берутся только моменты позже now.
         var now = DateTime.Now;
-        var next = alarms.Where(a => a.IsEnabled && a.At > now).Select(a => (DateTime?)a.At).FirstOrDefault();
+        var next = alarms.Where(a => a.IsEnabled).SelectMany(a => a.AlertTimes(a.At)).Where(t => t > now).Select(t => (DateTime?)t).Min();
         if (next is null)
         {
             this.NextAlarmText = AppResources.NoActiveAlarms;

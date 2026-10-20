@@ -139,10 +139,19 @@ public sealed class SyncLauncher
             IgnoredEventIds = [],
         });
 
+        // RequestSoon, вызванный во время ResetAsync или cancelWorker (Email тогда ещё был), успел завести таймер:
+        // гасим его под замком уже после очистки, иначе он сработал бы в очищенном состоянии.
+        lock (this.gate)
+        {
+            this.timer?.Dispose();
+            this.timer = null;
+        }
+
         foreach (var alarm in alarms.GetAll().Where(a => a.GoogleEventId is not null))
         {
             // false — время записи уже прошло, Save её не принял: id останется, это не ошибка.
-            alarms.Save(alarm with { GoogleEventId = null }, fromSync: true);
+            // ForeignSeries сбрасывается вместе с id: иначе запись чужой серии не ушла бы и в новый аккаунт.
+            alarms.Save(alarm with { GoogleEventId = null, ForeignSeries = false }, fromSync: true);
         }
     }
 
