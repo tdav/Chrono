@@ -85,6 +85,9 @@
   <data name="Back" xml:space="preserve"><value>Назад</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Предыдущий месяц</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Следующий месяц</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>Предыдущая неделя</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Следующая неделя</value></data>
+  <data name="UnmarkDone" xml:space="preserve"><value>Снять отметку</value></data>
   <data name="Tab_Alarms" xml:space="preserve"><value>Будильники</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Распорядок</value></data>
   <data name="Tab_Cycle" xml:space="preserve"><value>Цикл</value></data>

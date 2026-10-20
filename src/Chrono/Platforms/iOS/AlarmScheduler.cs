@@ -1,3 +1,4 @@
+using System.Globalization;
 using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
@@ -39,7 +40,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
                 InterruptionLevel = isNotify ? UNNotificationInterruptionLevel.Active2 : UNNotificationInterruptionLevel.TimeSensitive2,
                 UserInfo = isNotify
                     ? NSDictionary.FromObjectsAndKeys(
-                        [new NSString(planned.Alarm.Id.ToString()), new NSString($"{DateOnly.FromDateTime(planned.FireAt):yyyy-MM-dd}")],
+                        [new NSString(planned.Alarm.Id.ToString()), new NSString(DateOnly.FromDateTime(planned.FireAt).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
                         [new NSString(AlarmIdKey), new NSString(OpenDayKey)])
                     : NSDictionary.FromObjectAndKey(new NSString(planned.Alarm.Id.ToString()), new NSString(AlarmIdKey)),
             };

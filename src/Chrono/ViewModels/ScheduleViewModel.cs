@@ -49,6 +49,12 @@ public sealed record DayEntryItem(DayEntry Entry, string RangeText)
 
     public bool IsDone => this.Entry.IsDone;
 
+    /// <summary>Без длительности строки диапазона нет: время уже стоит в колонке слева.</summary>
+    public bool HasRange => this.RangeText.Length > 0;
+
+    /// <summary>Подпись кружка для TalkBack зависит от состояния: у отмеченного — «Снять отметку».</summary>
+    public string DoneDescription => this.Entry.IsDone ? AppResources.UnmarkDone : AppResources.MarkDone;
+
     public bool IsMuted => this.Entry.IsMuted;
 
     /// <summary>Текущее дело — вертикальная капсула: 1,2 pt на минуту, но не ниже круга 42.</summary>
@@ -109,7 +115,8 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
         var done = this.alarmService.GetDone();
         var selected = this.SelectedDay;
 
-        this.TitleDay = selected.ToString("d MMMM", CultureInfo.CurrentUICulture);
+        // Пробел между днём и годом — часть значения: хвостовой пробел в StringFormat внутри Span XAML обрезает.
+        this.TitleDay = selected.ToString("d MMMM", CultureInfo.CurrentUICulture) + " ";
         this.TitleYear = selected.Year.ToString(CultureInfo.CurrentUICulture);
         this.IsAddEnabled = selected >= today;
 
@@ -122,7 +129,7 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
             {
                 if (e.Alarm.DurationMinutes <= 0)
                 {
-                    return new DayEntryItem(e, e.Start.ToString("HH:mm"));
+                    return new DayEntryItem(e, string.Empty);
                 }
 
                 var range = $"{e.Start:HH:mm}–{e.End:HH:mm} · ";

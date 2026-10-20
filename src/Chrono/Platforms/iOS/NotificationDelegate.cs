@@ -1,3 +1,4 @@
+using System.Globalization;
 using Chrono.Services;
 using Foundation;
 using UserNotifications;
@@ -16,9 +17,13 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
         UNNotification notification,
         Action<UNNotificationPresentationOptions> completionHandler)
     {
-        if (DateOnly.TryParseExact(notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString(), "yyyy-MM-dd", out _))
+        // Ключ open_day есть — это уведомление Notify; нечитаемый день не превращает его в сигнал (путь Ring).
+        var openDayText = notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString();
+        if (openDayText is not null)
         {
-            completionHandler(UNNotificationPresentationOptions.Banner | UNNotificationPresentationOptions.Sound | UNNotificationPresentationOptions.List);
+            completionHandler(DateOnly.TryParseExact(openDayText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _)
+                ? UNNotificationPresentationOptions.Banner | UNNotificationPresentationOptions.Sound | UNNotificationPresentationOptions.List
+                : UNNotificationPresentationOptions.None);
             return;
         }
 
@@ -52,9 +57,14 @@ public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
         UNNotificationResponse response,
         Action completionHandler)
     {
-        if (DateOnly.TryParseExact(response.Notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString(), "yyyy-MM-dd", out var openDay))
+        var openDayText = response.Notification.Request.Content.UserInfo[AlarmScheduler.OpenDayKey]?.ToString();
+        if (openDayText is not null)
         {
-            ScheduleLauncher.Request(openDay);
+            if (DateOnly.TryParseExact(openDayText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var openDay))
+            {
+                ScheduleLauncher.Request(openDay);
+            }
+
             completionHandler();
             return;
         }

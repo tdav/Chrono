@@ -6,23 +6,33 @@
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="20,12,20,0" SafeAreaEdges="Container">
 
-        <!-- Заголовок: «20 октября» и год золотыми чернилами. -->
-        <Label Style="{StaticResource ScreenTitle}" Padding="0,6,0,0">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="{Binding TitleDay, StringFormat='{0} '}" />
-                    <Span Text="{Binding TitleYear}" TextColor="{StaticResource GoldInk}" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+        <!-- Заголовок: «20 октября» и год золотыми чернилами; справа стрелки недели (свайп по строке дней ненадёжен). -->
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <Label Style="{StaticResource ScreenTitle}" Padding="0,6,0,0">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{Binding TitleDay}" />
+                        <Span Text="{Binding TitleYear}" TextColor="{StaticResource GoldInk}" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Border Grid.Column="1" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.PrevWeek}">
+                <Image Source="icon_back.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PrevWeekCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.NextWeek}">
+                <Image Source="icon_next.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NextWeekCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+        </Grid>
 
-        <!-- Неделя с понедельника: семь колонок поровну; свайп влево/вправо листает недели. -->
+        <!-- Неделя с понедельника: семь колонок поровну. Свайп — на каждой колонке: распознаватель на родителе перекрывался нажатием дочерних. -->
         <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,14,0,10"
               BindableLayout.ItemsSource="{Binding Days}">
-            <Grid.GestureRecognizers>
-                <SwipeGestureRecognizer Direction="Left" Command="{Binding NextWeekCommand}" />
-                <SwipeGestureRecognizer Direction="Right" Command="{Binding PrevWeekCommand}" />
-            </Grid.GestureRecognizers>
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="vm:DayCell">
                     <VerticalStackLayout Grid.Column="{Binding Column}" Spacing="3"
@@ -51,6 +61,10 @@
                             <TapGestureRecognizer
                                 Command="{Binding SelectDayCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
                                 CommandParameter="{Binding Date}" />
+                            <SwipeGestureRecognizer Direction="Left"
+                                Command="{Binding NextWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
+                            <SwipeGestureRecognizer Direction="Right"
+                                Command="{Binding PrevWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
                         </VerticalStackLayout.GestureRecognizers>
                         <Label Text="{Binding Label}" Style="{StaticResource Eyebrow}" HorizontalOptions="Center">
                             <Label.Triggers>
@@ -156,13 +170,13 @@
                         </Border>
 
                         <VerticalStackLayout Grid.Column="2" VerticalOptions="Start" Margin="0,4,0,0" Spacing="1">
-                            <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" />
+                            <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" IsVisible="{Binding HasRange}" />
                             <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" />
                         </VerticalStackLayout>
 
                         <!-- Отметка «сделано»: кружок 22 в области нажатия 44. -->
                         <Grid Grid.Column="3" WidthRequest="44" HeightRequest="44" VerticalOptions="Start" HorizontalOptions="End"
-                              SemanticProperties.Description="{x:Static res:AppResources.MarkDone}">
+                              SemanticProperties.Description="{Binding DoneDescription}">
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
