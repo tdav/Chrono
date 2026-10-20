@@ -11,6 +11,11 @@ namespace Chrono.Platform;
 /// </summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
+    // ponytail: Cancel(id) не знает, какие напоминания были у записи, поэтому снимает эти типичные значения;
+    // нетипичное (45 мин) после смены в Google останется таймером, но AlarmRingService/ScheduleReceiver сверяют
+    // минуты с записью и не звонят. Полный учёт — хранить прошлые минуты.
+    private static readonly int[] KnownReminderMinutes = [5, 10, 15, 30, 60, 120, 1440];
+
     public void Sync(IReadOnlyList<Alarm> alarms)
     {
         var context = global::Android.App.Application.Context;
@@ -52,6 +57,39 @@ public sealed class AlarmScheduler : IAlarmScheduler
                 manager.Cancel(notifyOperation);
             }
 
+            // Напоминания: по таймеру на каждый ещё не прошедший момент, тем же способом, что и начало.
+            // Data у них свой (/r{минуты}), основной PendingIntent выше не затрагивается. Значения вне
+            // текущего списка (смена в Google, Ring → Notify) снимаются как несрабатывающие.
+            var reminders = alarm.Reminders();
+            foreach (var minutes in reminders.Union(KnownReminderMinutes))
+            {
+                var reminderAt = alarm.At.AddMinutes(-minutes);
+                var fires = reminders.Contains(minutes) && reminderAt > now;
+                var reminderMs = new DateTimeOffset(DateTime.SpecifyKind(reminderAt, DateTimeKind.Local)).ToUnixTimeMilliseconds();
+
+                var reminderRing = AlarmReceiver.CreatePendingIntent(context, alarm.Id, minutes);
+                if (ring && fires)
+                {
+                    var reminderShow = PendingIntent.GetActivity(
+                        context, 3, new Intent(context, typeof(MainActivity)), PendingIntentFlags.Immutable);
+                    manager.SetAlarmClock(new AlarmManager.AlarmClockInfo(reminderMs, reminderShow), reminderRing);
+                }
+                else
+                {
+                    manager.Cancel(reminderRing);
+                }
+
+                var reminderNotify = ScheduleReceiver.CreatePendingIntent(context, alarm.Id, minutes);
+                if (notify && fires)
+                {
+                    manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, reminderMs, reminderNotify);
+                }
+                else
+                {
+                    manager.Cancel(reminderNotify);
+                }
+            }
+
             // Начало окна умного пробуждения — обычный точный будильник: SetAlarmClock показал бы
             // в статус-баре время окна вместо времени будильника. Окно нужно только звонящим записям.
             var smartOperation = SmartWakeReceiver.CreatePendingIntent(context, alarm.Id);
@@ -75,6 +113,11 @@ public sealed class AlarmScheduler : IAlarmScheduler
         manager.Cancel(AlarmReceiver.CreatePendingIntent(context, id));
         manager.Cancel(ScheduleReceiver.CreatePendingIntent(context, id));
         manager.Cancel(SmartWakeReceiver.CreatePendingIntent(context, id));
+        foreach (var minutes in KnownReminderMinutes)
+        {
+            manager.Cancel(AlarmReceiver.CreatePendingIntent(context, id, minutes));
+            manager.Cancel(ScheduleReceiver.CreatePendingIntent(context, id, minutes));
+        }
     }
 
     public void StopRinging(Guid id)

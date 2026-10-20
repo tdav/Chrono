@@ -18,13 +18,15 @@ public sealed class ScheduleReceiver : BroadcastReceiver
 
     /// <summary>
     /// PendingIntent срабатывания. От будильника (chrono://alarm/{id}) отличается и классом, и Data-URI:
-    /// иначе Cancel одного снимал бы другой.
+    /// иначе Cancel одного снимал бы другой. Напоминание — суффикс /r{минуты}, основной остаётся прежним.
     /// </summary>
-    public static PendingIntent CreatePendingIntent(Context context, Guid alarmId)
+    public static PendingIntent CreatePendingIntent(Context context, Guid alarmId, int reminderMinutes = 0)
     {
+        var suffix = reminderMinutes > 0 ? $"/r{reminderMinutes}" : "";
         var intent = new Intent(context, typeof(ScheduleReceiver))
-            .SetData(global::Android.Net.Uri.Parse($"chrono://notify/{alarmId}"))!
-            .PutExtra(AlarmReceiver.ExtraAlarmId, alarmId.ToString())!;
+            .SetData(global::Android.Net.Uri.Parse($"chrono://notify/{alarmId}{suffix}"))!
+            .PutExtra(AlarmReceiver.ExtraAlarmId, alarmId.ToString())!
+            .PutExtra(AlarmReceiver.ExtraReminderMinutes, reminderMinutes)!;
         return PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent)!;
     }
 
@@ -41,7 +43,9 @@ public sealed class ScheduleReceiver : BroadcastReceiver
         try
         {
             // Запись удалили, выключили или перевели на другой уровень после постановки будильника: показывать нечего.
-            if (alarm is { IsEnabled: true, Alert: AlertKind.Notify })
+            // Таймер напоминания, которого в записи уже нет (поменяли в Google), тоже ничего не показывает.
+            var reminderMinutes = intent.GetIntExtra(AlarmReceiver.ExtraReminderMinutes, 0);
+            if (alarm is { IsEnabled: true, Alert: AlertKind.Notify } && (reminderMinutes == 0 || alarm.Reminders().Contains(reminderMinutes)))
             {
                 var notifications = (NotificationManager)context.GetSystemService(Context.NotificationService)!;
                 // Канал создаётся при каждом срабатывании: повторное создание с тем же id ничего не меняет.

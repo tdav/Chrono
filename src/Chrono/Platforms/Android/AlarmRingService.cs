@@ -47,6 +47,14 @@ public sealed class AlarmRingService : Service
         var alarm = Guid.TryParse(alarmIdText, out var alarmId)
             ? new AlarmStore(FileSystem.AppDataDirectory).Load().Alarms.FirstOrDefault(a => a.Id == alarmId)
             : null;
+        // Таймер напоминания, которого в записи уже нет (поменяли в Google, перевели в Notify, выключили),
+        // не звонит: без записи сервис останавливается ниже, как для удалённого будильника.
+        var reminderMinutes = intent?.GetIntExtra(AlarmReceiver.ExtraReminderMinutes, 0) ?? 0;
+        if (reminderMinutes > 0 && !(alarm is { IsEnabled: true, Alert: Models.AlertKind.Ring } && alarm.Reminders().Contains(reminderMinutes)))
+        {
+            alarm = null;
+        }
+
         var label = string.IsNullOrWhiteSpace(alarm?.Label) ? AppResources.DefaultLabel : alarm.Label;
         var timeText = (alarm?.At ?? DateTime.Now).ToString("HH:mm");
 
