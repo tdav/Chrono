@@ -85,6 +85,9 @@
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Next month</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>Previous week</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
+  <data name="UnmarkDone" xml:space="preserve"><value>Mark as not done</value></data>
   <data name="Tab_Alarms" xml:space="preserve"><value>Alarms</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
   <data name="Tab_Cycle" xml:space="preserve"><value>Cycle</value></data>
