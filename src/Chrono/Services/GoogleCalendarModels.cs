@@ -34,6 +34,10 @@ public sealed record GoogleEvent
     [JsonPropertyName("extendedProperties"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GoogleExtendedProperties? ExtendedProperties { get; init; }
 
+    /// <summary>Id серии, если это изменённый экземпляр («только это событие»); у обычных событий и мастеров серий null.</summary>
+    [JsonPropertyName("recurringEventId"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RecurringEventId { get; init; }
+
     /// <summary>Время последнего изменения; только для чтения.</summary>
     [JsonPropertyName("updated"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateTimeOffset? Updated { get; init; }

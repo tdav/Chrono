@@ -30,6 +30,7 @@
     <Compile Include="..\..\src\Chrono\Services\CalendarMapping.cs" Link="Linked\CalendarMapping.cs" />
     <Compile Include="..\..\src\Chrono\Services\IGoogleAuth.cs" Link="Linked\IGoogleAuth.cs" />
     <Compile Include="..\..\src\Chrono\Services\GoogleCalendarClient.cs" Link="Linked\GoogleCalendarClient.cs" />
+    <Compile Include="..\..\src\Chrono\Services\CalendarSync.cs" Link="Linked\CalendarSync.cs" />
   </ItemGroup>
 
 </Project>
