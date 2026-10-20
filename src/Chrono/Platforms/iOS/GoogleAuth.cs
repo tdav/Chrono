@@ -21,11 +21,11 @@ public sealed class GoogleAuth : IGoogleAuth
 
     private const string AuthEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
     private const string TokenEndpoint = "https://oauth2.googleapis.com/token";
+    private const string RevokeEndpoint = "https://oauth2.googleapis.com/revoke";
     private const string RefreshTokenKey = "google-refresh-token";
 
     private const string Scopes =
-        "https://www.googleapis.com/auth/calendar.app.created " +
-        "https://www.googleapis.com/auth/calendar.calendarlist.readonly openid email";
+        GoogleScopes.CalendarAppCreated + " " + GoogleScopes.CalendarListReadonly + " openid email";
 
     private readonly HttpClient http;
 
@@ -123,12 +123,20 @@ public sealed class GoogleAuth : IGoogleAuth
 
             using var response = await this.http.PostAsync(TokenEndpoint, new FormUrlEncodedContent(form), ct);
             var body = await response.Content.ReadAsStringAsync(ct);
-            using var json = JsonDocument.Parse(body);
-            var root = json.RootElement;
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = root.TryGetProperty("error", out var e) ? e.GetString() : null;
+                // Тело ошибки бывает не JSON (HTML от прокси или шлюза): тогда это HttpRequestException, а не JsonException.
+                string? error = null;
+                try
+                {
+                    using var errorJson = JsonDocument.Parse(body);
+                    error = errorJson.RootElement.TryGetProperty("error", out var e) ? e.GetString() : null;
+                }
+                catch (JsonException)
+                {
+                }
+
                 if (error == "invalid_grant" && usedRefresh)
                 {
                     // Refresh token отозван или просрочен: забываем его и просим войти заново.
@@ -146,6 +154,13 @@ public sealed class GoogleAuth : IGoogleAuth
                 throw new HttpRequestException($"Google token: {(int)response.StatusCode} {error}");
             }
 
+            using var json = JsonDocument.Parse(body);
+            var root = json.RootElement;
+
+            // Окно согласия позволяет снять галочку с области: токен без неё не отдаём (и refresh_token не сохраняем).
+            GoogleScopes.RequireCalendar(
+                root.TryGetProperty("scope", out var scopeValue) ? scopeValue.GetString()?.Split(' ') : null);
+
             // refresh_token приходит не в каждом ответе (при обмене refresh token его нет) — старый не затираем.
             if (root.TryGetProperty("refresh_token", out var rt) && !string.IsNullOrEmpty(rt.GetString()))
             {
@@ -159,10 +174,24 @@ public sealed class GoogleAuth : IGoogleAuth
         }
     }
 
-    public Task SignOutAsync()
+    public async Task SignOutAsync()
     {
-        // ponytail: токен в Google не отзываем (oauth2.googleapis.com/revoke), только забываем локально.
+        var refreshToken = await SecureStorage.Default.GetAsync(RefreshTokenKey);
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            // Отзыв refresh token отзывает и выданные по нему access token.
+            using var response = await this.http.PostAsync(
+                RevokeEndpoint,
+                new FormUrlEncodedContent(new Dictionary<string, string> { ["token"] = refreshToken }));
+
+            // Токен уже отозван пользователем в настройках аккаунта Google: Google отвечает 400 invalid_token — для выхода это успех.
+            if (!response.IsSuccessStatusCode && !(await response.Content.ReadAsStringAsync()).Contains("invalid_token"))
+            {
+                // Токен остаётся в Keychain: без сети выход можно повторить, как на Android.
+                throw new HttpRequestException($"Google revoke: {(int)response.StatusCode}");
+            }
+        }
+
         SecureStorage.Default.Remove(RefreshTokenKey);
-        return Task.CompletedTask;
     }
 }

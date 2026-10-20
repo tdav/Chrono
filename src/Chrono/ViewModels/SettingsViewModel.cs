@@ -167,15 +167,32 @@ public sealed partial class SettingsViewModel : ObservableObject
             var email = await this.google.GetEmailAsync(CancellationToken.None);
             this.syncStore.Save(this.syncStore.Load() with { Email = email });
         }
+        catch (SyncScopesMissingException)
+        {
+            // В окне согласия снята галочка с области календаря: показываем причину, а не общую «Ошибку синхронизации».
+            this.ShowStatus(SyncStatus.Idle);
+            this.SyncStatusText = AppResources.SyncScopesMissing;
+            return;
+        }
         catch (Exception ex)
         {
             this.ShowStatus(SyncLauncher.StatusOf(ex));
             return;
         }
 
+        try
+        {
 #if ANDROID
-        Platform.SyncWorker.Schedule(global::Android.App.Application.Context);
+            Platform.SyncWorker.Schedule(global::Android.App.Application.Context);
 #endif
+        }
+        catch (Exception ex)
+        {
+            // Исключение команды (async void) уронило бы приложение.
+            this.ShowStatus(SyncLauncher.StatusOf(ex));
+            return;
+        }
+
         this.ShowStatus(SyncStatus.Idle);
         await this.SyncNowAsync();
     }
@@ -201,14 +218,24 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        await this.syncLauncher.SignOutAsync(
-            this.alarmService,
+        try
+        {
+            await this.syncLauncher.SignOutAsync(
+                this.alarmService,
 #if ANDROID
-            () => Platform.SyncWorker.Cancel(global::Android.App.Application.Context),
+                () => Platform.SyncWorker.Cancel(global::Android.App.Application.Context),
 #else
-            () => { },
+                () => { },
 #endif
-            this.cache);
+                this.cache);
+        }
+        catch (Exception ex)
+        {
+            // Исключение команды (async void) уронило бы приложение.
+            this.ShowStatus(SyncLauncher.StatusOf(ex));
+            return;
+        }
+
         this.ShowStatus(SyncStatus.Idle);
     }
 }
