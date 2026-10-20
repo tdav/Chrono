@@ -39,9 +39,18 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Время, дата, повтор: каждая строка открывает свою шторку. -->
+                    <!-- Повтор, время, дата: каждая строка открывает свою шторку. -->
                     <Border Style="{StaticResource RowGroup}">
                         <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenRepeatCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding RepeatText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding OpenTimeCommand}" />
@@ -59,19 +68,10 @@
                                 <Label Grid.Column="1" Text="{Binding DateText}" Style="{StaticResource RowValue}" />
                                 <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
                             </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenRepeatCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding RepeatText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Название, звук, вибрация. -->
+                    <!-- Название, иконка, длительность, оповещение; звук и вибрация — только у звонящей записи. -->
                     <Border Style="{StaticResource RowGroup}">
                         <VerticalStackLayout>
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*">
@@ -81,7 +81,34 @@
                                        FontFamily="ManropeBold" FontSize="14.5" ReturnType="Done" />
                             </Grid>
                             <BoxView Style="{StaticResource RowDivider}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenIconCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowIcon}" Style="{StaticResource RowKey}" />
+                                <Image Grid.Column="1" Source="{Binding IconImage}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenDurationCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowDuration}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding DurationText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenAlertCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowAlert}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding AlertText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsSoundRowsVisible}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsSoundRowsVisible}">
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding OpenSoundCommand}" />
                                 </Grid.GestureRecognizers>
@@ -89,8 +116,8 @@
                                 <Label Grid.Column="1" Text="{Binding SoundText}" Style="{StaticResource RowValue}" />
                                 <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
                             </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsSoundRowsVisible}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" IsVisible="{Binding IsSoundRowsVisible}">
                                 <Label Text="{x:Static res:AppResources.Vibration}" Style="{StaticResource RowKey}" />
                                 <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" VerticalOptions="Center" />
                             </Grid>
@@ -142,6 +169,24 @@
                               CancelCommand="{Binding CloseSheetCommand}">
             <controls:BottomSheet.SheetContent>
                 <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
+            </controls:BottomSheet.SheetContent>
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsDurationSheetOpen}" Title="{x:Static res:AppResources.RowDuration}"
+                              CancelCommand="{Binding CloseSheetCommand}">
+            <controls:BottomSheet.SheetContent>
+                <sheets:DurationSheet BindingContext="{Binding DurationSheet}" />
+            </controls:BottomSheet.SheetContent>
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsIconSheetOpen}" Title="{x:Static res:AppResources.RowIcon}"
+                              CancelCommand="{Binding CloseSheetCommand}">
+            <controls:BottomSheet.SheetContent>
+                <sheets:IconSheet BindingContext="{Binding IconSheet}" />
+            </controls:BottomSheet.SheetContent>
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsAlertSheetOpen}" Title="{x:Static res:AppResources.RowAlert}"
+                              CancelCommand="{Binding CloseSheetCommand}">
+            <controls:BottomSheet.SheetContent>
+                <sheets:AlertSheet BindingContext="{Binding AlertSheet}" />
             </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
     </Grid>
