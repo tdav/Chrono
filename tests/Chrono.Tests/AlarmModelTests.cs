@@ -126,4 +126,29 @@ public sealed class AlarmModelTests
         Assert.Equal(3, (int)RepeatKind.Yearly);
         Assert.Equal(4, (int)RepeatKind.OnceThenDelete);
     }
+
+    [Fact]
+    public void Reminders_ParsesAndSkipsGarbage()
+    {
+        var a = new Alarm { ReminderMinutes = "30, x,10,30" };
+
+        Assert.Equal([30, 10], a.Reminders());
+    }
+
+    [Fact]
+    public void AlertTimes_ReminderAndStart()
+    {
+        var a = new Alarm { ReminderMinutes = "30" };
+        var at = new DateTime(2026, 10, 20, 7, 0, 0);
+
+        Assert.Equal([at.AddMinutes(-30), at], a.AlertTimes(at));
+    }
+
+    [Fact]
+    public void AlertTimes_NoReminders_OnlyStart()
+    {
+        var at = new DateTime(2026, 10, 20, 7, 0, 0);
+
+        Assert.Equal([at], new Alarm().AlertTimes(at));
+    }
 }
