@@ -66,9 +66,9 @@ public sealed class SmartWakeService : Service, ISensorEventListener
             this.StartForeground(NotificationId, notification);
         }
 
-        if (alarm is not { IsEnabled: true } || !SmartWakeSettings.Enabled || this.handler is not null)
+        if (alarm is not { IsEnabled: true, Alert: AlertKind.Ring } || !SmartWakeSettings.Enabled || this.handler is not null)
         {
-            // Будильник выключен/удалён, функция отключена или окно уже идёт — второй сервис не нужен.
+            // Будильник выключен/удалён, не Ring (звонит только этот уровень), функция отключена или окно уже идёт — второй сервис не нужен.
             if (this.handler is null)
             {
                 this.StopSelf();
@@ -147,9 +147,9 @@ public sealed class SmartWakeService : Service, ISensorEventListener
 
         var now = DateTimeOffset.Now;
         var alarm = new AlarmStore(FileSystem.AppDataDirectory).Load().Alarms.FirstOrDefault(a => a.Id == this.alarmId);
-        if (now >= this.deadline - TimeSpan.FromSeconds(30) || alarm is not { IsEnabled: true } || !SmartWakeSettings.Enabled)
+        if (now >= this.deadline - TimeSpan.FromSeconds(30) || alarm is not { IsEnabled: true, Alert: AlertKind.Ring } || !SmartWakeSettings.Enabled)
         {
-            // Срок наступил (звонит обычный будильник) или будильник/функцию выключили.
+            // Срок наступил (звонит обычный будильник), будильник/функцию выключили или запись сменила Ring на Notify/None.
             this.StopSelf();
             return;
         }

@@ -20,7 +20,6 @@ public sealed class AlarmRingService : Service
     public const string MissedChannelId = "missed";
     public const int RingNotificationId = 1;
     public const int MissedNotificationId = 2;
-    public static readonly TimeSpan RingTimeout = TimeSpan.FromMinutes(10);
 
     private readonly SoundPlayer soundPlayer = new();
     private Vibrator? vibrator;
@@ -114,7 +113,7 @@ public sealed class AlarmRingService : Service
 
         var power = (PowerManager)this.GetSystemService(PowerService)!;
         this.wakeLock = power.NewWakeLock(WakeLockFlags.Partial, "chrono:ring")!;
-        this.wakeLock.Acquire((long)(RingTimeout + TimeSpan.FromSeconds(10)).TotalMilliseconds);
+        this.wakeLock.Acquire((long)(Models.Alarm.RingTimeout + TimeSpan.FromSeconds(10)).TotalMilliseconds);
 
         if (alarm.SoundEnabled)
         {
@@ -161,7 +160,7 @@ public sealed class AlarmRingService : Service
                 notifications.Notify(MissedNotificationId, missed);
                 this.StopSelf();
             },
-            (long)RingTimeout.TotalMilliseconds);
+            (long)Models.Alarm.RingTimeout.TotalMilliseconds);
 
         return StartCommandResult.NotSticky;
     }
