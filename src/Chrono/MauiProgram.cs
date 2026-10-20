@@ -76,6 +76,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ReliabilityPage>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<SettingsPage>();
+        builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SchedulePage>();
         builder.Services.AddTransient<CyclePage>();
 
