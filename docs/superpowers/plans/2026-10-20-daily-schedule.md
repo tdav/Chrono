@@ -280,7 +280,7 @@ public sealed class ScheduleReceiver : BroadcastReceiver
 
 - [ ] **Шаг 1: тесты:** `Build_NoneAlert_NotPlanned`; `Build_Notify_SingleNotification`; `Build_OnceThenDelete_SingleOccurrence` (Ring → ровно 4 уведомления, не 64); `Build_ChainIdsUnchangedForRing` (существующие тесты остаются зелёными).
 - [ ] **Шаг 2:** красные → реализовать → зелёные; мутация: вернуть `alarm.Repeat == RepeatKind.None` вместо `IsOneShot()` — `Build_OnceThenDelete_SingleOccurrence` краснеет.
-- [ ] **Шаг 3:** `AlarmScheduler` (iOS): для `Notify` — `UNNotificationSound.Default`, `InterruptionLevel = Active`, в `UserInfo` ключи `alarm_id` и `open_day`. `NotificationDelegate`: если есть `open_day` — `WillPresent` показывает баннер со звуком (`Banner | Sound | List`), `DidReceive` вызывает `ScheduleLauncher.Request`; путь `Ring` не меняется. Сборка `-f net11.0-ios` — 0 ошибок.
+- [ ] **Шаг 3:** `AlarmScheduler` (iOS): для `Notify` — `UNNotificationSound.Default`, `InterruptionLevel = Active2` (не `Active`: устаревший член = Passive на стороне iOS, как `TimeSensitive2`), в `UserInfo` ключи `alarm_id` и `open_day`. `NotificationDelegate`: если есть `open_day` — `WillPresent` показывает баннер со звуком (`Banner | Sound | List`), `DidReceive` вызывает `ScheduleLauncher.Request`; путь `Ring` не меняется. Сборка `-f net11.0-ios` — 0 ошибок.
 - [ ] **Шаг 4: коммит** `iOS: уведомления распорядка в общем плане уведомлений`.
 
 ### Задача 6: вкладка «Будильники» и сигнал
