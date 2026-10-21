@@ -342,7 +342,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
                 this.Alert = alert;
             }
 
-            // Начало и длительность из циферблата: time=HH:mm, duration=N (минуты, больше нуля).
+            // Начало и длительность из циферблата: time=HH:mm, duration=N (минуты, 1..720 — как в шторке длительности).
             if (query.TryGetValue("time", out var timeValue)
                 && TimeOnly.TryParseExact(timeValue?.ToString(), "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTime))
             {
@@ -351,7 +351,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
             if (query.TryGetValue("duration", out var durationValue)
                 && int.TryParse(durationValue?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedDuration)
-                && parsedDuration > 0)
+                && parsedDuration is > 0 and <= DurationSheetModel.MaxMinutes)
             {
                 this.DurationMinutes = parsedDuration;
             }
