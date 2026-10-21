@@ -96,6 +96,21 @@ public sealed partial class CalendarSheetModel : ObservableObject
         this.Rebuild();
     }
 
+    // Год вперёд/назад нужен для далёкой даты окончания (бессрочные записи): без него — по 12 нажатий на год.
+    [RelayCommand]
+    private void PrevYear()
+    {
+        this.year--;
+        this.Rebuild();
+    }
+
+    [RelayCommand]
+    private void NextYear()
+    {
+        this.year++;
+        this.Rebuild();
+    }
+
     [RelayCommand]
     private void Pick(CalendarDayItem item)
     {
@@ -136,7 +151,7 @@ public sealed partial class CalendarSheetModel : ObservableObject
     [RelayCommand]
     private void Cancel() => this.Done?.Invoke(this, false);
 
-    // Четыре вызывающих (Load, листание назад/вперёд, «Сегодня») — общий пересчёт сетки и заголовка.
+    // Шесть вызывающих (Load, листание по месяцам и годам, «Сегодня») — общий пересчёт сетки и заголовка.
     private void Rebuild()
     {
         this.Cells.Clear();

@@ -85,6 +85,8 @@
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Next month</value></data>
+  <data name="PrevYear" xml:space="preserve"><value>Previous year</value></data>
+  <data name="NextYear" xml:space="preserve"><value>Next year</value></data>
   <data name="PrevWeek" xml:space="preserve"><value>Previous week</value></data>
   <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
   <data name="UnmarkDone" xml:space="preserve"><value>Mark as not done</value></data>

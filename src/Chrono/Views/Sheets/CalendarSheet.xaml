@@ -7,20 +7,32 @@
              x:DataType="vm:CalendarSheetModel">
 
     <VerticalStackLayout Spacing="16">
-        <!-- Навигация по месяцам. -->
-        <Grid ColumnDefinitions="Auto,*,Auto">
-            <Border Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.PrevMonth}">
+        <!-- Навигация: год назад, месяц назад, заголовок, месяц вперёд, год вперёд. -->
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="8">
+            <Border Grid.Column="0" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.PrevYear}">
+                <Label Text="&#171;" FontFamily="ManropeBold" FontSize="20" TextColor="{StaticResource Text}" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PrevYearCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.PrevMonth}">
                 <Image Source="icon_back.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding PrevMonthCommand}" />
                 </Border.GestureRecognizers>
             </Border>
-            <Label Grid.Column="1" Text="{Binding MonthTitle}" FontFamily="ManropeBold" FontSize="16"
+            <Label Grid.Column="2" Text="{Binding MonthTitle}" FontFamily="ManropeBold" FontSize="16"
                    TextColor="{StaticResource Text}" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Border Grid.Column="2" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.NextMonth}">
+            <Border Grid.Column="3" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.NextMonth}">
                 <Image Source="icon_next.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding NextMonthCommand}" />
+                </Border.GestureRecognizers>
+            </Border>
+            <Border Grid.Column="4" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.NextYear}">
+                <Label Text="&#187;" FontFamily="ManropeBold" FontSize="20" TextColor="{StaticResource Text}" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding NextYearCommand}" />
                 </Border.GestureRecognizers>
             </Border>
         </Grid>

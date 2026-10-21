@@ -360,6 +360,12 @@
   <data name="NextMonth" xml:space="preserve">
     <value>Следующий месяц</value>
   </data>
+  <data name="PrevYear" xml:space="preserve">
+    <value>Предыдущий год</value>
+  </data>
+  <data name="NextYear" xml:space="preserve">
+    <value>Следующий год</value>
+  </data>
   <data name="PrevWeek" xml:space="preserve">
     <value>Предыдущая неделя</value>
   </data>
