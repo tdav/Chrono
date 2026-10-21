@@ -22,6 +22,6 @@ public static class ScheduleLauncher
         }
 
         PendingDay = null;
-        await Shell.Current.GoToAsync($"//schedule?day={day:yyyy-MM-dd}");
+        await Shell.Current.GoToAsync($"//schedule?day={day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}");
     }
 }

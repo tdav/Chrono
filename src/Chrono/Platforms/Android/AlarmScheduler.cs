@@ -46,7 +46,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
             }
 
             // Уведомление без звонка: обычный точный будильник, SetAlarmClock занял бы значок будильника в статус-баре.
-            var notifyOperation = ScheduleReceiver.CreatePendingIntent(context, alarm.Id);
+            var notifyOperation = ScheduleReceiver.CreatePendingIntent(context, alarm.Id, 0, alarm.At);
             if (notify)
             {
                 var notifyAtMs = new DateTimeOffset(DateTime.SpecifyKind(alarm.At, DateTimeKind.Local)).ToUnixTimeMilliseconds();
@@ -79,7 +79,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
                     manager.Cancel(reminderRing);
                 }
 
-                var reminderNotify = ScheduleReceiver.CreatePendingIntent(context, alarm.Id, minutes);
+                var reminderNotify = ScheduleReceiver.CreatePendingIntent(context, alarm.Id, minutes, alarm.At);
                 if (notify && fires)
                 {
                     manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, reminderMs, reminderNotify);
