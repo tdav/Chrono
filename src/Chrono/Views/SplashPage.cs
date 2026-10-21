@@ -114,7 +114,8 @@ public sealed class SplashPage : ContentPage
                 }
 
                 await Task.Delay(100);
-                if (tick % 20 == 0)
+                // Раз в 2 с и только первую минуту: свёрнутый splash может ждать часами и вытеснил бы журнал.
+                if (tick % 20 == 0 && tick <= 600)
                 {
                     global::Android.Util.Log.Info("Chrono", $"splash: всё ещё ждём {waited.ElapsedMilliseconds} мс, состояние {owner.Lifecycle.CurrentState}");
                 }
