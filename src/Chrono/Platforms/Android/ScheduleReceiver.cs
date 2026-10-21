@@ -1,18 +1,28 @@
 using System.Globalization;
 using Android.App;
 using Android.Content;
+using Android.Media;
+using Android.OS;
 using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
 
 namespace Chrono.Platform;
 
-/// <summary>Срабатывание записи уровня Notify: обычное уведомление без звонка и full-screen intent.</summary>
+/// <summary>
+/// Срабатывание записи уровня Notify или Beep: обычное уведомление без звонка и full-screen intent.
+/// Beep добавляет к уведомлению три коротких сигнала. Звук канала уведомления идёт по громкости уведомлений и молчит
+/// в беззвучном режиме и «Не беспокоить», а короткий сигнал должен слышаться как будильник. Поэтому канал Beep беззвучный,
+/// а сигнал и вибрацию запускает само приложение: MediaPlayer с Usage=Alarm (тот же поток, что у звонка).
+/// </summary>
 [BroadcastReceiver(Enabled = true, Exported = false)]
 public sealed class ScheduleReceiver : BroadcastReceiver
 {
     // Настройки канала после создания не меняются: вибрацию получил только новый id (старый «schedule» без неё удаляется).
     public const string ChannelId = "schedule_v2";
+
+    /// <summary>Канал короткого сигнала: без звука и вибрации канала (их запускает приложение, см. шапку класса).</summary>
+    public const string BeepChannelId = "beep_v1";
 
     private const string OldChannelId = "schedule";
 
@@ -26,12 +36,19 @@ public sealed class ScheduleReceiver : BroadcastReceiver
     private const string ExtraLabel = "label";
     private const string ExtraDuration = "duration_minutes";
 
+    // Вид записи едет в extras по той же причине, что подпись: запись могли удалить до срабатывания (см. OnReceive), а сигнал
+    // и канал для неё всё равно нужны те же, что при постановке.
+    private const string ExtraBeep = "beep";
+
+    // Файл beep.wav длится 2,3 с; запас на случай, если плеер не прислал ни Completion, ни Error, а система держит приёмник.
+    private const int BeepGuardMs = 5000;
+
     /// <summary>
     /// PendingIntent срабатывания. От будильника (chrono://alarm/{id}) отличается и классом, и Data-URI:
     /// иначе Cancel одного снимал бы другой. Ключ — id, время начала at и (для напоминания) суффикс /r{минуты}.
-    /// Подпись и длительность нужны только при постановке; для Cancel не важны (extras в ключ не входят).
+    /// Подпись, длительность и признак короткого сигнала нужны только при постановке; для Cancel не важны (extras в ключ не входят).
     /// </summary>
-    public static PendingIntent CreatePendingIntent(Context context, Guid alarmId, DateTime at, int reminderMinutes = 0, string label = "", int durationMinutes = 0)
+    public static PendingIntent CreatePendingIntent(Context context, Guid alarmId, DateTime at, int reminderMinutes = 0, string label = "", int durationMinutes = 0, bool beep = false)
     {
         var suffix = reminderMinutes > 0 ? $"/r{reminderMinutes}" : "";
         var intent = new Intent(context, typeof(ScheduleReceiver))
@@ -40,7 +57,8 @@ public sealed class ScheduleReceiver : BroadcastReceiver
             .PutExtra(AlarmReceiver.ExtraReminderMinutes, reminderMinutes)!
             .PutExtra(ExtraAtTicks, at.Ticks)!
             .PutExtra(ExtraLabel, label)!
-            .PutExtra(ExtraDuration, durationMinutes)!;
+            .PutExtra(ExtraDuration, durationMinutes)!
+            .PutExtra(ExtraBeep, beep)!;
         return PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent)!;
     }
 
@@ -69,7 +87,7 @@ public sealed class ScheduleReceiver : BroadcastReceiver
             // мог сбросить GetAll после срабатывания (D3), а выключенную заранее Sync уже снял с AlarmManager.
             var show = ticks != 0 && (alarm is null
                 ? reminderMinutes == 0
-                : alarm.Alert == AlertKind.Notify
+                : alarm.Alert is AlertKind.Notify or AlertKind.Beep
                     && (alarm.IsEnabled || alarm.IsOneShot())
                     && alarm.IsOccurrence(at)
                     && (reminderMinutes == 0 || alarm.Reminders().Contains(reminderMinutes)));
@@ -82,6 +100,13 @@ public sealed class ScheduleReceiver : BroadcastReceiver
                 var channel = new NotificationChannel(ChannelId, AppResources.ChannelSchedule, NotificationImportance.Default);
                 channel.EnableVibration(true);
                 notifications.CreateNotificationChannel(channel);
+
+                // Записи нет: вид берём из extras, иначе из самой записи (смену уровня show уже учёл).
+                var beep = alarm is null ? intent.GetBooleanExtra(ExtraBeep, false) : alarm.Alert == AlertKind.Beep;
+                var beepChannel = new NotificationChannel(BeepChannelId, AppResources.ChannelBeep, NotificationImportance.Default);
+                beepChannel.SetSound(null, null);
+                beepChannel.EnableVibration(false);
+                notifications.CreateNotificationChannel(beepChannel);
 
                 var labelText = alarm?.Label ?? intent.GetStringExtra(ExtraLabel);
                 var label = string.IsNullOrWhiteSpace(labelText) ? AppResources.DefaultLabel : labelText;
@@ -105,7 +130,7 @@ public sealed class ScheduleReceiver : BroadcastReceiver
                         .AddFlags(ActivityFlags.NewTask | ActivityFlags.SingleTop),
                     PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
 
-                var notification = new Notification.Builder(context, ChannelId)
+                var notification = new Notification.Builder(context, beep ? BeepChannelId : ChannelId)
                     .SetSmallIcon(Resource.Drawable.ic_stat_alarm)!
                     .SetContentTitle(label)!
                     .SetContentText(timeText)!
@@ -113,6 +138,68 @@ public sealed class ScheduleReceiver : BroadcastReceiver
                     .SetAutoCancel(true)!
                     .Build()!;
                 notifications.Notify(notificationId, notification);
+
+                if (beep)
+                {
+                    // Вибрация в такт пикам файла (0, 1, 2 с); без атрибутов будильника система считает её UNKNOWN и подавляет в «Не беспокоить».
+                    // Удалённой записи настройка неизвестна: вибрируем.
+                    if (alarm?.VibrationEnabled ?? true)
+                    {
+                        var vibrator = OperatingSystem.IsAndroidVersionAtLeast(31)
+                            ? ((VibratorManager)context.GetSystemService(Context.VibratorManagerService)!).DefaultVibrator
+                            : (Vibrator)context.GetSystemService(Context.VibratorService)!;
+                        var pattern = VibrationEffect.CreateWaveform([0, 120, 880, 120, 880, 120], -1)!;
+                        if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                        {
+                            vibrator.Vibrate(pattern, VibrationAttributes.CreateForUsage((int)VibrationAttributesUsageType.Alarm));
+                        }
+                        else
+                        {
+                            vibrator.Vibrate(pattern, new AudioAttributes.Builder().SetUsage(AudioUsageKind.Alarm)!.Build()!);
+                        }
+                    }
+
+                    // Без GoAsync процесс приёмника могут завершить, не дождавшись конца сигнала. Finish нужен ровно один раз:
+                    // Completion, Error и страховка по времени приходят в главном потоке, гонки нет.
+                    var pending = this.GoAsync();
+                    var player = new MediaPlayer();
+                    var finished = false;
+                    var finish = () =>
+                    {
+                        if (finished)
+                        {
+                            return;
+                        }
+
+                        finished = true;
+                        player.Release();
+                        pending?.Finish();
+                    };
+                    try
+                    {
+                        player.SetAudioAttributes(new AudioAttributes.Builder()
+                            .SetUsage(AudioUsageKind.Alarm)!
+                            .SetContentType(AudioContentType.Sonification)!
+                            .Build()!);
+                        using var fd = context.Assets!.OpenFd("beep.wav");
+                        player.SetDataSource(fd.FileDescriptor, fd.StartOffset, fd.Length);
+                        player.Completion += (_, _) => finish();
+                        player.Error += (_, e) =>
+                        {
+                            e.Handled = true;
+                            finish();
+                        };
+                        player.Prepare();
+                        player.Start();
+                        new Handler(Looper.MainLooper!).PostDelayed(finish, BeepGuardMs);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Уведомление уже показано; без звука приёмник завершается сразу.
+                        global::Android.Util.Log.Error("Chrono", $"Короткий сигнал не запустился: {ex}");
+                        finish();
+                    }
+                }
             }
         }
         finally

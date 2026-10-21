@@ -2,7 +2,7 @@
 
 Только стандартная библиотека Python. Лицензионно чисто: звуки создаются математически.
 Запуск из корня репозитория:  python tools/gen_sounds.py
-Результат: src/Chrono/Resources/Raw/{bell,chime,digital,rising,soft}.wav
+Результат: src/Chrono/Resources/Raw/{bell,chime,digital,rising,soft}.wav и beep.wav (короткий сигнал, 2,3 с)
 """
 import math
 import os
@@ -12,6 +12,11 @@ import wave
 
 RATE = 22050
 DURATION = 20.0  # iOS проигрывает звук уведомления не дольше 30 с
+# Короткий сигнал (AlertKind.Beep): три пика и тишина после последнего. Калибровка на телефоне: частота, длина пика, период.
+BEEP_FREQ = 1760
+BEEP_ON = 0.12
+BEEP_PERIOD = 1.0
+BEEP_DURATION = 2.3
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else os.path.join("src", "Chrono", "Resources", "Raw")
 
 
@@ -59,8 +64,16 @@ def soft(t):
     return sum(strike(cycle - i * 0.6, f, MARIMBA, 2.5) for i, f in enumerate(notes))
 
 
-def render(name, fn):
-    frames = [fn(i / RATE) for i in range(int(RATE * DURATION))]
+def beep(t):
+    cycle = t % BEEP_PERIOD
+    if cycle >= BEEP_ON:
+        return 0.0
+    env = min(1.0, cycle / 0.005, (BEEP_ON - cycle) / 0.005)  # атака и спад по 5 мс без щелчка
+    return env * math.sin(2 * math.pi * BEEP_FREQ * t)
+
+
+def render(name, fn, duration=DURATION):
+    frames = [fn(i / RATE) for i in range(int(RATE * duration))]
     peak = max(abs(x) for x in frames) or 1.0
     scale = 0.8 * 32767 / peak  # нормализация до -2 dBFS
     path = os.path.join(OUT_DIR, f"{name}.wav")
@@ -76,3 +89,4 @@ if __name__ == "__main__":
     os.makedirs(OUT_DIR, exist_ok=True)
     for sound_name, sound_fn in [("bell", bell), ("chime", chime), ("digital", digital), ("rising", rising), ("soft", soft)]:
         render(sound_name, sound_fn)
+    render("beep", beep, BEEP_DURATION)

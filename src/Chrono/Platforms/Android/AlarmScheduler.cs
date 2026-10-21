@@ -16,7 +16,7 @@ internal sealed partial class NotifyKeysJsonContext : JsonSerializerContext
 
 /// <summary>
 /// Планирование через AlarmManager по уровню оповещения: Ring — SetAlarmClock (точный, не ограничивается Doze),
-/// Notify — точный будильник с уведомлением, None — ничего.
+/// Notify — точный будильник с уведомлением, Beep — то же уведомление и короткий сигнал, None — ничего.
 /// </summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
@@ -58,9 +58,11 @@ public sealed class AlarmScheduler : IAlarmScheduler
             {
                 foreach (var alarm in alarms)
                 {
-                    var upcoming = alarm.IsEnabled && alarm.At > now;
+                    // После даты окончания повторяющаяся запись не срабатывает: ни звонка, ни уведомления, ни напоминаний.
+                    var upcoming = alarm.IsEnabled && alarm.At > now && !alarm.Ended(alarm.At);
                     var ring = upcoming && alarm.Alert == AlertKind.Ring;
-                    var notify = upcoming && alarm.Alert == AlertKind.Notify;
+                    // Короткий сигнал едет теми же таймерами, что и уведомление: звук играет приёмник (см. ScheduleReceiver).
+                    var notify = upcoming && alarm.Alert is AlertKind.Notify or AlertKind.Beep;
 
                     // Каждый уровень снимает чужой PendingIntent: запись, сменившая Ring на Notify, не должна звонить на весь экран.
                     var operation = AlarmReceiver.CreatePendingIntent(context, alarm.Id);
@@ -142,7 +144,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
                         manager.SetExactAndAllowWhileIdle(
                             AlarmType.RtcWakeup,
                             triggerMs,
-                            ScheduleReceiver.CreatePendingIntent(context, alarm.Id, alarm.At, minutes, alarm.Label, alarm.DurationMinutes));
+                            ScheduleReceiver.CreatePendingIntent(context, alarm.Id, alarm.At, minutes, alarm.Label, alarm.DurationMinutes, alarm.Alert == AlertKind.Beep));
                     }
 
                     notifyKeys[alarm.Id.ToString()] = [.. wanted];
