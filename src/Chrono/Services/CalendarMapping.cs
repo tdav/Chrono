@@ -208,11 +208,16 @@ public static class CalendarMapping
                         // UTC — переводим в местную дату; дата без времени и время без Z — уже местные.
                         if (value.EndsWith('Z') && DateTime.TryParseExact(value, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var untilUtc))
                         {
-                            until = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(untilUtc, zone));
+                            var untilZoned = TimeZoneInfo.ConvertTimeFromUtc(untilUtc, zone);
+
+                            // UNTIL раньше времени старта в тот же день — повторения в этот день уже нет (так Google режет серию
+                            // «это и последующие»); свой UNTIL (23:59:59) не меньше любого старта и дату не сдвигает.
+                            until = DateOnly.FromDateTime(untilZoned).AddDays(TimeOnly.FromDateTime(untilZoned) < TimeOnly.FromDateTime(start) ? -1 : 0);
                         }
                         else if (!value.EndsWith('Z') && DateTime.TryParseExact(value, ["yyyyMMdd", "yyyyMMdd'T'HHmmss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var untilLocal))
                         {
-                            until = DateOnly.FromDateTime(untilLocal);
+                            // Дата без времени включительна; со временем — как у UTC-формы.
+                            until = DateOnly.FromDateTime(untilLocal).AddDays(value.Length > 8 && TimeOnly.FromDateTime(untilLocal) < TimeOnly.FromDateTime(start) ? -1 : 0);
                         }
                         else
                         {

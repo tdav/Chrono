@@ -648,9 +648,24 @@ public sealed class CalendarMappingTests
     }
 
     [Fact]
+    public void FromEvent_UntilBeforeStartTimeSameDay_EndsPreviousDay()
+    {
+        // 20261101T000000Z = 05:00 по Ташкенту, раньше старта 07:15: повторения 1.11 уже нет.
+        var utc = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261101T000000Z"]);
+        var local = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261101T050000"]);
+        var atStart = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261101T021500Z"]);
+
+        Assert.Equal(new DateOnly(2026, 10, 31), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(utc, Tashkent, Now, null)).Alarm.EndsOn);
+        Assert.Equal(new DateOnly(2026, 10, 31), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(local, Tashkent, Now, null)).Alarm.EndsOn);
+
+        // UNTIL ровно в момент старта включителен (RFC 5545): 1.11 07:15 ещё есть.
+        Assert.Equal(new DateOnly(2026, 11, 1), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(atStart, Tashkent, Now, null)).Alarm.EndsOn);
+    }
+
+    [Fact]
     public void FromEvent_UntilInPast_ImportedEnabledWithoutChange()
     {
-        var ev = Timed("2026-09-01T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261001T000000Z"]);
+        var ev = Timed("2026-09-01T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261001T185959Z"]);
 
         var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
 
