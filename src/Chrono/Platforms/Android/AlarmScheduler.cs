@@ -1,11 +1,18 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Android.App;
 using Android.Content;
 using Chrono.Models;
 using Chrono.Services;
 
 namespace Chrono.Platform;
+
+/// <summary>Метаданные JSON реестра таймеров Notify, сгенерированные при компиляции (без отражения на холодном старте).</summary>
+[JsonSerializable(typeof(Dictionary<string, string[]>))]
+internal sealed partial class NotifyKeysJsonContext : JsonSerializerContext
+{
+}
 
 /// <summary>
 /// Планирование через AlarmManager по уровню оповещения: Ring — SetAlarmClock (точный, не ограничивается Doze),
@@ -36,7 +43,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
             Dictionary<string, string[]> notifyKeys;
             try
             {
-                notifyKeys = JsonSerializer.Deserialize<Dictionary<string, string[]>>(Preferences.Default.Get(NotifyKeysPref, "{}")) ?? [];
+                notifyKeys = JsonSerializer.Deserialize(Preferences.Default.Get(NotifyKeysPref, "{}"), NotifyKeysJsonContext.Default.DictionaryStringStringArray) ?? [];
             }
             catch (JsonException)
             {
@@ -158,7 +165,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
             finally
             {
                 // Сохраняем и при сбое посреди прохода: поставленные таймеры должны остаться известными, чтобы их можно было снять.
-                Preferences.Default.Set(NotifyKeysPref, JsonSerializer.Serialize(notifyKeys));
+                Preferences.Default.Set(NotifyKeysPref, JsonSerializer.Serialize(notifyKeys, NotifyKeysJsonContext.Default.DictionaryStringStringArray));
             }
         }
     }
@@ -180,7 +187,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
             Dictionary<string, string[]> notifyKeys;
             try
             {
-                notifyKeys = JsonSerializer.Deserialize<Dictionary<string, string[]>>(Preferences.Default.Get(NotifyKeysPref, "{}")) ?? [];
+                notifyKeys = JsonSerializer.Deserialize(Preferences.Default.Get(NotifyKeysPref, "{}"), NotifyKeysJsonContext.Default.DictionaryStringStringArray) ?? [];
             }
             catch (JsonException)
             {
@@ -195,7 +202,7 @@ public sealed class AlarmScheduler : IAlarmScheduler
             }
 
             notifyKeys.Remove(id.ToString());
-            Preferences.Default.Set(NotifyKeysPref, JsonSerializer.Serialize(notifyKeys));
+            Preferences.Default.Set(NotifyKeysPref, JsonSerializer.Serialize(notifyKeys, NotifyKeysJsonContext.Default.DictionaryStringStringArray));
         }
     }
 

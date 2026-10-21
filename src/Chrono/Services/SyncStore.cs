@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Chrono.Services;
 
@@ -28,11 +29,16 @@ public sealed record SyncState
     public List<string> IgnoredEventIds { get; init; } = [];
 }
 
+/// <summary>Метаданные JSON, сгенерированные при компиляции (без отражения на холодном старте); формат sync.json прежний.</summary>
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(SyncState))]
+internal sealed partial class SyncStoreJsonContext : JsonSerializerContext
+{
+}
+
 /// <summary>Хранение SyncState в sync.json рядом с alarms.json. Запись атомарная, как в AlarmStore; вызовы — с главного потока.</summary>
 public sealed class SyncStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
     private readonly string path;
 
     public SyncStore(string directory) => this.path = Path.Combine(directory, "sync.json");
@@ -50,7 +56,7 @@ public sealed class SyncStore
 
         try
         {
-            return JsonSerializer.Deserialize<SyncState>(File.ReadAllText(this.path), JsonOptions) ?? new SyncState();
+            return JsonSerializer.Deserialize(File.ReadAllText(this.path), SyncStoreJsonContext.Default.SyncState) ?? new SyncState();
         }
         catch (JsonException)
         {
@@ -71,7 +77,7 @@ public sealed class SyncStore
     public void Save(SyncState state)
     {
         var tempPath = this.path + ".tmp";
-        File.WriteAllText(tempPath, JsonSerializer.Serialize(state, JsonOptions));
+        File.WriteAllText(tempPath, JsonSerializer.Serialize(state, SyncStoreJsonContext.Default.SyncState));
         File.Move(tempPath, this.path, overwrite: true);
     }
 

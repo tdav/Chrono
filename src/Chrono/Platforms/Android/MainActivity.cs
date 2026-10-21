@@ -38,7 +38,9 @@ public class MainActivity : MauiAppCompatActivity
             ScheduleLauncher.Request(openDay);
         }
 
+        StartTrace.Mark("MainActivity.OnCreate: до base");
         base.OnCreate(savedInstanceState);
+        StartTrace.Mark("MainActivity.OnCreate: после base");
 
         // Светлая тема «Кость»: тёмные значки статус-бара и панели навигации (иначе белые значки пропадают на светлом фоне).
         var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(this.Window!, this.Window!.DecorView)!;
@@ -58,6 +60,12 @@ public class MainActivity : MauiAppCompatActivity
                 this.Window!.AddFlags(WindowManagerFlags.ShowWhenLocked | WindowManagerFlags.TurnScreenOn);
             }
         }
+    }
+
+    protected override void OnResume()
+    {
+        StartTrace.Mark("MainActivity.OnResume");
+        base.OnResume();
     }
 
     protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)

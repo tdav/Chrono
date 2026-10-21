@@ -22,6 +22,11 @@
 		<AndroidStoreUncompressedFileExtensions>.wav</AndroidStoreUncompressedFileExtensions>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(ChronoStartTrace)' == 'true'">
+		<!-- Метки времени холодного старта в logcat (см. StartTrace): включаются только по -p:ChronoStartTrace=true. -->
+		<DefineConstants>$(DefineConstants);CHRONO_STARTTRACE</DefineConstants>
+	</PropertyGroup>
+
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(Configuration)' == 'Release'">
 		<!-- Release по умолчанию собирает .aab (для Google Play); publish должен давать устанавливаемый .apk. -->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>

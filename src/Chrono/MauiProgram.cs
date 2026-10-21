@@ -12,6 +12,10 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        StartTrace.Mark("CreateMauiApp: начало");
+        // Первое обращение к TimeZoneInfo.Local на Android разбирает tzdata (110-250 мс) и приходится на RescheduleAll
+        // в конструкторе App; на фоновом потоке оно идёт параллельно с созданием приложения.
+        _ = Task.Run(() => TimeZoneInfo.Local);
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
@@ -111,6 +115,8 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        StartTrace.Mark("CreateMauiApp: конец");
+        return app;
     }
 }
