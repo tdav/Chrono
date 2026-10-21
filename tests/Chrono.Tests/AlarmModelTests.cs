@@ -160,4 +160,61 @@ public sealed class AlarmModelTests
 
         Assert.Equal([at], new Alarm().AlertTimes(at));
     }
+
+    [Theory]
+    [InlineData(RepeatKind.None)]
+    [InlineData(RepeatKind.OnceThenDelete)]
+    public void IsOccurrence_OneShot_OnlyExactAt(RepeatKind repeat)
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 21, 10, 0, 0), Repeat = repeat };
+
+        Assert.True(a.IsOccurrence(new DateTime(2026, 10, 21, 10, 0, 0)));
+        // Время записи изменили: таймер со старым временем устарел.
+        Assert.False(a.IsOccurrence(new DateTime(2026, 10, 21, 10, 5, 0)));
+        // То же время суток другого дня разовую запись не касается.
+        Assert.False(a.IsOccurrence(new DateTime(2026, 10, 22, 10, 0, 0)));
+    }
+
+    [Fact]
+    public void IsOccurrence_Daily_AtAlreadyMovedToNextTime_YesterdaysFiringStillValid()
+    {
+        // GetAll перенёс At на завтра; сегодняшнее срабатывание, ждущее доставки, остаётся действительным.
+        var a = new Alarm { At = new DateTime(2026, 10, 22, 10, 0, 0), Repeat = RepeatKind.Daily };
+
+        Assert.True(a.IsOccurrence(new DateTime(2026, 10, 21, 10, 0, 0)));
+        Assert.True(a.IsOccurrence(new DateTime(2026, 10, 22, 10, 0, 0)));
+        Assert.False(a.IsOccurrence(new DateTime(2026, 10, 21, 10, 5, 0)));
+    }
+
+    [Fact]
+    public void IsOccurrence_Weekly_OnlyChosenDays()
+    {
+        // 26.10.2026 — понедельник, 28.10 — среда.
+        var a = new Alarm { At = new DateTime(2026, 10, 28, 8, 0, 0), Repeat = RepeatKind.Weekly, Days = WeekDays.Monday | WeekDays.Wednesday };
+
+        Assert.True(a.IsOccurrence(new DateTime(2026, 10, 26, 8, 0, 0)));
+        Assert.False(a.IsOccurrence(new DateTime(2026, 10, 27, 8, 0, 0)));
+        // Дни недели изменили: таймер на понедельник от прежнего набора устарел.
+        Assert.False((a with { Days = WeekDays.Wednesday }).IsOccurrence(new DateTime(2026, 10, 26, 8, 0, 0)));
+        // Без выбранных дней — каждый день.
+        Assert.True((a with { Days = WeekDays.None }).IsOccurrence(new DateTime(2026, 10, 27, 8, 0, 0)));
+    }
+
+    [Fact]
+    public void IsOccurrence_Yearly_SameDayOtherYearOnly()
+    {
+        var a = new Alarm { At = new DateTime(2027, 3, 15, 7, 0, 0), Repeat = RepeatKind.Yearly };
+
+        Assert.True(a.IsOccurrence(new DateTime(2026, 3, 15, 7, 0, 0)));
+        Assert.False(a.IsOccurrence(new DateTime(2026, 3, 16, 7, 0, 0)));
+    }
+
+    [Fact]
+    public void IsOccurrence_BeforeStartsOn_False()
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), Repeat = RepeatKind.Daily, StartsOn = new DateOnly(2026, 10, 26) };
+
+        Assert.False(a.IsOccurrence(new DateTime(2026, 10, 25, 7, 15, 0)));
+        Assert.True(a.IsOccurrence(new DateTime(2026, 10, 27, 7, 15, 0)));
+    }
 }

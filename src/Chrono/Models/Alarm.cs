@@ -102,6 +102,12 @@ public sealed record Alarm
     /// <summary>Разовая запись: без повтора или «Один раз и удалить».</summary>
     public bool IsOneShot() => this.Repeat is RepeatKind.None or RepeatKind.OnceThenDelete;
 
+    /// <summary>
+    /// Является ли at срабатыванием записи по её нынешнему правилу. Нужна приёмнику уведомления: таймер с ключом по времени
+    /// мог остаться от прежнего времени записи (правка), а у повторяющейся GetAll уже перенёс At на следующий раз.
+    /// </summary>
+    public bool IsOccurrence(DateTime at) => at == this.At || (!this.IsOneShot() && this.NextAfter(at.AddTicks(-1)) == at);
+
     /// <summary>Конец срабатывания: At плюс бо́льшее из длительности и (для Ring) времени звонка.</summary>
     public DateTime ExpiresAt()
     {
