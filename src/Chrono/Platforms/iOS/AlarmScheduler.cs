@@ -7,7 +7,7 @@ using UserNotifications;
 
 namespace Chrono.Platform;
 
-/// <summary>Планирование уведомлений (IosNotificationPlan): цепочка time-sensitive для Ring, одно обычное для Notify.</summary>
+/// <summary>Планирование уведомлений (IosNotificationPlan): цепочка time-sensitive для Ring, одно обычное для Notify и Beep.</summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
     public const string AlarmIdKey = "alarm_id";
@@ -29,14 +29,15 @@ public sealed class AlarmScheduler : IAlarmScheduler
 
         foreach (var planned in IosNotificationPlan.Build(alarms, DateTime.Now))
         {
-            var isNotify = planned.Alarm.Alert == AlertKind.Notify;
+            // Notify и Beep — одно обычное уведомление (короткий сигнал): открывают распорядок и идут баннером.
+            var isNotify = planned.Alarm.Alert is AlertKind.Notify or AlertKind.Beep;
             // Начало срабатывания: у напоминания FireAt раньше него на ReminderMinutes.
             var occurrence = planned.FireAt.AddMinutes(planned.ReminderMinutes);
             var content = new UNMutableNotificationContent
             {
                 Title = string.IsNullOrWhiteSpace(planned.Alarm.Label) ? AppResources.DefaultLabel : planned.Alarm.Label,
                 Body = (isNotify ? occurrence : planned.Alarm.At).ToString("HH:mm"),
-                // Notify — обычное уведомление без прорыва через фокус: Active2, а не Active
+                // Notify и Beep — обычное уведомление без прорыва через фокус: Active2, а не Active
                 // (устаревший Active имеет значение 0 = Passive на стороне iOS).
                 // Ring — TimeSensitive2, а не TimeSensitive: устаревший член имеет значение 3 = Critical на стороне iOS.
                 InterruptionLevel = isNotify ? UNNotificationInterruptionLevel.Active2 : UNNotificationInterruptionLevel.TimeSensitive2,
@@ -48,7 +49,10 @@ public sealed class AlarmScheduler : IAlarmScheduler
             };
             if (isNotify)
             {
-                content.Sound = UNNotificationSound.Default;
+                // Beep — собственный звук beep.wav из бандла; Notify — системный звук по умолчанию.
+                content.Sound = planned.Alarm.Alert == AlertKind.Beep
+                    ? UNNotificationSound.GetSound("beep.wav")
+                    : UNNotificationSound.Default;
             }
             else if (planned.Alarm.SoundEnabled)
             {

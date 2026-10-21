@@ -7,7 +7,7 @@ namespace Chrono.Platform;
 
 /// <summary>
 /// Нажатие на уведомление и уведомление при открытом приложении → RingPage;
-/// уведомление Notify (есть open_day) показывается баннером и открывает «Распорядок» на нужном дне.
+/// уведомление Notify или Beep (есть open_day) показывается баннером и открывает «Распорядок» на нужном дне.
 /// Назначается в FinishedLaunching, чтобы ловить и запуск приложения нажатием.
 /// </summary>
 public sealed class NotificationDelegate : UNUserNotificationCenterDelegate
