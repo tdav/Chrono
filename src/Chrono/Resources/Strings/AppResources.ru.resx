@@ -642,4 +642,31 @@
   <data name="SyncScopesMissing" xml:space="preserve">
     <value>Разрешите доступ к календарю для синхронизации</value>
   </data>
+  <data name="Alert_Beep" xml:space="preserve">
+    <value>Короткий сигнал</value>
+  </data>
+  <data name="Repeat_Monthly" xml:space="preserve">
+    <value>Каждый месяц</value>
+  </data>
+  <data name="MonthlyOnDay" xml:space="preserve">
+    <value>Каждый месяц, {0}-го</value>
+  </data>
+  <data name="RowEnds" xml:space="preserve">
+    <value>Окончание</value>
+  </data>
+  <data name="EndsNotSet" xml:space="preserve">
+    <value>Не выбрано</value>
+  </data>
+  <data name="EndsPickHint" xml:space="preserve">
+    <value>Выберите последний день</value>
+  </data>
+  <data name="EndsBeforeStart" xml:space="preserve">
+    <value>Дата окончания раньше начала</value>
+  </data>
+  <data name="ChannelBeep" xml:space="preserve">
+    <value>Короткие сигналы</value>
+  </data>
+  <data name="DialTapToEdit" xml:space="preserve">
+    <value>Нажмите, чтобы изменить</value>
+  </data>
 </root>

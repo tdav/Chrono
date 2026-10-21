@@ -11,6 +11,9 @@ public enum RepeatKind
 
     /// <summary>Разовая запись, которая после срабатывания и окончания длительности удаляется. Добавлено последним: enum хранится числом.</summary>
     OnceThenDelete,
+
+    /// <summary>Раз в месяц в то же число; месяцы без такого числа пропускаются. Добавлено последним: enum хранится числом.</summary>
+    Monthly,
 }
 
 /// <summary>Уровень оповещения записи.</summary>
@@ -19,6 +22,9 @@ public enum AlertKind
     None,
     Notify,
     Ring,
+
+    /// <summary>Короткий сигнал без звонка и без полноэкранного экрана. Добавлено последним: enum хранится числом.</summary>
+    Beep,
 }
 
 /// <summary>Набор дней недели; бит N соответствует (DayOfWeek)N.</summary>
@@ -70,6 +76,9 @@ public sealed record Alarm
     /// <summary>Первый день действия записи; null только у ещё не промигрированных старых записей.</summary>
     public DateOnly? StartsOn { get; init; }
 
+    /// <summary>Последний день действия повторяющейся записи включительно; null — бессрочно. У разовой игнорируется.</summary>
+    public DateOnly? EndsOn { get; init; }
+
     /// <summary>Id события в календаре Google; null — запись ещё не отправлена. В старых файлах поля нет.</summary>
     public string? GoogleEventId { get; init; }
 
@@ -99,6 +108,9 @@ public sealed record Alarm
     /// <summary>Сколько звонок звонит до автоматической остановки (единый источник).</summary>
     public static readonly TimeSpan RingTimeout = TimeSpan.FromMinutes(10);
 
+    /// <summary>Срабатывание occurrence позже EndsOn: повторяющаяся запись уже закончилась. Разовая никогда не заканчивается.</summary>
+    public bool Ended(DateTime occurrence) => !this.IsOneShot() && this.EndsOn is { } e && DateOnly.FromDateTime(occurrence) > e;
+
     /// <summary>Разовая запись: без повтора или «Один раз и удалить».</summary>
     public bool IsOneShot() => this.Repeat is RepeatKind.None or RepeatKind.OnceThenDelete;
 
@@ -106,7 +118,7 @@ public sealed record Alarm
     /// Является ли at срабатыванием записи по её нынешнему правилу. Нужна приёмнику уведомления: таймер с ключом по времени
     /// мог остаться от прежнего времени записи (правка), а у повторяющейся GetAll уже перенёс At на следующий раз.
     /// </summary>
-    public bool IsOccurrence(DateTime at) => at == this.At || (!this.IsOneShot() && this.NextAfter(at.AddTicks(-1)) == at);
+    public bool IsOccurrence(DateTime at) => (at == this.At || (!this.IsOneShot() && this.NextAfter(at.AddTicks(-1)) == at)) && !this.Ended(at);
 
     /// <summary>Конец срабатывания: At плюс бо́льшее из длительности и (для Ring) времени звонка.</summary>
     public DateTime ExpiresAt()
@@ -124,19 +136,26 @@ public sealed record Alarm
             return false;
         }
 
+        if (!this.IsOneShot() && this.EndsOn is { } e && day > e)
+        {
+            return false;
+        }
+
         var at = DateOnly.FromDateTime(this.At);
         return this.Repeat switch
         {
             RepeatKind.Daily => true,
             RepeatKind.Weekly => this.Days == WeekDays.None || this.Days.HasFlag((WeekDays)(1 << (int)day.DayOfWeek)),
             RepeatKind.Yearly => day.Month == at.Month && day.Day == at.Day,
+            RepeatKind.Monthly => day.Day == at.Day,
             _ => day == at,
         };
     }
 
     /// <summary>
     /// Первое срабатывание по правилу повтора строго позже moment: время суток берётся из At,
-    /// для Yearly — ещё день и месяц (29 февраля — только в високосные годы).
+    /// для Yearly — ещё день и месяц (29 февраля — только в високосные годы), для Monthly — число месяца
+    /// (месяцы без такого числа пропускаются). EndsOn не учитывает: вызывающий проверяет Ended.
     /// </summary>
     public DateTime NextAfter(DateTime moment)
     {
@@ -153,6 +172,20 @@ public sealed record Alarm
             {
                 if (this.At.Day <= DateTime.DaysInMonth(year, this.At.Month)
                     && new DateTime(new DateOnly(year, this.At.Month, this.At.Day), time) is var candidate
+                    && candidate > moment)
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        if (this.Repeat == RepeatKind.Monthly)
+        {
+            // Завершается за ≤ 12 шагов: не менее 7 месяцев в году имеют 31 день.
+            for (var (year, month) = (moment.Year, moment.Month); ; (year, month) = month == 12 ? (year + 1, 1) : (year, month + 1))
+            {
+                if (this.At.Day <= DateTime.DaysInMonth(year, month)
+                    && new DateTime(new DateOnly(year, month, this.At.Day), time) is var candidate
                     && candidate > moment)
                 {
                     return candidate;

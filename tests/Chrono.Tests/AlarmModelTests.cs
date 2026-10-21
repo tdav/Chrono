@@ -125,6 +125,7 @@ public sealed class AlarmModelTests
         Assert.Equal(2, (int)RepeatKind.Weekly);
         Assert.Equal(3, (int)RepeatKind.Yearly);
         Assert.Equal(4, (int)RepeatKind.OnceThenDelete);
+        Assert.Equal(5, (int)RepeatKind.Monthly);
     }
 
     [Fact]
@@ -216,5 +217,70 @@ public sealed class AlarmModelTests
 
         Assert.False(a.IsOccurrence(new DateTime(2026, 10, 25, 7, 15, 0)));
         Assert.True(a.IsOccurrence(new DateTime(2026, 10, 27, 7, 15, 0)));
+    }
+
+    [Fact]
+    public void AlertKind_ExistingValues_KeepNumbers()
+    {
+        Assert.Equal(0, (int)AlertKind.None);
+        Assert.Equal(1, (int)AlertKind.Notify);
+        Assert.Equal(2, (int)AlertKind.Ring);
+        Assert.Equal(3, (int)AlertKind.Beep);
+    }
+
+    [Fact]
+    public void NextAfter_Monthly_SameDayNextMonth()
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 15, 8, 0, 0), Repeat = RepeatKind.Monthly, StartsOn = new DateOnly(2026, 10, 15) };
+        Assert.Equal(new DateTime(2026, 11, 15, 8, 0, 0), a.NextAfter(new DateTime(2026, 10, 15, 9, 0, 0)));
+    }
+
+    [Fact]
+    public void NextAfter_Monthly31_SkipsShortMonths()
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 31, 8, 0, 0), Repeat = RepeatKind.Monthly, StartsOn = new DateOnly(2026, 10, 31) };
+        Assert.Equal(new DateTime(2026, 12, 31, 8, 0, 0), a.NextAfter(new DateTime(2026, 10, 31, 9, 0, 0)));
+        Assert.Equal(new DateTime(2027, 1, 31, 8, 0, 0), a.NextAfter(new DateTime(2026, 12, 31, 9, 0, 0)));
+        Assert.Equal(new DateTime(2027, 3, 31, 8, 0, 0), a.NextAfter(new DateTime(2027, 1, 31, 9, 0, 0)));
+    }
+
+    [Fact]
+    public void OccursOn_Monthly_OnlyThatDayOfMonth()
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 15, 8, 0, 0), Repeat = RepeatKind.Monthly, StartsOn = new DateOnly(2026, 10, 15) };
+        Assert.True(a.OccursOn(new DateOnly(2026, 12, 15)));
+        Assert.False(a.OccursOn(new DateOnly(2026, 12, 16)));
+    }
+
+    [Fact]
+    public void OccursOn_EndsOn_InclusiveThenStops()
+    {
+        var a = new Alarm { At = new DateTime(2026, 10, 21, 7, 30, 0), Repeat = RepeatKind.Daily, StartsOn = new DateOnly(2026, 10, 21), EndsOn = new DateOnly(2026, 11, 9) };
+        Assert.True(a.OccursOn(new DateOnly(2026, 11, 9)));
+        Assert.False(a.OccursOn(new DateOnly(2026, 11, 10)));
+    }
+
+    [Fact]
+    public void Ended_NextAfterLastDay_True()
+    {
+        var a = new Alarm { At = new DateTime(2026, 11, 9, 7, 0, 0), Repeat = RepeatKind.Daily, StartsOn = new DateOnly(2026, 10, 21), EndsOn = new DateOnly(2026, 11, 9) };
+        var next = a.NextAfter(new DateTime(2026, 11, 9, 8, 0, 0));
+        Assert.Equal(new DateTime(2026, 11, 10, 7, 0, 0), next);
+        Assert.True(a.Ended(next));
+        Assert.False(a.Ended(new DateTime(2026, 11, 9, 7, 0, 0)));
+    }
+
+    [Fact]
+    public void Ended_OneShot_AlwaysFalse()
+    {
+        var a = new Alarm { At = new DateTime(2026, 12, 1, 7, 0, 0), EndsOn = new DateOnly(2026, 11, 1) };
+        Assert.False(a.Ended(a.At));
+    }
+
+    [Fact]
+    public void IsOccurrence_AfterEndsOn_False()
+    {
+        var a = new Alarm { At = new DateTime(2026, 11, 10, 7, 0, 0), Repeat = RepeatKind.Daily, StartsOn = new DateOnly(2026, 10, 21), EndsOn = new DateOnly(2026, 11, 9) };
+        Assert.False(a.IsOccurrence(new DateTime(2026, 11, 10, 7, 0, 0)));
     }
 }
