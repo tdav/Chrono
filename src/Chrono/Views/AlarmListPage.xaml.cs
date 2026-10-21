@@ -16,10 +16,12 @@ public partial class AlarmListPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        Chrono.Services.StartTrace.Mark("AlarmListPage: показана");
 
         // Список читаем сразу, до await: AppearingAsync может уйти в навигацию или проверки надёжности,
         // а вкладка не должна показывать данные, прочитанные до правок на «Распорядке».
         this.viewModel.Load();
         await this.viewModel.AppearingAsync();
+        Chrono.Services.StartTrace.Mark("AlarmListPage: AppearingAsync выполнен");
     }
 }

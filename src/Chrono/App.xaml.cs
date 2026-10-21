@@ -10,6 +10,7 @@ public partial class App : Application
 
     public App(IServiceProvider services, AlarmService alarmService, SyncLauncher syncLauncher)
     {
+        StartTrace.Mark("App: конструктор, начало");
         this.InitializeComponent();
         this.services = services;
         this.syncLauncher = syncLauncher;
@@ -17,6 +18,7 @@ public partial class App : Application
         this.UserAppTheme = AppTheme.Dark;
         // Восстанавливаем расписание: после «Остановить принудительно» Android стирает будильники приложения.
         alarmService.RescheduleAll();
+        StartTrace.Mark("App: RescheduleAll выполнен");
 
         // Правки пользователя уходят в Google через 3 с; правки из самой синхронизации (fromSync) Changed не вызывают.
         alarmService.Changed += (_, _) => syncLauncher.RequestSoon();
@@ -25,6 +27,7 @@ public partial class App : Application
     protected override Window CreateWindow(IActivationState? activationState)
     {
         // Запуск по сигналу — без splash, сразу Shell; RingPage откроет AlarmListPage через RingLauncher.
+        StartTrace.Mark("App: CreateWindow, начало");
         Page first = RingLauncher.PendingId is null
             ? new SplashPage(this.services)
             : this.services.GetRequiredService<AppShell>();
@@ -39,6 +42,7 @@ public partial class App : Application
 
         // Возврат в приложение: подтянуть изменения, сделанные в Google Календаре.
         window.Resumed += (_, _) => this.syncLauncher.RequestSoon();
+        StartTrace.Mark("App: CreateWindow, конец");
         return window;
     }
 }

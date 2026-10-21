@@ -12,6 +12,7 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
+        StartTrace.Mark("CreateMauiApp: начало");
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
@@ -111,6 +112,8 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+        StartTrace.Mark("CreateMauiApp: конец");
+        return app;
     }
 }

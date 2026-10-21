@@ -69,6 +69,7 @@ public sealed class SplashPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        Chrono.Services.StartTrace.Mark("SplashPage: показана");
 
         var swing = async () =>
         {
@@ -126,5 +127,6 @@ public sealed class SplashPage : ContentPage
 #endif
 
         this.Window!.Page = this.services.GetRequiredService<AppShell>();
+        Chrono.Services.StartTrace.Mark("SplashPage: Shell выставлен");
     }
 }
