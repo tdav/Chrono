@@ -90,8 +90,20 @@
   <data name="UnmarkDone" xml:space="preserve"><value>Mark as not done</value></data>
   <data name="Tab_Alarms" xml:space="preserve"><value>Alarms</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
-  <data name="Tab_Cycle" xml:space="preserve"><value>Cycle</value></data>
-  <data name="CycleSoon" xml:space="preserve"><value>Coming soon</value></data>
+  <data name="Tab_Dial" xml:space="preserve"><value>Dial</value></data>
+  <data name="DialNow" xml:space="preserve"><value>Now</value></data>
+  <data name="DialEvening" xml:space="preserve"><value>Evening</value></data>
+  <data name="DialLeft" xml:space="preserve"><value>{0} left</value></data>
+  <data name="DialUntilEnd" xml:space="preserve"><value>ends in {0} · next {1} at {2}</value></data>
+  <data name="DialFree" xml:space="preserve"><value>Free · next {0} at {1}</value></data>
+  <data name="DialFreeAllDay" xml:space="preserve"><value>Nothing planned</value></data>
+  <data name="DialTapForActions" xml:space="preserve"><value>Tap for actions</value></data>
+  <data name="DialClearSelection" xml:space="preserve"><value>Clear selection</value></data>
+  <data name="DialAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
+  <data name="DialEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="DialDone" xml:space="preserve"><value>Done</value></data>
+  <data name="DialUndone" xml:space="preserve"><value>Undo</value></data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Once, then delete</value></data>
   <data name="RowIcon" xml:space="preserve"><value>Icon</value></data>
   <data name="RowDuration" xml:space="preserve"><value>Duration</value></data>

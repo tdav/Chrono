@@ -90,8 +90,20 @@
   <data name="UnmarkDone" xml:space="preserve"><value>Снять отметку</value></data>
   <data name="Tab_Alarms" xml:space="preserve"><value>Будильники</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Распорядок</value></data>
-  <data name="Tab_Cycle" xml:space="preserve"><value>Цикл</value></data>
-  <data name="CycleSoon" xml:space="preserve"><value>Скоро</value></data>
+  <data name="Tab_Dial" xml:space="preserve"><value>Циферблат</value></data>
+  <data name="DialNow" xml:space="preserve"><value>Сейчас</value></data>
+  <data name="DialEvening" xml:space="preserve"><value>Вечер</value></data>
+  <data name="DialLeft" xml:space="preserve"><value>ещё {0}</value></data>
+  <data name="DialUntilEnd" xml:space="preserve"><value>до конца {0} · далее {1} в {2}</value></data>
+  <data name="DialFree" xml:space="preserve"><value>Свободно · далее {0} в {1}</value></data>
+  <data name="DialFreeAllDay" xml:space="preserve"><value>Ничего не запланировано</value></data>
+  <data name="DialTapForActions" xml:space="preserve"><value>Нажмите, чтобы открыть действия</value></data>
+  <data name="DialClearSelection" xml:space="preserve"><value>Снять выбор</value></data>
+  <data name="DialAdd" xml:space="preserve"><value>Добавить</value></data>
+  <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
+  <data name="DialEdit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="DialDone" xml:space="preserve"><value>Сделано</value></data>
+  <data name="DialUndone" xml:space="preserve"><value>Снять отметку</value></data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Один раз и удалить</value></data>
   <data name="RowIcon" xml:space="preserve"><value>Иконка</value></data>
   <data name="RowDuration" xml:space="preserve"><value>Длительность</value></data>

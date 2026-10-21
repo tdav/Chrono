@@ -104,7 +104,8 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<SchedulePage>();
-        builder.Services.AddTransient<CyclePage>();
+        builder.Services.AddTransient<DialViewModel>();
+        builder.Services.AddTransient<DialPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

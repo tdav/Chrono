@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Views.DialPage"
+             x:DataType="vm:DialViewModel">
+
+    <ContentPage.Resources>
+        <!-- Ячейка сегмента «Сейчас / Вечер»: базовый вид — здесь, активный (металл с золотой кромкой) — триггером у ячейки. -->
+        <Style x:Key="SegmentCell" TargetType="Border">
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+            <Setter Property="StrokeThickness" Value="1" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Stroke" Value="Transparent" />
+        </Style>
+        <Style x:Key="SegmentText" TargetType="Label" BasedOn="{StaticResource ChipText}">
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid SafeAreaEdges="Container">
+        <ScrollView VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,12,20,110" Spacing="14">
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="{x:Static res:AppResources.Tab_Dial}" Style="{StaticResource ScreenTitle}" Padding="0,6,0,0" />
+                    <Label Grid.Column="1" Text="{Binding TitleDate}" Style="{StaticResource Muted}" FontFamily="ManropeBold" FontSize="13"
+                           VerticalOptions="Center" Padding="0,6,0,0" />
+                </Grid>
+
+                <!-- Сегмент: «Сейчас» — половина суток с текущим временем, «Вечер» — 12:00–24:00. -->
+                <Border Background="{StaticResource Divider}" Stroke="{StaticResource Divider}" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 23" Padding="3">
+                    <Grid ColumnDefinitions="*,*">
+                        <Border Style="{StaticResource SegmentCell}" SemanticProperties.Description="{x:Static res:AppResources.DialNow}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsNowTab}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                                    <Setter Property="Stroke" Value="{StaticResource Gold}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowNowCommand}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{x:Static res:AppResources.DialNow}" Style="{StaticResource SegmentText}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsNowTab}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource SegmentCell}" SemanticProperties.Description="{x:Static res:AppResources.DialEvening}">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsEvening}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
+                                    <Setter Property="Stroke" Value="{StaticResource Gold}" />
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding ShowEveningCommand}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{x:Static res:AppResources.DialEvening}" Style="{StaticResource SegmentText}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsEvening}" Value="True">
+                                        <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Циферблат; подписи в центре лежат поверх и касания пропускают. -->
+                <Grid>
+                    <GraphicsView x:Name="Dial" HeightRequest="320" SemanticProperties.Description="{Binding DialDescription}">
+                        <GraphicsView.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDialTapped" />
+                        </GraphicsView.GestureRecognizers>
+                    </GraphicsView>
+                    <VerticalStackLayout WidthRequest="140" Spacing="2" HorizontalOptions="Center" VerticalOptions="Center"
+                                         InputTransparent="True" CascadeInputTransparent="True">
+                        <Label Text="{Binding CenterTitle}" FontFamily="ManropeExtraBold" FontSize="18" TextColor="{StaticResource Text}"
+                               HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding CenterSub}" Style="{StaticResource Muted}" FontSize="12"
+                               HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Без выбора: «сейчас» и ближайшие дела. -->
+                <Border Style="{StaticResource Card}" IsVisible="{Binding IsIdle}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding IdleHeadline}" Style="{StaticResource RowValue}" />
+                        <VerticalStackLayout Spacing="2" BindableLayout.ItemsSource="{Binding IdleLines}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" Style="{StaticResource Muted}" FontSize="13" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- С выбором: карточка записи; нажатие раскрывает действия. -->
+                <Border Style="{StaticResource Card}" Stroke="{StaticResource Metal700}" StrokeThickness="2"
+                        IsVisible="{Binding HasSelection}"
+                        SemanticProperties.Description="{Binding CardDescription}"
+                        SemanticProperties.Hint="{x:Static res:AppResources.DialTapForActions}">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
+                    </Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="8">
+                        <HorizontalStackLayout Spacing="10">
+                            <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6" Color="{Binding SelectedColor}" VerticalOptions="Center" />
+                            <Label Text="{Binding SelectedTitle}" FontFamily="ManropeExtraBold" FontSize="18" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding SelectedDetails}" Style="{StaticResource Muted}" FontSize="13" />
+                        <Label Text="{x:Static res:AppResources.DialTapForActions}" FontSize="12" TextColor="{StaticResource GoldInk}"
+                               IsVisible="{Binding IsHintVisible}" />
+                        <!-- Справа налево: «Изменить» (primary) крайняя справа, левее «Сделано», ещё левее «Снять выбор». -->
+                        <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" IsVisible="{Binding IsExpanded}">
+                            <Button Text="{x:Static res:AppResources.DialClearSelection}" Command="{Binding ClearSelectionCommand}"
+                                    Style="{StaticResource CompactAccentButton}" FontSize="12" Padding="4,0" />
+                            <Button Grid.Column="1" Text="{Binding DoneText}" Command="{Binding ToggleDoneCommand}"
+                                    Style="{StaticResource CompactAccentButton}" FontSize="12" Padding="4,0"
+                                    SemanticProperties.Description="{Binding DoneDescription}" />
+                            <Button Grid.Column="2" Text="{x:Static res:AppResources.DialEdit}" Command="{Binding EditCommand}"
+                                    Style="{StaticResource CompactPrimaryButton}" FontSize="12" Padding="4,0" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Плавающая «+», как на «Будильниках» и в «Распорядке». -->
+        <Border WidthRequest="60" HeightRequest="60" StrokeShape="RoundRectangle 30"
+                Background="{StaticResource MetalBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
+                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,24,24"
+                SemanticProperties.Description="{x:Static res:AppResources.DialAdd}">
+            <Border.Shadow>
+                <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding AddCommand}" />
+            </Border.GestureRecognizers>
+            <Image Source="icon_plus.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
+        </Border>
+    </Grid>
+</ContentPage>
