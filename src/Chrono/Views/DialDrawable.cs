@@ -73,8 +73,10 @@ public sealed class DialDrawable : IDrawable
                         canvas.DrawLine(At(cx, cy, r * 0.84f, slice.StartAngle), At(cx, cy, r, slice.StartAngle));
                     }
 
-                    canvas.StrokeColor = color.WithAlpha(dim ? 0.35f : 0.9f);
-                    canvas.StrokeSize = 4;
+                    // Как у секторов: выполненная — 35 %, выключенная — бледная тонкая линия, остальные бледнеют при выборе другой записи.
+                    var alpha = slice.Entry.IsMuted ? 0.45f : slice.Entry.IsDone ? 0.35f : 0.9f;
+                    canvas.StrokeColor = color.WithAlpha(dim ? Math.Min(alpha, 0.35f) : alpha);
+                    canvas.StrokeSize = slice.Entry.IsMuted ? 2 : 4;
                     canvas.DrawLine(At(cx, cy, r * 0.86f, slice.StartAngle), At(cx, cy, r, slice.StartAngle));
                     continue;
                 }

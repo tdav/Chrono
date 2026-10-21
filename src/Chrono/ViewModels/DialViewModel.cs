@@ -162,9 +162,10 @@ public sealed partial class DialViewModel : ObservableObject
 
         if (minutes is not null)
         {
+            // Идущее дело называется в строке: «Работа · до конца 26 мин · далее Обед в 13:00».
             this.IdleHeadline = next is { } n
-                ? string.Format(culture, AppResources.DialUntilEnd, minutes, Title(n), $"{n.Start:HH:mm}")
-                : left!;
+                ? string.Format(culture, AppResources.DialUntilEnd, Title(current!.Value), minutes, Title(n), $"{n.Start:HH:mm}")
+                : $"{Title(current!.Value)} · {left}";
         }
         else if (next is { } following)
         {
@@ -207,7 +208,9 @@ public sealed partial class DialViewModel : ObservableObject
     [RelayCommand]
     private void ShowNow()
     {
+        // Выбранной записи может не быть на другой половине: переключение снимает выбор, как «Снять выбор».
         this.IsEvening = false;
+        this.selected = null;
         this.Refresh();
     }
 
@@ -215,6 +218,7 @@ public sealed partial class DialViewModel : ObservableObject
     private void ShowEvening()
     {
         this.IsEvening = true;
+        this.selected = null;
         this.Refresh();
     }
 

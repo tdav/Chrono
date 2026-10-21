@@ -94,7 +94,7 @@
   <data name="DialNow" xml:space="preserve"><value>Сейчас</value></data>
   <data name="DialEvening" xml:space="preserve"><value>Вечер</value></data>
   <data name="DialLeft" xml:space="preserve"><value>ещё {0}</value></data>
-  <data name="DialUntilEnd" xml:space="preserve"><value>до конца {0} · далее {1} в {2}</value></data>
+  <data name="DialUntilEnd" xml:space="preserve"><value>{0} · до конца {1} · далее {2} в {3}</value></data>
   <data name="DialFree" xml:space="preserve"><value>Свободно · далее {0} в {1}</value></data>
   <data name="DialFreeAllDay" xml:space="preserve"><value>Ничего не запланировано</value></data>
   <data name="DialTapForActions" xml:space="preserve"><value>Нажмите, чтобы открыть действия</value></data>

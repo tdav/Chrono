@@ -141,6 +141,8 @@
 
     <!-- Компактная primary-кнопка 38 в паре с CompactAccentButton: действия карточки на «Циферблате». -->
     <Style x:Key="CompactPrimaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <!-- Тень от PrimaryButton рамка карточки обрезает: вокруг кнопки виден светлый прямоугольник. -->
+        <Setter Property="Shadow" Value="{x:Null}" />
         <Setter Property="HeightRequest" Value="38" />
         <Setter Property="CornerRadius" Value="13" />
         <Setter Property="FontSize" Value="13" />
