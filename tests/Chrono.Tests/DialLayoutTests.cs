@@ -152,6 +152,20 @@ public sealed class DialLayoutTests
     }
 
     [Fact]
+    public void Current_EqualDuration_PicksTopmostLikeHitTest()
+    {
+        // Два идущих дела одной длины: «текущим» должно быть то же, что выбирает касание, — верхнее (последнее в порядке отрисовки).
+        var first = E("10:00", 60);
+        var second = E("10:15", 60);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        var current = DialLayout.Current([first, second], At(10, 30))!.Value;
+        var touched = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(10, 30)), 0.8)!.Value;
+
+        Assert.Equal(touched.Alarm.Id, current.Alarm.Id);
+    }
+
+    [Fact]
     public void Next_FirstStartAfterNow()
     {
         var next = E("09:00", 30);

@@ -111,14 +111,14 @@ public static class DialLayout
         return best?.Entry;
     }
 
-    /// <summary>Идущее сейчас дело; при нескольких — самое короткое.</summary>
+    /// <summary>Идущее сейчас дело; при нескольких — самое короткое, при равных — последнее (верхнее, как в HitTest).</summary>
     public static DayEntry? Current(IReadOnlyList<DayEntry> entries, DateTime now)
     {
         DayEntry? best = null;
         foreach (var entry in entries)
         {
             if (entry.Alarm.DurationMinutes > 0 && entry.Start <= now && now < entry.End
-                && (best is null || entry.Alarm.DurationMinutes < best.Value.Alarm.DurationMinutes))
+                && (best is null || entry.Alarm.DurationMinutes <= best.Value.Alarm.DurationMinutes))
             {
                 best = entry;
             }
