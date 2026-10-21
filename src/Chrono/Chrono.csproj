@@ -30,8 +30,6 @@
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(Configuration)' == 'Release'">
 		<!-- Release по умолчанию собирает .aab (для Google Play); publish должен давать устанавливаемый .apk. -->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
-		<!-- Без инструментирования tier-0 для PGO: на холодном старте меньше работы JIT (замер на эмуляторе: медиана TotalTime на ≈0,2 с меньше). -->
-		<TieredPGO>false</TieredPGO>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">

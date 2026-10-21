@@ -25,7 +25,7 @@ public partial class App : Application
         StartTrace.Mark("App: RescheduleAll выполнен");
 
         // Правки пользователя уходят в Google через 3 с; правки из самой синхронизации (fromSync) Changed не вызывают.
-        alarmService.Changed += (_, _) => services.GetRequiredService<SyncLauncher>().RequestSoon();
+        alarmService.Changed += (_, _) => this.services.GetRequiredService<SyncLauncher>().RequestSoon();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
