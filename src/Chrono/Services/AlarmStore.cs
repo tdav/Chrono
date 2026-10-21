@@ -1,7 +1,21 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Chrono.Models;
 
 namespace Chrono.Services;
+
+/// <summary>
+/// Метаданные JSON, сгенерированные при компиляции. Отражение System.Text.Json на холодном старте стоило ≈0,3 с
+/// главного потока при первом чтении alarms.json (RescheduleAll в конструкторе App); формат файла прежний.
+/// </summary>
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IReadOnlyList<Alarm>))]
+[JsonSerializable(typeof(List<Alarm>))]
+[JsonSerializable(typeof(IReadOnlyDictionary<Guid, HashSet<DateOnly>>))]
+[JsonSerializable(typeof(Dictionary<Guid, HashSet<DateOnly>>))]
+internal sealed partial class AlarmStoreJsonContext : JsonSerializerContext
+{
+}
 
 /// <summary>
 /// Хранение будильников в alarms.json и отметок «сделано» в done.json. Запись атомарная: временный файл + File.Move.
@@ -9,8 +23,6 @@ namespace Chrono.Services;
 /// </summary>
 public sealed class AlarmStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
     private readonly string directory;
     private readonly string path;
     private readonly string donePath;
@@ -32,7 +44,7 @@ public sealed class AlarmStore
 
         try
         {
-            var alarms = JsonSerializer.Deserialize<List<Alarm>>(File.ReadAllText(this.path), JsonOptions);
+            var alarms = JsonSerializer.Deserialize(File.ReadAllText(this.path), AlarmStoreJsonContext.Default.ListAlarm);
             return (alarms ?? [], false);
         }
         catch (JsonException)
@@ -47,7 +59,7 @@ public sealed class AlarmStore
     public void Save(IReadOnlyList<Alarm> alarms)
     {
         var tempPath = this.path + ".tmp";
-        File.WriteAllText(tempPath, JsonSerializer.Serialize(alarms, JsonOptions));
+        File.WriteAllText(tempPath, JsonSerializer.Serialize(alarms, AlarmStoreJsonContext.Default.IReadOnlyListAlarm));
         File.Move(tempPath, this.path, overwrite: true);
     }
 
@@ -61,7 +73,7 @@ public sealed class AlarmStore
 
         try
         {
-            return JsonSerializer.Deserialize<Dictionary<Guid, HashSet<DateOnly>>>(File.ReadAllText(this.donePath), JsonOptions) ?? [];
+            return JsonSerializer.Deserialize(File.ReadAllText(this.donePath), AlarmStoreJsonContext.Default.DictionaryGuidHashSetDateOnly) ?? [];
         }
         catch (JsonException)
         {
@@ -73,7 +85,7 @@ public sealed class AlarmStore
     public void SaveDone(IReadOnlyDictionary<Guid, HashSet<DateOnly>> done)
     {
         var tempPath = this.donePath + ".tmp";
-        File.WriteAllText(tempPath, JsonSerializer.Serialize(done, JsonOptions));
+        File.WriteAllText(tempPath, JsonSerializer.Serialize(done, AlarmStoreJsonContext.Default.IReadOnlyDictionaryGuidHashSetDateOnly));
         File.Move(tempPath, this.donePath, overwrite: true);
     }
 }
