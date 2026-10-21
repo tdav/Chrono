@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Shapes;
 namespace Chrono.Views;
 
 /// <summary>
-/// Вторая ступень splash: тот же фон и колокол, что у нативного MauiSplashScreen, «оживают» ≈1,2 с,
+/// Вторая ступень splash: тот же фон и колокол, что у нативного MauiSplashScreen, «оживают» ≈0,7 с,
 /// затем окно переключается на AppShell.
 /// </summary>
 public sealed class SplashPage : ContentPage
@@ -73,10 +73,10 @@ public sealed class SplashPage : ContentPage
 
         var swing = async () =>
         {
-            await this.bell.RotateToAsync(-16, 150, Easing.SinOut);
-            await this.bell.RotateToAsync(14, 260, Easing.SinInOut);
-            await this.bell.RotateToAsync(-8, 220, Easing.SinInOut);
-            await this.bell.RotateToAsync(0, 180, Easing.SinIn);
+            await this.bell.RotateToAsync(-16, 110, Easing.SinOut);
+            await this.bell.RotateToAsync(14, 200, Easing.SinInOut);
+            await this.bell.RotateToAsync(-8, 170, Easing.SinInOut);
+            await this.bell.RotateToAsync(0, 140, Easing.SinIn);
         };
         var ripple = async () =>
         {
@@ -87,12 +87,13 @@ public sealed class SplashPage : ContentPage
                 wave.Opacity = 0.7;
                 _ = wave.ScaleToAsync(1.3, 900, Easing.CubicOut);
                 _ = wave.FadeToAsync(0, 900, Easing.CubicIn);
-                await Task.Delay(180);
+                await Task.Delay(120);
             }
         };
 
-        await Task.WhenAll(swing(), ripple(), this.title.FadeToAsync(1, 700, Easing.CubicIn));
-        await Task.Delay(250);
+        await Task.WhenAll(swing(), ripple(), this.title.FadeToAsync(1, 500, Easing.CubicIn));
+        // Пауза нужна и для D1 (см. ниже): продолжение должно прийти отдельным сообщением главного цикла.
+        await Task.Delay(100);
 
 #if ANDROID
         // Экран выключили, пока шёл splash (активити остановлена): MAUI откладывает транзакции фрагментов нового Shell
