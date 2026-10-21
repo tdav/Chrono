@@ -1,182 +1,645 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
-  <resheader name="version"><value>2.0</value></resheader>
-  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="AppName" xml:space="preserve"><value>Chrono</value></data>
-  <data name="NextInHours" xml:space="preserve"><value>Следующий через {0} ч {1} мин</value></data>
-  <data name="NextInMinutes" xml:space="preserve"><value>Следующий через {0} мин</value></data>
-  <data name="NoActiveAlarms" xml:space="preserve"><value>Нет активных будильников</value></data>
-  <data name="EmptyList" xml:space="preserve"><value>Будильников пока нет. Нажмите +, чтобы добавить.</value></data>
-  <data name="WarningBanner" xml:space="preserve"><value>Будильник может не сработать — исправить</value></data>
-  <data name="NewAlarm" xml:space="preserve"><value>Новый будильник</value></data>
-  <data name="EditAlarm" xml:space="preserve"><value>Изменить будильник</value></data>
-  <data name="Sound" xml:space="preserve"><value>Звук</value></data>
-  <data name="Vibration" xml:space="preserve"><value>Вибрация</value></data>
-  <data name="DeleteAlarm" xml:space="preserve"><value>Удалить будильник</value></data>
-  <data name="Delete" xml:space="preserve"><value>Удалить</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
-  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
-  <data name="Ok" xml:space="preserve"><value>ОК</value></data>
-  <data name="TimeInPast" xml:space="preserve"><value>Это время уже прошло</value></data>
-  <data name="PickNewDate" xml:space="preserve"><value>Время этого будильника прошло. Выберите новую дату.</value></data>
-  <data name="DefaultLabel" xml:space="preserve"><value>Будильник</value></data>
-  <data name="Stop" xml:space="preserve"><value>Стоп</value></data>
-  <data name="ChannelAlarms" xml:space="preserve"><value>Будильники</value></data>
-  <data name="ChannelMissed" xml:space="preserve"><value>Пропущенные будильники</value></data>
-  <data name="MissedAlarm" xml:space="preserve"><value>Пропущенный будильник {0}</value></data>
-  <data name="CorruptFile" xml:space="preserve"><value>Не удалось прочитать список будильников. Повреждённый файл сохранён отдельно.</value></data>
-  <data name="Sound_bell" xml:space="preserve"><value>Колокол</value></data>
-  <data name="Sound_chime" xml:space="preserve"><value>Перезвон</value></data>
-  <data name="Sound_digital" xml:space="preserve"><value>Цифровой</value></data>
-  <data name="Sound_rising" xml:space="preserve"><value>Нарастающий</value></data>
-  <data name="Sound_soft" xml:space="preserve"><value>Мягкий</value></data>
-  <data name="ReliabilityTitle" xml:space="preserve"><value>Надёжность</value></data>
-  <data name="Rel_Notifications" xml:space="preserve"><value>Уведомления разрешены</value></data>
-  <data name="Rel_ExactAlarms" xml:space="preserve"><value>Точные будильники разрешены</value></data>
-  <data name="Rel_FullScreen" xml:space="preserve"><value>Полноэкранные уведомления разрешены</value></data>
-  <data name="Rel_Battery" xml:space="preserve"><value>Оптимизация батареи отключена</value></data>
-  <data name="Rel_TimeSensitive" xml:space="preserve"><value>Срочные уведомления разрешены</value></data>
-  <data name="Fix" xml:space="preserve"><value>Исправить</value></data>
-  <data name="OemHint" xml:space="preserve"><value>На телефонах Xiaomi, Huawei и Samsung также разрешите Chrono автозапуск: Настройки → Приложения → Chrono → Автозапуск / Батарея.</value></data>
-  <data name="SilentHint" xml:space="preserve"><value>В беззвучном режиме будет только вибрация.</value></data>
-  <data name="SettingsTitle" xml:space="preserve"><value>Настройки</value></data>
-  <data name="SmartWake" xml:space="preserve"><value>Умное пробуждение</value></data>
-  <data name="SmartWakeDescription" xml:space="preserve"><value>За 30 минут до будильника Chrono ищет фазу лёгкого сна по данным умных часов (через Health Connect) и движению телефона и будит в ней, а не в глубоком сне. Если лёгкий сон не найден, будильник звонит в заданное время. Положите телефон на кровать.</value></data>
-  <data name="SmartWakePrivacy" xml:space="preserve"><value>Пульс и данные сна читаются только на этом телефоне и только в течение 30 минут перед будильником. Они не сохраняются и никуда не передаются.</value></data>
-  <data name="SmartWakeAccessGranted" xml:space="preserve"><value>Данные часов: Health Connect подключён</value></data>
-  <data name="SmartWakeAccessNoPermission" xml:space="preserve"><value>Данные часов: нет доступа к Health Connect — будет использоваться только движение телефона</value></data>
-  <data name="SmartWakeAccessMissing" xml:space="preserve"><value>Health Connect не установлен — будет использоваться только движение телефона</value></data>
-  <data name="SmartWakeUnsupported" xml:space="preserve"><value>Умное пробуждение доступно только на Android</value></data>
-  <data name="GrantAccess" xml:space="preserve"><value>Дать доступ</value></data>
-  <data name="SmartWakeNotification" xml:space="preserve"><value>Ищу фазу лёгкого сна до {0}</value></data>
-  <data name="ChannelSmartWake" xml:space="preserve"><value>Умное пробуждение</value></data>
-  <data name="DismissGroup" xml:space="preserve"><value>Отключение сигнала</value></data>
-  <data name="MathChallenge" xml:space="preserve"><value>Решить пример</value></data>
-  <data name="MathChallengeDescription" xml:space="preserve"><value>Чтобы выключить будильник, нужно решить пример на сложение или вычитание двузначных чисел. Выберите верный ответ из четырёх вариантов; при неверном сигнал продолжается и появляется новый пример.</value></data>
-  <data name="SolveToStop" xml:space="preserve"><value>Решите пример, чтобы выключить сигнал</value></data>
-  <data name="WrongAnswer" xml:space="preserve"><value>Неверно. Сигнал продолжается — решите этот пример</value></data>
-  <data name="RepeatHeader" xml:space="preserve"><value>Повтор</value></data>
-  <data name="Repeat_None" xml:space="preserve"><value>Однократно</value></data>
-  <data name="Repeat_Daily" xml:space="preserve"><value>Каждый день</value></data>
-  <data name="Repeat_Weekly" xml:space="preserve"><value>По дням недели</value></data>
-  <data name="Repeat_Yearly" xml:space="preserve"><value>Каждый год</value></data>
-  <data name="PlateDate" xml:space="preserve"><value>Сработает · {0}</value></data>
-  <data name="PlateToday" xml:space="preserve"><value>Сработает сегодня · {0}</value></data>
-  <data name="PlateTomorrow" xml:space="preserve"><value>Сработает завтра · {0}</value></data>
-  <data name="RelDays" xml:space="preserve"><value>через {0} д {1} ч</value></data>
-  <data name="RelHours" xml:space="preserve"><value>через {0} ч {1} мин</value></data>
-  <data name="RelMinutes" xml:space="preserve"><value>через {0} мин</value></data>
-  <data name="TimePassed" xml:space="preserve"><value>время уже прошло</value></data>
-  <data name="RowTime" xml:space="preserve"><value>Время</value></data>
-  <data name="RowDate" xml:space="preserve"><value>Дата</value></data>
-  <data name="RowName" xml:space="preserve"><value>Название</value></data>
-  <data name="Nearest" xml:space="preserve"><value>Ближайшее</value></data>
-  <data name="NearestHint" xml:space="preserve"><value>Ближайшее подходящее</value></data>
-  <data name="NoSound" xml:space="preserve"><value>Без звука</value></data>
-  <data name="SaveFootnote" xml:space="preserve"><value>Изменения применяются по кнопке «Сохранить».</value></data>
-  <data name="DiscardTitle" xml:space="preserve"><value>Не сохранять изменения?</value></data>
-  <data name="DiscardYes" xml:space="preserve"><value>Не сохранять</value></data>
-  <data name="SheetOk" xml:space="preserve"><value>Окей</value></data>
-  <data name="Clear" xml:space="preserve"><value>Очистить</value></data>
-  <data name="Today" xml:space="preserve"><value>Сегодня</value></data>
-  <data name="Now" xml:space="preserve"><value>Сейчас</value></data>
-  <data name="Back" xml:space="preserve"><value>Назад</value></data>
-  <data name="PrevMonth" xml:space="preserve"><value>Предыдущий месяц</value></data>
-  <data name="NextMonth" xml:space="preserve"><value>Следующий месяц</value></data>
-  <data name="PrevWeek" xml:space="preserve"><value>Предыдущая неделя</value></data>
-  <data name="NextWeek" xml:space="preserve"><value>Следующая неделя</value></data>
-  <data name="UnmarkDone" xml:space="preserve"><value>Снять отметку</value></data>
-  <data name="Tab_Alarms" xml:space="preserve"><value>Будильники</value></data>
-  <data name="Tab_Schedule" xml:space="preserve"><value>Распорядок</value></data>
-  <data name="Tab_Dial" xml:space="preserve"><value>Циферблат</value></data>
-  <data name="DialNow" xml:space="preserve"><value>Сейчас</value></data>
-  <data name="DialEvening" xml:space="preserve"><value>Вечер</value></data>
-  <data name="DialLeft" xml:space="preserve"><value>ещё {0}</value></data>
-  <data name="DialUntilEnd" xml:space="preserve"><value>{0} · до конца {1} · далее {2} в {3}</value></data>
-  <data name="DialFree" xml:space="preserve"><value>Свободно · далее {0} в {1}</value></data>
-  <data name="DialFreeAllDay" xml:space="preserve"><value>Ничего не запланировано</value></data>
-  <data name="DialTapForActions" xml:space="preserve"><value>Нажмите, чтобы открыть действия</value></data>
-  <data name="DialClearSelection" xml:space="preserve"><value>Снять выбор</value></data>
-  <data name="DialAdd" xml:space="preserve"><value>Добавить</value></data>
-  <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
-  <data name="DialEdit" xml:space="preserve"><value>Изменить</value></data>
-  <data name="DialDone" xml:space="preserve"><value>Сделано</value></data>
-  <data name="DialUndone" xml:space="preserve"><value>Снять отметку</value></data>
-  <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Один раз и удалить</value></data>
-  <data name="RowIcon" xml:space="preserve"><value>Иконка</value></data>
-  <data name="RowDuration" xml:space="preserve"><value>Длительность</value></data>
-  <data name="RowAlert" xml:space="preserve"><value>Оповещение</value></data>
-  <data name="Alert_None" xml:space="preserve"><value>Без уведомления</value></data>
-  <data name="Alert_Notify" xml:space="preserve"><value>Уведомление</value></data>
-  <data name="Alert_Ring" xml:space="preserve"><value>Звонить как будильник</value></data>
-  <data name="DurationNone" xml:space="preserve"><value>Нет</value></data>
-  <data name="DurationMinutes" xml:space="preserve"><value>{0} мин</value></data>
-  <data name="DurationCustom" xml:space="preserve"><value>Своё, мин</value></data>
-  <data name="ScheduleEmpty" xml:space="preserve"><value>На этот день ничего нет</value></data>
-  <data name="ScheduleLeft" xml:space="preserve"><value>осталось {0} мин</value></data>
-  <data name="ChannelSchedule" xml:space="preserve"><value>Распорядок</value></data>
-  <data name="MarkDone" xml:space="preserve"><value>Отметить выполненным</value></data>
-  <data name="Icon_bell" xml:space="preserve"><value>Будильник</value></data>
-  <data name="Icon_yoga" xml:space="preserve"><value>Йога</value></data>
-  <data name="Icon_shower" xml:space="preserve"><value>Душ</value></data>
-  <data name="Icon_coffee" xml:space="preserve"><value>Кофе</value></data>
-  <data name="Icon_food" xml:space="preserve"><value>Еда</value></data>
-  <data name="Icon_bike" xml:space="preserve"><value>Велосипед</value></data>
-  <data name="Icon_work" xml:space="preserve"><value>Работа</value></data>
-  <data name="Icon_book" xml:space="preserve"><value>Книга</value></data>
-  <data name="Icon_pill" xml:space="preserve"><value>Лекарство</value></data>
-  <data name="Icon_phone" xml:space="preserve"><value>Телефон</value></data>
-  <data name="Icon_walk" xml:space="preserve"><value>Прогулка</value></data>
-  <data name="Icon_sleep" xml:space="preserve"><value>Сон</value></data>
-  <data name="Icon_run" xml:space="preserve"><value>Бег</value></data>
-  <data name="Icon_dumbbell" xml:space="preserve"><value>Тренировка</value></data>
-  <data name="Icon_swim" xml:space="preserve"><value>Плавание</value></data>
-  <data name="Icon_ball" xml:space="preserve"><value>Игра в мяч</value></data>
-  <data name="Icon_heart" xml:space="preserve"><value>Здоровье</value></data>
-  <data name="Icon_tooth" xml:space="preserve"><value>Зубы</value></data>
-  <data name="Icon_water" xml:space="preserve"><value>Вода</value></data>
-  <data name="Icon_egg" xml:space="preserve"><value>Завтрак</value></data>
-  <data name="Icon_tea" xml:space="preserve"><value>Чай</value></data>
-  <data name="Icon_cake" xml:space="preserve"><value>Десерт</value></data>
-  <data name="Icon_apple" xml:space="preserve"><value>Фрукты</value></data>
-  <data name="Icon_cart" xml:space="preserve"><value>Покупки</value></data>
-  <data name="Icon_home" xml:space="preserve"><value>Дом</value></data>
-  <data name="Icon_broom" xml:space="preserve"><value>Уборка</value></data>
-  <data name="Icon_laundry" xml:space="preserve"><value>Стирка</value></data>
-  <data name="Icon_plant" xml:space="preserve"><value>Растения</value></data>
-  <data name="Icon_pet" xml:space="preserve"><value>Питомец</value></data>
-  <data name="Icon_child" xml:space="preserve"><value>Дети</value></data>
-  <data name="Icon_laptop" xml:space="preserve"><value>Ноутбук</value></data>
-  <data name="Icon_meeting" xml:space="preserve"><value>Встреча</value></data>
-  <data name="Icon_mail" xml:space="preserve"><value>Почта</value></data>
-  <data name="Icon_calendar" xml:space="preserve"><value>Календарь</value></data>
-  <data name="Icon_pen" xml:space="preserve"><value>Письмо</value></data>
-  <data name="Icon_study" xml:space="preserve"><value>Учёба</value></data>
-  <data name="Icon_idea" xml:space="preserve"><value>Идея</value></data>
-  <data name="Icon_car" xml:space="preserve"><value>Машина</value></data>
-  <data name="Icon_bus" xml:space="preserve"><value>Автобус</value></data>
-  <data name="Icon_plane" xml:space="preserve"><value>Перелёт</value></data>
-  <data name="Icon_music" xml:space="preserve"><value>Музыка</value></data>
-  <data name="Icon_movie" xml:space="preserve"><value>Кино</value></data>
-  <data name="Icon_game" xml:space="preserve"><value>Игры</value></data>
-  <data name="Icon_camera" xml:space="preserve"><value>Фото</value></data>
-  <data name="Icon_gift" xml:space="preserve"><value>Подарок</value></data>
-  <data name="Icon_sun" xml:space="preserve"><value>Утро</value></data>
-  <data name="Icon_star" xml:space="preserve"><value>Важное</value></data>
-  <data name="Icon_money" xml:space="preserve"><value>Деньги</value></data>
-  <data name="Icon_target" xml:space="preserve"><value>Цель</value></data>
-  <data name="Icon_flower" xml:space="preserve"><value>Цветы</value></data>
-  <data name="GoogleGroup" xml:space="preserve"><value>Google Календарь</value></data>
-  <data name="SignInGoogle" xml:space="preserve"><value>Войти через Google</value></data>
-  <data name="SignInAgainButton" xml:space="preserve"><value>Войти снова</value></data>
-  <data name="GoogleAccount" xml:space="preserve"><value>Аккаунт</value></data>
-  <data name="SyncedAt" xml:space="preserve"><value>Синхронизировано в {0}</value></data>
-  <data name="SyncNoNetwork" xml:space="preserve"><value>Нет сети</value></data>
-  <data name="SyncSignInAgain" xml:space="preserve"><value>Нужно войти снова</value></data>
-  <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
-  <data name="SignOut" xml:space="preserve"><value>Выйти</value></data>
-  <data name="SyncFailed" xml:space="preserve"><value>Ошибка синхронизации</value></data>
-  <data name="SyncScopesMissing" xml:space="preserve"><value>Разрешите доступ к календарю для синхронизации</value></data>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Chrono</value>
+  </data>
+  <data name="NextInHours" xml:space="preserve">
+    <value>Следующий через {0} ч {1} мин</value>
+  </data>
+  <data name="NextInMinutes" xml:space="preserve">
+    <value>Следующий через {0} мин</value>
+  </data>
+  <data name="NoActiveAlarms" xml:space="preserve">
+    <value>Нет активных будильников</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>Будильников пока нет. Нажмите +, чтобы добавить.</value>
+  </data>
+  <data name="WarningBanner" xml:space="preserve">
+    <value>Будильник может не сработать — исправить</value>
+  </data>
+  <data name="NewAlarm" xml:space="preserve">
+    <value>Новый будильник</value>
+  </data>
+  <data name="EditAlarm" xml:space="preserve">
+    <value>Изменить будильник</value>
+  </data>
+  <data name="Sound" xml:space="preserve">
+    <value>Звук</value>
+  </data>
+  <data name="Vibration" xml:space="preserve">
+    <value>Вибрация</value>
+  </data>
+  <data name="DeleteAlarm" xml:space="preserve">
+    <value>Удалить будильник</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="TimeInPast" xml:space="preserve">
+    <value>Это время уже прошло</value>
+  </data>
+  <data name="PickNewDate" xml:space="preserve">
+    <value>Время этого будильника прошло. Выберите новую дату.</value>
+  </data>
+  <data name="DefaultLabel" xml:space="preserve">
+    <value>Будильник</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Стоп</value>
+  </data>
+  <data name="ChannelAlarms" xml:space="preserve">
+    <value>Будильники</value>
+  </data>
+  <data name="ChannelMissed" xml:space="preserve">
+    <value>Пропущенные будильники</value>
+  </data>
+  <data name="MissedAlarm" xml:space="preserve">
+    <value>Пропущенный будильник {0}</value>
+  </data>
+  <data name="CorruptFile" xml:space="preserve">
+    <value>Не удалось прочитать список будильников. Повреждённый файл сохранён отдельно.</value>
+  </data>
+  <data name="Sound_bell" xml:space="preserve">
+    <value>Колокол</value>
+  </data>
+  <data name="Sound_chime" xml:space="preserve">
+    <value>Перезвон</value>
+  </data>
+  <data name="Sound_digital" xml:space="preserve">
+    <value>Цифровой</value>
+  </data>
+  <data name="Sound_rising" xml:space="preserve">
+    <value>Нарастающий</value>
+  </data>
+  <data name="Sound_soft" xml:space="preserve">
+    <value>Мягкий</value>
+  </data>
+  <data name="ReliabilityTitle" xml:space="preserve">
+    <value>Надёжность</value>
+  </data>
+  <data name="Rel_Notifications" xml:space="preserve">
+    <value>Уведомления разрешены</value>
+  </data>
+  <data name="Rel_ExactAlarms" xml:space="preserve">
+    <value>Точные будильники разрешены</value>
+  </data>
+  <data name="Rel_FullScreen" xml:space="preserve">
+    <value>Полноэкранные уведомления разрешены</value>
+  </data>
+  <data name="Rel_Battery" xml:space="preserve">
+    <value>Оптимизация батареи отключена</value>
+  </data>
+  <data name="Rel_TimeSensitive" xml:space="preserve">
+    <value>Срочные уведомления разрешены</value>
+  </data>
+  <data name="Fix" xml:space="preserve">
+    <value>Исправить</value>
+  </data>
+  <data name="OemHint" xml:space="preserve">
+    <value>На телефонах Xiaomi, Huawei и Samsung также разрешите Chrono автозапуск: Настройки → Приложения → Chrono → Автозапуск / Батарея.</value>
+  </data>
+  <data name="SilentHint" xml:space="preserve">
+    <value>В беззвучном режиме будет только вибрация.</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="SmartWake" xml:space="preserve">
+    <value>Умное пробуждение</value>
+  </data>
+  <data name="SmartWakeDescription" xml:space="preserve">
+    <value>За 30 минут до будильника Chrono ищет фазу лёгкого сна по данным умных часов (через Health Connect) и движению телефона и будит в ней, а не в глубоком сне. Если лёгкий сон не найден, будильник звонит в заданное время. Положите телефон на кровать.</value>
+  </data>
+  <data name="SmartWakePrivacy" xml:space="preserve">
+    <value>Пульс и данные сна читаются только на этом телефоне и только в течение 30 минут перед будильником. Они не сохраняются и никуда не передаются.</value>
+  </data>
+  <data name="SmartWakeAccessGranted" xml:space="preserve">
+    <value>Данные часов: Health Connect подключён</value>
+  </data>
+  <data name="SmartWakeAccessNoPermission" xml:space="preserve">
+    <value>Данные часов: нет доступа к Health Connect — будет использоваться только движение телефона</value>
+  </data>
+  <data name="SmartWakeAccessMissing" xml:space="preserve">
+    <value>Health Connect не установлен — будет использоваться только движение телефона</value>
+  </data>
+  <data name="SmartWakeUnsupported" xml:space="preserve">
+    <value>Умное пробуждение доступно только на Android</value>
+  </data>
+  <data name="GrantAccess" xml:space="preserve">
+    <value>Дать доступ</value>
+  </data>
+  <data name="SmartWakeNotification" xml:space="preserve">
+    <value>Ищу фазу лёгкого сна до {0}</value>
+  </data>
+  <data name="ChannelSmartWake" xml:space="preserve">
+    <value>Умное пробуждение</value>
+  </data>
+  <data name="DismissGroup" xml:space="preserve">
+    <value>Отключение сигнала</value>
+  </data>
+  <data name="MathChallenge" xml:space="preserve">
+    <value>Решить пример</value>
+  </data>
+  <data name="MathChallengeDescription" xml:space="preserve">
+    <value>Чтобы выключить будильник, нужно решить пример на сложение или вычитание двузначных чисел. Выберите верный ответ из четырёх вариантов; при неверном сигнал продолжается и появляется новый пример.</value>
+  </data>
+  <data name="SolveToStop" xml:space="preserve">
+    <value>Решите пример, чтобы выключить сигнал</value>
+  </data>
+  <data name="WrongAnswer" xml:space="preserve">
+    <value>Неверно. Сигнал продолжается — решите этот пример</value>
+  </data>
+  <data name="RepeatHeader" xml:space="preserve">
+    <value>Повтор</value>
+  </data>
+  <data name="Repeat_None" xml:space="preserve">
+    <value>Однократно</value>
+  </data>
+  <data name="Repeat_Daily" xml:space="preserve">
+    <value>Каждый день</value>
+  </data>
+  <data name="Repeat_Weekly" xml:space="preserve">
+    <value>По дням недели</value>
+  </data>
+  <data name="Repeat_Yearly" xml:space="preserve">
+    <value>Каждый год</value>
+  </data>
+  <data name="PlateDate" xml:space="preserve">
+    <value>Сработает · {0}</value>
+  </data>
+  <data name="PlateToday" xml:space="preserve">
+    <value>Сработает сегодня · {0}</value>
+  </data>
+  <data name="PlateTomorrow" xml:space="preserve">
+    <value>Сработает завтра · {0}</value>
+  </data>
+  <data name="RelDays" xml:space="preserve">
+    <value>через {0} д {1} ч</value>
+  </data>
+  <data name="RelHours" xml:space="preserve">
+    <value>через {0} ч {1} мин</value>
+  </data>
+  <data name="RelMinutes" xml:space="preserve">
+    <value>через {0} мин</value>
+  </data>
+  <data name="TimePassed" xml:space="preserve">
+    <value>время уже прошло</value>
+  </data>
+  <data name="RowTime" xml:space="preserve">
+    <value>Время</value>
+  </data>
+  <data name="RowDate" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="RowName" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="Nearest" xml:space="preserve">
+    <value>Ближайшее</value>
+  </data>
+  <data name="NearestHint" xml:space="preserve">
+    <value>Ближайшее подходящее</value>
+  </data>
+  <data name="NoSound" xml:space="preserve">
+    <value>Без звука</value>
+  </data>
+  <data name="SaveFootnote" xml:space="preserve">
+    <value>Изменения применяются по кнопке «Сохранить».</value>
+  </data>
+  <data name="DiscardTitle" xml:space="preserve">
+    <value>Не сохранять изменения?</value>
+  </data>
+  <data name="DiscardYes" xml:space="preserve">
+    <value>Не сохранять</value>
+  </data>
+  <data name="SheetOk" xml:space="preserve">
+    <value>Ок</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="Now" xml:space="preserve">
+    <value>Сейчас</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="PrevMonth" xml:space="preserve">
+    <value>Предыдущий месяц</value>
+  </data>
+  <data name="NextMonth" xml:space="preserve">
+    <value>Следующий месяц</value>
+  </data>
+  <data name="PrevWeek" xml:space="preserve">
+    <value>Предыдущая неделя</value>
+  </data>
+  <data name="NextWeek" xml:space="preserve">
+    <value>Следующая неделя</value>
+  </data>
+  <data name="UnmarkDone" xml:space="preserve">
+    <value>Снять отметку</value>
+  </data>
+  <data name="Tab_Alarms" xml:space="preserve">
+    <value>Будильники</value>
+  </data>
+  <data name="Tab_Schedule" xml:space="preserve">
+    <value>Распорядок</value>
+  </data>
+  <data name="Tab_Dial" xml:space="preserve">
+    <value>Циферблат</value>
+  </data>
+  <data name="DialNow" xml:space="preserve">
+    <value>Сейчас</value>
+  </data>
+  <data name="DialEvening" xml:space="preserve">
+    <value>Вечер</value>
+  </data>
+  <data name="DialLeft" xml:space="preserve">
+    <value>ещё {0}</value>
+  </data>
+  <data name="DialUntilEnd" xml:space="preserve">
+    <value>{0} · до конца {1} · далее {2} в {3}</value>
+  </data>
+  <data name="DialFree" xml:space="preserve">
+    <value>Свободно · далее {0} в {1}</value>
+  </data>
+  <data name="DialFreeAllDay" xml:space="preserve">
+    <value>Ничего не запланировано</value>
+  </data>
+  <data name="DialTapForActions" xml:space="preserve">
+    <value>Нажмите, чтобы открыть действия</value>
+  </data>
+  <data name="DialClearSelection" xml:space="preserve">
+    <value>Снять выбор</value>
+  </data>
+  <data name="DialAdd" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="DialSectorDescription" xml:space="preserve">
+    <value>{0}, {1}–{2}</value>
+  </data>
+  <data name="DialEdit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="DialDone" xml:space="preserve">
+    <value>Сделано</value>
+  </data>
+  <data name="DialUndone" xml:space="preserve">
+    <value>Снять отметку</value>
+  </data>
+  <data name="Repeat_OnceThenDelete" xml:space="preserve">
+    <value>Один раз и удалить</value>
+  </data>
+  <data name="RowIcon" xml:space="preserve">
+    <value>Иконка</value>
+  </data>
+  <data name="RowDuration" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="RowAlert" xml:space="preserve">
+    <value>Оповещение</value>
+  </data>
+  <data name="Alert_None" xml:space="preserve">
+    <value>Без уведомления</value>
+  </data>
+  <data name="Alert_Notify" xml:space="preserve">
+    <value>Уведомление</value>
+  </data>
+  <data name="Alert_Ring" xml:space="preserve">
+    <value>Звонить как будильник</value>
+  </data>
+  <data name="DurationNone" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="DurationMinutes" xml:space="preserve">
+    <value>{0} мин</value>
+  </data>
+  <data name="DurationCustom" xml:space="preserve">
+    <value>Своё, мин</value>
+  </data>
+  <data name="ScheduleEmpty" xml:space="preserve">
+    <value>На этот день ничего нет</value>
+  </data>
+  <data name="ScheduleLeft" xml:space="preserve">
+    <value>осталось {0} мин</value>
+  </data>
+  <data name="ChannelSchedule" xml:space="preserve">
+    <value>Распорядок</value>
+  </data>
+  <data name="MarkDone" xml:space="preserve">
+    <value>Отметить выполненным</value>
+  </data>
+  <data name="Icon_bell" xml:space="preserve">
+    <value>Будильник</value>
+  </data>
+  <data name="Icon_yoga" xml:space="preserve">
+    <value>Йога</value>
+  </data>
+  <data name="Icon_shower" xml:space="preserve">
+    <value>Душ</value>
+  </data>
+  <data name="Icon_coffee" xml:space="preserve">
+    <value>Кофе</value>
+  </data>
+  <data name="Icon_food" xml:space="preserve">
+    <value>Еда</value>
+  </data>
+  <data name="Icon_bike" xml:space="preserve">
+    <value>Велосипед</value>
+  </data>
+  <data name="Icon_work" xml:space="preserve">
+    <value>Работа</value>
+  </data>
+  <data name="Icon_book" xml:space="preserve">
+    <value>Книга</value>
+  </data>
+  <data name="Icon_pill" xml:space="preserve">
+    <value>Лекарство</value>
+  </data>
+  <data name="Icon_phone" xml:space="preserve">
+    <value>Телефон</value>
+  </data>
+  <data name="Icon_walk" xml:space="preserve">
+    <value>Прогулка</value>
+  </data>
+  <data name="Icon_sleep" xml:space="preserve">
+    <value>Сон</value>
+  </data>
+  <data name="Icon_run" xml:space="preserve">
+    <value>Бег</value>
+  </data>
+  <data name="Icon_dumbbell" xml:space="preserve">
+    <value>Тренировка</value>
+  </data>
+  <data name="Icon_swim" xml:space="preserve">
+    <value>Плавание</value>
+  </data>
+  <data name="Icon_ball" xml:space="preserve">
+    <value>Игра в мяч</value>
+  </data>
+  <data name="Icon_heart" xml:space="preserve">
+    <value>Здоровье</value>
+  </data>
+  <data name="Icon_tooth" xml:space="preserve">
+    <value>Зубы</value>
+  </data>
+  <data name="Icon_water" xml:space="preserve">
+    <value>Вода</value>
+  </data>
+  <data name="Icon_egg" xml:space="preserve">
+    <value>Завтрак</value>
+  </data>
+  <data name="Icon_tea" xml:space="preserve">
+    <value>Чай</value>
+  </data>
+  <data name="Icon_cake" xml:space="preserve">
+    <value>Десерт</value>
+  </data>
+  <data name="Icon_apple" xml:space="preserve">
+    <value>Фрукты</value>
+  </data>
+  <data name="Icon_cart" xml:space="preserve">
+    <value>Покупки</value>
+  </data>
+  <data name="Icon_home" xml:space="preserve">
+    <value>Дом</value>
+  </data>
+  <data name="Icon_broom" xml:space="preserve">
+    <value>Уборка</value>
+  </data>
+  <data name="Icon_laundry" xml:space="preserve">
+    <value>Стирка</value>
+  </data>
+  <data name="Icon_plant" xml:space="preserve">
+    <value>Растения</value>
+  </data>
+  <data name="Icon_pet" xml:space="preserve">
+    <value>Питомец</value>
+  </data>
+  <data name="Icon_child" xml:space="preserve">
+    <value>Дети</value>
+  </data>
+  <data name="Icon_laptop" xml:space="preserve">
+    <value>Ноутбук</value>
+  </data>
+  <data name="Icon_meeting" xml:space="preserve">
+    <value>Встреча</value>
+  </data>
+  <data name="Icon_mail" xml:space="preserve">
+    <value>Почта</value>
+  </data>
+  <data name="Icon_calendar" xml:space="preserve">
+    <value>Календарь</value>
+  </data>
+  <data name="Icon_pen" xml:space="preserve">
+    <value>Письмо</value>
+  </data>
+  <data name="Icon_study" xml:space="preserve">
+    <value>Учёба</value>
+  </data>
+  <data name="Icon_idea" xml:space="preserve">
+    <value>Идея</value>
+  </data>
+  <data name="Icon_car" xml:space="preserve">
+    <value>Машина</value>
+  </data>
+  <data name="Icon_bus" xml:space="preserve">
+    <value>Автобус</value>
+  </data>
+  <data name="Icon_plane" xml:space="preserve">
+    <value>Перелёт</value>
+  </data>
+  <data name="Icon_music" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="Icon_movie" xml:space="preserve">
+    <value>Кино</value>
+  </data>
+  <data name="Icon_game" xml:space="preserve">
+    <value>Игры</value>
+  </data>
+  <data name="Icon_camera" xml:space="preserve">
+    <value>Фото</value>
+  </data>
+  <data name="Icon_gift" xml:space="preserve">
+    <value>Подарок</value>
+  </data>
+  <data name="Icon_sun" xml:space="preserve">
+    <value>Утро</value>
+  </data>
+  <data name="Icon_star" xml:space="preserve">
+    <value>Важное</value>
+  </data>
+  <data name="Icon_money" xml:space="preserve">
+    <value>Деньги</value>
+  </data>
+  <data name="Icon_target" xml:space="preserve">
+    <value>Цель</value>
+  </data>
+  <data name="Icon_flower" xml:space="preserve">
+    <value>Цветы</value>
+  </data>
+  <data name="GoogleGroup" xml:space="preserve">
+    <value>Google Календарь</value>
+  </data>
+  <data name="SignInGoogle" xml:space="preserve">
+    <value>Войти через Google</value>
+  </data>
+  <data name="SignInAgainButton" xml:space="preserve">
+    <value>Войти снова</value>
+  </data>
+  <data name="GoogleAccount" xml:space="preserve">
+    <value>Аккаунт</value>
+  </data>
+  <data name="SyncedAt" xml:space="preserve">
+    <value>Синхронизировано в {0}</value>
+  </data>
+  <data name="SyncNoNetwork" xml:space="preserve">
+    <value>Нет сети</value>
+  </data>
+  <data name="SyncSignInAgain" xml:space="preserve">
+    <value>Нужно войти снова</value>
+  </data>
+  <data name="SyncNow" xml:space="preserve">
+    <value>Синхронизировать сейчас</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
+  <data name="SyncFailed" xml:space="preserve">
+    <value>Ошибка синхронизации</value>
+  </data>
+  <data name="SyncScopesMissing" xml:space="preserve">
+    <value>Разрешите доступ к календарю для синхронизации</value>
+  </data>
 </root>
