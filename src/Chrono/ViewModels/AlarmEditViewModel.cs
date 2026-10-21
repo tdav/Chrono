@@ -538,7 +538,9 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             EndsOn = this.IsOneShot ? null : this.EndsOn,
         };
 
-        if (!this.IsOneShot && alarm.EndsOn < alarm.StartsOn)
+        // At повторяющейся — ближайшее срабатывание (Target): если оно уже после окончания, запись не прозвенит ни разу.
+        // Условие покрывает и EndsOn < StartsOn (At не раньше StartsOn). Для разовой Ended всегда false.
+        if (alarm.Ended(alarm.At))
         {
             this.ErrorText = AppResources.EndsBeforeStart;
             return;
