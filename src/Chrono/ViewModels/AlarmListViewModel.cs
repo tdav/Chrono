@@ -31,6 +31,7 @@ public sealed partial class AlarmItem : ObservableObject
                 // В ru сокращения приходят строчными («пн») — первая буква заглавная.
                 .Select(d => culture.TextInfo.ToUpper(format.AbbreviatedDayNames[d][0]) + format.AbbreviatedDayNames[d][1..])),
             RepeatKind.Weekly => AppResources.Repeat_Daily,
+            RepeatKind.Monthly => string.Format(culture, AppResources.MonthlyOnDay, alarm.At.Day),
             RepeatKind.Yearly => $"{AppResources.Repeat_Yearly}, {alarm.At.ToString("d MMM", CultureInfo.CurrentUICulture)}",
             RepeatKind.OnceThenDelete => $"{alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture)} · {AppResources.Repeat_OnceThenDelete}",
             _ => alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture),
@@ -116,8 +117,9 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
         // Ближайший момент оповещения: напоминание звонит раньше At. Сработавшие, но не истёкшие записи
         // («Один раз и удалить» с At <= now до конца звонка) не считаются: берутся только моменты позже now.
+        // Закончившаяся серия сохраняет IsEnabled и At после EndsOn, но уже не прозвонит — её пропускаем.
         var now = DateTime.Now;
-        var next = alarms.Where(a => a.IsEnabled).SelectMany(a => a.AlertTimes(a.At)).Where(t => t > now).Select(t => (DateTime?)t).Min();
+        var next = alarms.Where(a => a.IsEnabled && !a.Ended(a.At)).SelectMany(a => a.AlertTimes(a.At)).Where(t => t > now).Select(t => (DateTime?)t).Min();
         if (next is null)
         {
             this.NextAlarmText = AppResources.NoActiveAlarms;

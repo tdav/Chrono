@@ -52,11 +52,22 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         {
             if (accepted)
             {
-                // Ежегодному нужны день и месяц: «Ближайшее» для него не имеет смысла.
-                this.Date = this.CalendarSheet.Selected ?? (this.Repeat == RepeatKind.Yearly ? DateOnly.FromDateTime(DateTime.Now) : null);
+                // Ежегодному и ежемесячному нужна дата (день и месяц / число): «Ближайшее» для них не имеет смысла.
+                this.Date = this.CalendarSheet.Selected ?? (this.Repeat is RepeatKind.Yearly or RepeatKind.Monthly ? DateOnly.FromDateTime(DateTime.Now) : null);
             }
 
             this.IsDateSheetOpen = false;
+        };
+
+        // Пустой выбор («Очистить» скрыта) оставляет прежнюю дату окончания: сбросить её нельзя, она обязательна.
+        this.EndsSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.EndsOn = this.EndsSheet.Selected ?? this.EndsOn;
+            }
+
+            this.IsEndsSheetOpen = false;
         };
 
         this.RepeatSheet.Done += (_, accepted) =>
@@ -66,8 +77,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
                 this.Repeat = this.RepeatSheet.Repeat;
                 this.Days = this.RepeatSheet.Repeat == RepeatKind.Weekly ? this.RepeatSheet.SelectedDays : WeekDays.None;
 
-                // Ежегодному нужны день и месяц: «Ближайшее» для него не имеет смысла.
-                if (this.Repeat == RepeatKind.Yearly && this.Date is null)
+                // Ежегодному и ежемесячному нужна дата: «Ближайшее» для них не имеет смысла.
+                if (this.Repeat is RepeatKind.Yearly or RepeatKind.Monthly && this.Date is null)
                 {
                     this.Date = DateOnly.FromDateTime(DateTime.Now);
                 }
@@ -129,6 +140,9 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     public CalendarSheetModel CalendarSheet { get; } = new();
 
+    /// <summary>Шторка даты окончания: тот же календарь, но с другой подсказкой и без «Очистить».</summary>
+    public CalendarSheetModel EndsSheet { get; } = new() { EmptyHint = AppResources.EndsPickHint };
+
     public RepeatSheetModel RepeatSheet { get; } = new();
 
     public SoundSheetModel SoundSheet { get; }
@@ -146,6 +160,9 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     public partial bool IsDateSheetOpen { get; set; }
 
     [ObservableProperty]
+    public partial bool IsEndsSheetOpen { get; set; }
+
+    [ObservableProperty]
     public partial bool IsRepeatSheetOpen { get; set; }
 
     [ObservableProperty]
@@ -160,7 +177,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     public partial bool IsDurationSheetOpen { get; set; }
 
-    public bool IsAnySheetOpen => this.IsTimeSheetOpen || this.IsDateSheetOpen || this.IsRepeatSheetOpen || this.IsSoundSheetOpen
+    public bool IsAnySheetOpen => this.IsTimeSheetOpen || this.IsDateSheetOpen || this.IsEndsSheetOpen || this.IsRepeatSheetOpen || this.IsSoundSheetOpen
         || this.IsAlertSheetOpen || this.IsIconSheetOpen || this.IsDurationSheetOpen;
 
     [ObservableProperty]
@@ -178,8 +195,15 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [NotifyPropertyChangedFor(nameof(DateText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
     public partial DateOnly? Date { get; set; }
 
+    /// <summary>Последний день повторяющейся записи включительно; у повторяющейся обязателен (иначе сохранение недоступно), у разовой не хранится.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DateText), nameof(IsDateRowVisible), nameof(RepeatText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
+    [NotifyPropertyChangedFor(nameof(EndsText), nameof(IsEndsMissing))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial DateOnly? EndsOn { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DateText), nameof(IsDateRowVisible), nameof(IsEndsRowVisible), nameof(IsEndsMissing), nameof(RepeatText), nameof(PlateTitle), nameof(RelText), nameof(TimeHint))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     public partial RepeatKind Repeat { get; set; } = RepeatKind.None;
 
     [ObservableProperty]
@@ -231,8 +255,21 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         ? AppResources.Nearest
         : date.ToString(this.Repeat == RepeatKind.Yearly ? "d MMMM" : "dd.MM.yyyy", CultureInfo.CurrentUICulture);
 
-    /// <summary>Дата нужна разовому («Однократно», «Один раз и удалить») и ежегодному; ежедневному и по дням недели — только время.</summary>
-    public bool IsDateRowVisible => this.IsOneShot || this.Repeat == RepeatKind.Yearly;
+    /// <summary>Дата нужна разовому («Однократно», «Один раз и удалить»), ежегодному и ежемесячному; ежедневному и по дням недели — только время.</summary>
+    public bool IsDateRowVisible => this.IsOneShot || this.Repeat is RepeatKind.Yearly or RepeatKind.Monthly;
+
+    /// <summary>Окончание есть только у повторяющейся записи.</summary>
+    public bool IsEndsRowVisible => !this.IsOneShot;
+
+    /// <summary>Дата окончания обязательна, но ещё не выбрана: строка подсвечивается.</summary>
+    public bool IsEndsMissing => this.IsEndsRowVisible && this.EndsOn is null;
+
+    public string EndsText => this.EndsOn is { } date
+        ? date.ToString("dd.MM.yyyy", CultureInfo.CurrentUICulture)
+        : AppResources.EndsNotSet;
+
+    /// <summary>Повторяющейся записи без даты окончания сохраняться нельзя.</summary>
+    private bool CanSave => this.IsOneShot || this.EndsOn is not null;
 
     /// <summary>Звук и вибрация имеют смысл только у звонящей записи.</summary>
     public bool IsSoundRowsVisible => this.Alert == AlertKind.Ring;
@@ -260,6 +297,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
                     RepeatKind.None => AppResources.Repeat_None,
                     RepeatKind.OnceThenDelete => AppResources.Repeat_OnceThenDelete,
                     RepeatKind.Yearly => AppResources.Repeat_Yearly,
+                    RepeatKind.Monthly => AppResources.Repeat_Monthly,
                     _ => AppResources.Repeat_Daily,
                 };
             }
@@ -311,7 +349,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             this.IsExisting = true;
             this.Time = new TimeOnly(this.existing.At.Hour, this.existing.At.Minute);
             this.Repeat = this.existing.Repeat;
-            this.Date = this.existing.IsOneShot() || this.existing.Repeat == RepeatKind.Yearly ? DateOnly.FromDateTime(this.existing.At) : null;
+            this.Date = this.existing.IsOneShot() || this.existing.Repeat is RepeatKind.Yearly or RepeatKind.Monthly ? DateOnly.FromDateTime(this.existing.At) : null;
+            this.EndsOn = this.existing.EndsOn;
             this.Days = this.existing.Days;
             this.Label = this.existing.Label;
             this.SoundEnabled = this.existing.SoundEnabled;
@@ -386,8 +425,18 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private void OpenDate()
     {
-        this.CalendarSheet.Load(this.Date, DateOnly.FromDateTime(DateTime.Now), allowPast: this.Repeat == RepeatKind.Yearly);
+        this.CalendarSheet.Load(this.Date, DateOnly.FromDateTime(DateTime.Now), allowPast: this.Repeat is RepeatKind.Yearly or RepeatKind.Monthly);
         this.IsDateSheetOpen = true;
+    }
+
+    [RelayCommand]
+    private void OpenEnds()
+    {
+        this.EndsSheet.Load(this.EndsOn, DateOnly.FromDateTime(DateTime.Now), allowPast: false);
+
+        // Окончание обязательно: «Очистить» (вернуть «не выбрано») недоступна.
+        this.EndsSheet.IsClearVisible = false;
+        this.IsEndsSheetOpen = true;
     }
 
     [RelayCommand]
@@ -437,6 +486,10 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         {
             this.CalendarSheet.CancelCommand.Execute(null);
         }
+        else if (this.IsEndsSheetOpen)
+        {
+            this.EndsSheet.CancelCommand.Execute(null);
+        }
         else if (this.IsRepeatSheetOpen)
         {
             this.RepeatSheet.CancelCommand.Execute(null);
@@ -459,7 +512,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
     {
         var at = this.Target(this.Time);
@@ -480,7 +533,16 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             // ушедший вперёд, скрыл бы запись в её дне). Ежегодная — с выбранной даты. У ежедневной и «по дням
             // недели» строка даты скрыта, поэтому оставшийся от прежнего выбора Date не сдвигает начало.
             StartsOn = this.IsOneShot ? DateOnly.FromDateTime(at) : this.Date is { } start && this.IsDateRowVisible ? start : this.StartsOn,
+            // У разовой записи окончания нет; у повторяющейся оно обязательно (CanSave), но прежнее значение, оставшееся
+            // после смены повтора на разовый, не должно утечь в запись.
+            EndsOn = this.IsOneShot ? null : this.EndsOn,
         };
+
+        if (!this.IsOneShot && alarm.EndsOn < alarm.StartsOn)
+        {
+            this.ErrorText = AppResources.EndsBeforeStart;
+            return;
+        }
 
         if (!this.alarmService.Save(alarm))
         {
@@ -538,6 +600,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     partial void OnIsDateSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
 
+    partial void OnIsEndsSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
     partial void OnIsRepeatSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
 
     partial void OnIsSoundSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
@@ -551,6 +615,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     partial void OnTimeChanged(TimeOnly value) => this.MarkDirty();
 
     partial void OnDateChanged(DateOnly? value) => this.MarkDirty();
+
+    partial void OnEndsOnChanged(DateOnly? value) => this.MarkDirty();
 
     partial void OnRepeatChanged(RepeatKind value) => this.MarkDirty();
 

@@ -12,7 +12,8 @@ public sealed partial class RepeatSheetModel : ObservableObject
 {
     public RepeatSheetModel()
     {
-        this.Options = new(Enum.GetValues<RepeatKind>().Select(kind =>
+        // Порядок задан явно: enum хранится числом, и новые значения (Monthly) добавляются в его конец, а в списке — между «По дням недели» и «Каждый год».
+        this.Options = new(new[] { RepeatKind.None, RepeatKind.Daily, RepeatKind.Weekly, RepeatKind.Monthly, RepeatKind.Yearly, RepeatKind.OnceThenDelete }.Select(kind =>
             new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Repeat_{kind}", AppResources.Culture) ?? kind.ToString())));
 
         // Неделя с понедельника; AbbreviatedDayNames начинается с воскресенья.

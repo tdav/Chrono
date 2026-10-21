@@ -40,7 +40,7 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <!-- Повтор, время, дата: каждая строка открывает свою шторку. -->
+                    <!-- Повтор, время, дата, окончание: каждая строка открывает свою шторку. -->
                     <Border Style="{StaticResource RowGroup}">
                         <VerticalStackLayout>
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
@@ -67,6 +67,22 @@
                                 </Grid.GestureRecognizers>
                                 <Label Text="{x:Static res:AppResources.RowDate}" Style="{StaticResource RowKey}" />
                                 <Label Grid.Column="1" Text="{Binding DateText}" Style="{StaticResource RowValue}" />
+                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                            </Grid>
+                            <!-- Окончание: только у повторяющейся записи и обязательно, пока не выбрано — значение золотом, «Сохранить» неактивна. -->
+                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsEndsRowVisible}" />
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsEndsRowVisible}">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenEndsCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Label Text="{x:Static res:AppResources.RowEnds}" Style="{StaticResource RowKey}" />
+                                <Label Grid.Column="1" Text="{Binding EndsText}" Style="{StaticResource RowValue}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsEndsMissing}" Value="True">
+                                            <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                                 <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
                             </Grid>
                         </VerticalStackLayout>
@@ -158,6 +174,12 @@
                               Hint="{Binding CalendarSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
             <controls:BottomSheet.SheetContent>
                 <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
+            </controls:BottomSheet.SheetContent>
+        </controls:BottomSheet>
+        <controls:BottomSheet IsOpen="{Binding IsEndsSheetOpen}" Title="{x:Static res:AppResources.RowEnds}"
+                              Hint="{Binding EndsSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
+            <controls:BottomSheet.SheetContent>
+                <sheets:CalendarSheet BindingContext="{Binding EndsSheet}" />
             </controls:BottomSheet.SheetContent>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"

@@ -57,9 +57,12 @@ public sealed partial class CalendarSheetModel : ObservableObject
     [ObservableProperty]
     public partial string MonthTitle { get; set; } = "";
 
+    /// <summary>Подсказка, пока дата не выбрана: «Ближайшее» для даты записи, «Выберите последний день» для окончания.</summary>
+    public string EmptyHint { get; init; } = AppResources.NearestHint;
+
     public string Hint => this.Selected is { } date
         ? date.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture)
-        : AppResources.NearestHint;
+        : this.EmptyHint;
 
     /// <summary>«Очистить» (= «Ближайшее») не имеет смысла для ежегодного будильника: дата в нём обязательна.</summary>
     [ObservableProperty]
