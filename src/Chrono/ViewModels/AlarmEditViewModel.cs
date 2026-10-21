@@ -342,6 +342,20 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
                 this.Alert = alert;
             }
 
+            // Начало и длительность из циферблата: time=HH:mm, duration=N (минуты, больше нуля).
+            if (query.TryGetValue("time", out var timeValue)
+                && TimeOnly.TryParseExact(timeValue?.ToString(), "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTime))
+            {
+                this.Time = parsedTime;
+            }
+
+            if (query.TryGetValue("duration", out var durationValue)
+                && int.TryParse(durationValue?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedDuration)
+                && parsedDuration > 0)
+            {
+                this.DurationMinutes = parsedDuration;
+            }
+
             this.StartsOn = day ?? today;
 
             // Для сегодняшнего дня дата не задаётся: «Ближайшее» само выберет сегодня или завтра по времени.
