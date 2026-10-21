@@ -69,8 +69,9 @@ public static class DialLayout
             slices.Add(new DialSlice(entry, AngleOf(TimeOnly.FromDateTime(from)), (to - from).TotalHours * 30, false, colorIndex));
         }
 
-        // OrderByDescending стабилен: при равной длине сохраняется порядок записей.
-        return slices.OrderByDescending(s => s.SweepAngle).ToList();
+        // «Короче — сверху» считается по полной длительности дела, а не по срезу после обрезки (у засечки 0).
+        // OrderByDescending стабилен: при равной длительности сохраняется порядок записей.
+        return slices.OrderByDescending(s => s.Entry.Alarm.DurationMinutes).ToList();
     }
 
     /// <summary>
@@ -100,7 +101,8 @@ public static class DialLayout
                 hit = offset < slice.SweepAngle;
             }
 
-            if (hit && (best is null || slice.SweepAngle < best.Value.SweepAngle))
+            // <=: при равной длительности берётся последний в порядке отрисовки, то есть лежащий сверху.
+            if (hit && (best is null || slice.Entry.Alarm.DurationMinutes <= best.Value.Entry.Alarm.DurationMinutes))
             {
                 best = slice;
             }
@@ -116,7 +118,7 @@ public static class DialLayout
         foreach (var entry in entries)
         {
             if (entry.Alarm.DurationMinutes > 0 && entry.Start <= now && now < entry.End
-                && (best is null || entry.End - entry.Start < best.Value.End - best.Value.Start))
+                && (best is null || entry.Alarm.DurationMinutes < best.Value.Alarm.DurationMinutes))
             {
                 best = entry;
             }
@@ -146,7 +148,7 @@ public static class DialLayout
     public static DateTime FreeSlot(IReadOnlyList<DayEntry> entries, DateTime now)
     {
         var halfHour = TimeSpan.FromMinutes(DefaultNewMinutes);
-        var first = new DateTime((now.Ticks + halfHour.Ticks - 1) / halfHour.Ticks * halfHour.Ticks);
+        var first = new DateTime((now.Ticks + halfHour.Ticks - 1) / halfHour.Ticks * halfHour.Ticks, now.Kind);
 
         for (var candidate = first; candidate.Date == now.Date; candidate += halfHour)
         {
