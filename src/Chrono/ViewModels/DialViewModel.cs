@@ -103,14 +103,15 @@ public sealed partial class DialViewModel : ObservableObject
         this.Slices = DialLayout.Slices(this.entries, today, half);
         this.ArrowAngle = half == nowHalf ? DialLayout.AngleOf(TimeOnly.FromDateTime(this.now)) : null;
 
-        // Выбор сохраняется, пока запись есть в дне; иначе снимается вместе с раскрытой карточкой.
+        // Выбор сохраняется, пока запись видна на показанной половине; иначе снимается вместе с раскрытой карточкой
+        // (в полдень таймер сам переключает половину — утреннее дело уходит с экрана).
         var selectedId = this.SelectedId;
         this.selected = null;
-        foreach (var entry in this.entries)
+        foreach (var slice in this.Slices)
         {
-            if (entry.Alarm.Id == selectedId)
+            if (slice.Entry.Alarm.Id == selectedId)
             {
-                this.selected = entry;
+                this.selected = slice.Entry;
             }
         }
 
