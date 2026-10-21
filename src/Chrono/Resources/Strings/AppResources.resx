@@ -97,13 +97,8 @@
   <data name="DialUntilEnd" xml:space="preserve"><value>{0} · ends in {1} · next {2} at {3}</value></data>
   <data name="DialFree" xml:space="preserve"><value>Free · next {0} at {1}</value></data>
   <data name="DialFreeAllDay" xml:space="preserve"><value>Nothing planned</value></data>
-  <data name="DialTapForActions" xml:space="preserve"><value>Tap for actions</value></data>
-  <data name="DialClearSelection" xml:space="preserve"><value>Clear selection</value></data>
   <data name="DialAdd" xml:space="preserve"><value>Add</value></data>
   <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
-  <data name="DialEdit" xml:space="preserve"><value>Edit</value></data>
-  <data name="DialDone" xml:space="preserve"><value>Done</value></data>
-  <data name="DialUndone" xml:space="preserve"><value>Undo</value></data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Once, then delete</value></data>
   <data name="RowIcon" xml:space="preserve"><value>Icon</value></data>
   <data name="RowDuration" xml:space="preserve"><value>Duration</value></data>

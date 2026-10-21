@@ -396,26 +396,11 @@
   <data name="DialFreeAllDay" xml:space="preserve">
     <value>Ничего не запланировано</value>
   </data>
-  <data name="DialTapForActions" xml:space="preserve">
-    <value>Нажмите, чтобы открыть действия</value>
-  </data>
-  <data name="DialClearSelection" xml:space="preserve">
-    <value>Снять выбор</value>
-  </data>
   <data name="DialAdd" xml:space="preserve">
     <value>Добавить</value>
   </data>
   <data name="DialSectorDescription" xml:space="preserve">
     <value>{0}, {1}–{2}</value>
-  </data>
-  <data name="DialEdit" xml:space="preserve">
-    <value>Изменить</value>
-  </data>
-  <data name="DialDone" xml:space="preserve">
-    <value>Сделано</value>
-  </data>
-  <data name="DialUndone" xml:space="preserve">
-    <value>Снять отметку</value>
   </data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve">
     <value>Один раз и удалить</value>

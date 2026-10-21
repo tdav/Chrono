@@ -7,7 +7,10 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-/// <summary>Вкладка «Циферблат»: сегодняшний день секторами, выбор записи, карточка с действиями, «+».</summary>
+/// <summary>Строка сводки без выбора: текст и дело, в редактор которого она ведёт (null — «Свободно весь день»).</summary>
+public sealed record DialIdleLine(Guid? Id, string Text);
+
+/// <summary>Вкладка «Циферблат»: сегодняшний день секторами, выбор записи, карточка (нажатие — редактор), «+».</summary>
 public sealed partial class DialViewModel : ObservableObject
 {
     private readonly AlarmService alarmService;
@@ -57,13 +60,6 @@ public sealed partial class DialViewModel : ObservableObject
     public bool IsIdle => !this.HasSelection;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsHintVisible))]
-    public partial bool IsExpanded { get; set; }
-
-    /// <summary>Подсказка «Нажмите, чтобы открыть действия» — пока действия свёрнуты.</summary>
-    public bool IsHintVisible => !this.IsExpanded;
-
-    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CardDescription))]
     public partial string SelectedTitle { get; set; } = "";
 
@@ -77,19 +73,12 @@ public sealed partial class DialViewModel : ObservableObject
     [ObservableProperty]
     public partial Color SelectedColor { get; set; } = Colors.Transparent;
 
-    /// <summary>Короткая подпись кнопки: «Сделано» или «Снять отметку».</summary>
+    /// <summary>Верхняя строка сводки: идущее дело, иначе ближайшее, иначе «Свободно весь день» (Id = null).</summary>
     [ObservableProperty]
-    public partial string DoneText { get; set; } = "";
-
-    /// <summary>Длинная подпись для TalkBack: «Отметить выполненным» или «Снять отметку».</summary>
-    [ObservableProperty]
-    public partial string DoneDescription { get; set; } = "";
+    public partial DialIdleLine IdleHeadline { get; set; } = new(null, "");
 
     [ObservableProperty]
-    public partial string IdleHeadline { get; set; } = "";
-
-    [ObservableProperty]
-    public partial IReadOnlyList<string> IdleLines { get; set; } = [];
+    public partial IReadOnlyList<DialIdleLine> IdleLines { get; set; } = [];
 
     /// <summary>Перечитывает записи дня и пересчитывает всё показываемое. Вызывается из OnAppearing, таймера и при возврате из фона.</summary>
     public void Refresh()
@@ -143,20 +132,19 @@ public sealed partial class DialViewModel : ObservableObject
             {
                 AlertKind.None => AppResources.Alert_None,
                 AlertKind.Notify => AppResources.Alert_Notify,
+                AlertKind.Beep => AppResources.Alert_Beep,
+                AlertKind.Ring => AppResources.Alert_Ring,
                 _ => AppResources.Alert_Ring,
             });
 
             this.SelectedTitle = Title(sel);
             this.SelectedDetails = string.Join(" · ", details);
             this.SelectedColor = Color.FromArgb(DialLayout.Palette[DialLayout.ColorIndex(sel.Alarm.Id)]);
-            this.DoneText = sel.IsDone ? AppResources.DialUndone : AppResources.DialDone;
-            this.DoneDescription = sel.IsDone ? AppResources.UnmarkDone : AppResources.MarkDone;
             this.CenterTitle = this.SelectedTitle;
             this.CenterSub = range;
         }
         else
         {
-            this.IsExpanded = false;
             this.CenterTitle = this.now.ToString("HH:mm", culture);
             this.CenterSub = current is { } c && left is not null ? $"{Title(c)} · {left}" : "";
         }
@@ -164,20 +152,21 @@ public sealed partial class DialViewModel : ObservableObject
         if (minutes is not null)
         {
             // Идущее дело называется в строке: «Работа · до конца 26 мин · далее Обед в 13:00».
-            this.IdleHeadline = next is { } n
+            var text = next is { } n
                 ? string.Format(culture, AppResources.DialUntilEnd, Title(current!.Value), minutes, Title(n), $"{n.Start:HH:mm}")
                 : $"{Title(current!.Value)} · {left}";
+            this.IdleHeadline = new DialIdleLine(current!.Value.Alarm.Id, text);
         }
         else if (next is { } following)
         {
-            this.IdleHeadline = string.Format(culture, AppResources.DialFree, Title(following), $"{following.Start:HH:mm}");
+            this.IdleHeadline = new DialIdleLine(following.Alarm.Id, string.Format(culture, AppResources.DialFree, Title(following), $"{following.Start:HH:mm}"));
         }
         else
         {
-            this.IdleHeadline = AppResources.DialFreeAllDay;
+            this.IdleHeadline = new DialIdleLine(null, AppResources.DialFreeAllDay);
         }
 
-        this.IdleLines = this.entries.Where(e => e.Start > this.now).Take(3).Select(e => $"{e.Start:HH:mm} {Title(e)}").ToList();
+        this.IdleLines = this.entries.Where(e => e.Start > this.now).Take(3).Select(e => new DialIdleLine(e.Alarm.Id, $"{e.Start:HH:mm} {Title(e)}")).ToList();
 
         // Для TalkBack — дела показанной половины одним списком (дело через полдень не дублируется).
         this.DialDescription = string.Join("; ", this.Slices.Select(s => s.Entry).Select(e => e.Alarm.DurationMinutes > 0
@@ -189,17 +178,18 @@ public sealed partial class DialViewModel : ObservableObject
 
     private static string Title(DayEntry entry) => string.IsNullOrWhiteSpace(entry.Alarm.Label) ? AppResources.DefaultLabel : entry.Alarm.Label;
 
-    /// <summary>Касание циферблата: угол от «12 часов» по часовой и доля радиуса обода. Пустое место ничего не меняет.</summary>
+    /// <summary>Касание циферблата: угол от «12 часов» по часовой и доля радиуса обода. Сектор выделяется; пустое место снимает выделение.</summary>
     public void SelectAt(double angle, double radiusFraction)
     {
         if (DialLayout.HitTest(this.Slices, angle, radiusFraction) is not { } hit)
         {
-            return;
-        }
+            if (this.selected is not null)
+            {
+                this.selected = null;
+                this.Refresh();
+            }
 
-        if (hit.Alarm.Id != this.SelectedId)
-        {
-            this.IsExpanded = false;
+            return;
         }
 
         this.selected = hit;
@@ -209,7 +199,7 @@ public sealed partial class DialViewModel : ObservableObject
     [RelayCommand]
     private void ShowNow()
     {
-        // Выбранной записи может не быть на другой половине: переключение снимает выбор, как «Снять выбор».
+        // Выбранной записи может не быть на другой половине: переключение снимает выбор.
         this.IsEvening = false;
         this.selected = null;
         this.Refresh();
@@ -224,27 +214,10 @@ public sealed partial class DialViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ToggleExpanded() => this.IsExpanded = !this.IsExpanded;
-
-    [RelayCommand]
-    private void ClearSelection()
-    {
-        this.selected = null;
-        this.Refresh();
-    }
-
-    [RelayCommand]
-    private void ToggleDone()
-    {
-        if (this.selected is { } entry)
-        {
-            this.alarmService.SetDone(entry.Alarm.Id, DateOnly.FromDateTime(entry.Start), !entry.IsDone);
-            this.Refresh();
-        }
-    }
-
-    [RelayCommand]
     private Task EditAsync() => this.selected is { } entry ? Shell.Current.GoToAsync($"edit?id={entry.Alarm.Id}") : Task.CompletedTask;
+
+    [RelayCommand]
+    private Task OpenEntryAsync(DialIdleLine? line) => line?.Id is { } id ? Shell.Current.GoToAsync($"edit?id={id}") : Task.CompletedTask;
 
     [RelayCommand]
     private Task AddAsync()
