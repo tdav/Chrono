@@ -161,4 +161,48 @@ public sealed class IosNotificationPlanTests
             [$"{id}-r30-4", $"{id}-r30-5", $"{id}-r30-6", $"{id}-r30-7"],
             IosNotificationPlan.ReminderChainIds($"{id}-r30-5"));
     }
+
+    [Fact]
+    public void Build_Beep_SingleNotification()
+    {
+        var beep = new Alarm { At = Now.AddHours(1), Alert = AlertKind.Beep };
+
+        var plan = IosNotificationPlan.Build([beep], Now);
+
+        Assert.Single(plan);
+        Assert.Equal(beep.At, plan[0].FireAt);
+    }
+
+    [Fact]
+    public void Build_EndedSeries_NotPlanned()
+    {
+        var ended = new Alarm
+        {
+            At = new DateTime(2026, 11, 10, 7, 0, 0),
+            StartsOn = new DateOnly(2026, 10, 21),
+            Repeat = RepeatKind.Daily,
+            EndsOn = new DateOnly(2026, 11, 9),
+        };
+
+        Assert.Empty(IosNotificationPlan.Build([ended], new DateTime(2026, 11, 9, 8, 0, 0)));
+    }
+
+    [Fact]
+    public void Build_DailyEndingSoon_StopsAtEndsOn()
+    {
+        var series = new Alarm
+        {
+            At = new DateTime(2026, 11, 7, 7, 0, 0),
+            StartsOn = new DateOnly(2026, 10, 21),
+            Repeat = RepeatKind.Daily,
+            Alert = AlertKind.Notify,
+            EndsOn = new DateOnly(2026, 11, 9),
+        };
+
+        var plan = IosNotificationPlan.Build([series], new DateTime(2026, 11, 6, 8, 0, 0));
+
+        Assert.Equal(
+            [new DateTime(2026, 11, 7, 7, 0, 0), new DateTime(2026, 11, 8, 7, 0, 0), new DateTime(2026, 11, 9, 7, 0, 0)],
+            plan.Select(p => p.FireAt));
+    }
 }

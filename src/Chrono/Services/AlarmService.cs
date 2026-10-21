@@ -110,6 +110,12 @@ public sealed class AlarmService
         // и после смены часового пояса 06:30 превратилось бы в другой час.
         alarm = alarm with { At = DateTime.SpecifyKind(alarm.At, DateTimeKind.Unspecified) };
         alarm = alarm with { StartsOn = alarm.StartsOn ?? DateOnly.FromDateTime(alarm.At) };
+        if (alarm.IsOneShot())
+        {
+            // Дата окончания есть только у серии: у разовой её могла оставить прежняя форма редактора.
+            alarm = alarm with { EndsOn = null };
+        }
+
         var now = this.time.GetLocalNow().DateTime;
         if (!alarm.IsOneShot() && alarm.At < alarm.StartsOn!.Value.ToDateTime(TimeOnly.MinValue))
         {

@@ -6,7 +6,7 @@ namespace Chrono.Services;
 public readonly record struct PlannedNotification(string Id, Alarm Alarm, DateTime FireAt, int ReminderMinutes = 0);
 
 /// <summary>
-/// Цепочка уведомлений iOS: 4 уведомления на срабатывание Ring (0/30/60/90 с) и одно на Notify (смещение 0),
+/// Цепочка уведомлений iOS: 4 уведомления на срабатывание Ring (0/30/60/90 с) и одно на Notify и Beep (смещение 0),
 /// не более 16 ближайших срабатываний на оба вида — iOS хранит не более 64 запланированных уведомлений.
 /// Напоминания (Alarm.AlertTimes) — отдельные цепочки того же вида за N минут до начала; лимит считается на моменты.
 /// Записи с Alert == None не планируются. Повторяющийся будильник разворачивается в несколько
@@ -31,6 +31,12 @@ public static class IosNotificationPlan
             var at = alarm.At;
             for (var k = 0; k < (alarm.IsOneShot() ? 1 : MaxAlarms); k++)
             {
+                // Серия закончилась: NextAfter дату окончания не учитывает, дальше срабатываний нет.
+                if (alarm.Ended(at))
+                {
+                    break;
+                }
+
                 // Напоминание, время которого уже прошло, не планируется: iOS не сработает по прошедшему времени.
                 foreach (var moment in alarm.AlertTimes(at).Where(t => t > now))
                 {
@@ -47,7 +53,7 @@ public static class IosNotificationPlan
             .OrderBy(o => o.At)
             .Take(MaxAlarms)
             .SelectMany(o => Offsets
-                .Take(o.Alarm.Alert == AlertKind.Notify ? 1 : Offsets.Count)
+                .Take(o.Alarm.Alert is AlertKind.Notify or AlertKind.Beep ? 1 : Offsets.Count)
                 .Select((offset, i) => new PlannedNotification(
                     o.Minutes == 0 ? $"{o.Alarm.Id}-{o.K * Offsets.Count + i}" : $"{o.Alarm.Id}-r{o.Minutes}-{o.K * Offsets.Count + i}",
                     o.Alarm,

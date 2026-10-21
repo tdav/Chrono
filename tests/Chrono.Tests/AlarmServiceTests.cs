@@ -560,4 +560,33 @@ public sealed class AlarmServiceTests : IDisposable
         Assert.False(File.Exists(Path.Combine(this.directory.FullName, "sync.json")));
         Assert.Equal(3, raised);
     }
+
+    [Fact]
+    public void Save_OneShot_ClearsEndsOn()
+    {
+        var alarm = new Alarm { At = Now.AddHours(1), EndsOn = DateOnly.FromDateTime(Now).AddDays(5) };
+
+        Assert.True(this.service.Save(alarm));
+
+        Assert.Null(this.store.Load().Alarms.Single().EndsOn);
+    }
+
+    [Fact]
+    public void GetAll_EndedSeries_KeepsEnabled()
+    {
+        var today = DateOnly.FromDateTime(Now);
+        this.store.Save([new Alarm
+        {
+            At = Now.AddDays(-1).AddHours(-5),
+            StartsOn = today.AddDays(-10),
+            Repeat = RepeatKind.Daily,
+            EndsOn = today.AddDays(-1),
+        }]);
+
+        var alarm = this.service.GetAll().Single();
+
+        Assert.True(alarm.IsEnabled);
+        Assert.True(alarm.At > Now);
+        Assert.True(alarm.Ended(alarm.At));
+    }
 }
