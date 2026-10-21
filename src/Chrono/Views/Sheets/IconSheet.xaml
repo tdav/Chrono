@@ -13,11 +13,12 @@
 
     <VerticalStackLayout Spacing="16">
 
-        <!-- Сетка 4×3: ячейка занимает 25% ширины (Basis), кружок 56 по центру ячейки, поэтому колонок ровно 4 при любой ширине экрана. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
+        <!-- Сетка 5 колонок × 10 рядов: ячейка занимает 20% ширины (Basis), кружок 56 по центру ячейки, поэтому колонок ровно 5 при любой ширине экрана. Сетка в ScrollView высотой не больше 320 (последний ряд виден наполовину — намёк на прокрутку): панель шторки прижата к низу страницы, и без ограничения 50 иконок вытолкнули бы «Отмену» и «OK» за экран; кнопки лежат вне ScrollView и всегда видны. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
+        <ScrollView MaximumHeightRequest="320">
         <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
             <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChoiceOption">
-                    <Grid FlexLayout.Basis="25%" Margin="0,0,0,12">
+                    <Grid FlexLayout.Basis="20%" Margin="0,0,0,12">
                         <Border WidthRequest="56" HeightRequest="56" Padding="5" HorizontalOptions="Center"
                                 StrokeThickness="0" StrokeShape="RoundRectangle 28"
                                 Background="{StaticResource Surface2}"
@@ -41,6 +42,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </FlexLayout>
+        </ScrollView>
 
         <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
             <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"

@@ -130,6 +130,44 @@
   <data name="Icon_phone" xml:space="preserve"><value>Телефон</value></data>
   <data name="Icon_walk" xml:space="preserve"><value>Прогулка</value></data>
   <data name="Icon_sleep" xml:space="preserve"><value>Сон</value></data>
+  <data name="Icon_run" xml:space="preserve"><value>Бег</value></data>
+  <data name="Icon_dumbbell" xml:space="preserve"><value>Тренировка</value></data>
+  <data name="Icon_swim" xml:space="preserve"><value>Плавание</value></data>
+  <data name="Icon_ball" xml:space="preserve"><value>Игра в мяч</value></data>
+  <data name="Icon_heart" xml:space="preserve"><value>Здоровье</value></data>
+  <data name="Icon_tooth" xml:space="preserve"><value>Зубы</value></data>
+  <data name="Icon_water" xml:space="preserve"><value>Вода</value></data>
+  <data name="Icon_egg" xml:space="preserve"><value>Завтрак</value></data>
+  <data name="Icon_tea" xml:space="preserve"><value>Чай</value></data>
+  <data name="Icon_cake" xml:space="preserve"><value>Десерт</value></data>
+  <data name="Icon_apple" xml:space="preserve"><value>Фрукты</value></data>
+  <data name="Icon_cart" xml:space="preserve"><value>Покупки</value></data>
+  <data name="Icon_home" xml:space="preserve"><value>Дом</value></data>
+  <data name="Icon_broom" xml:space="preserve"><value>Уборка</value></data>
+  <data name="Icon_laundry" xml:space="preserve"><value>Стирка</value></data>
+  <data name="Icon_plant" xml:space="preserve"><value>Растения</value></data>
+  <data name="Icon_pet" xml:space="preserve"><value>Питомец</value></data>
+  <data name="Icon_child" xml:space="preserve"><value>Дети</value></data>
+  <data name="Icon_laptop" xml:space="preserve"><value>Ноутбук</value></data>
+  <data name="Icon_meeting" xml:space="preserve"><value>Встреча</value></data>
+  <data name="Icon_mail" xml:space="preserve"><value>Почта</value></data>
+  <data name="Icon_calendar" xml:space="preserve"><value>Календарь</value></data>
+  <data name="Icon_pen" xml:space="preserve"><value>Письмо</value></data>
+  <data name="Icon_study" xml:space="preserve"><value>Учёба</value></data>
+  <data name="Icon_idea" xml:space="preserve"><value>Идея</value></data>
+  <data name="Icon_car" xml:space="preserve"><value>Машина</value></data>
+  <data name="Icon_bus" xml:space="preserve"><value>Автобус</value></data>
+  <data name="Icon_plane" xml:space="preserve"><value>Перелёт</value></data>
+  <data name="Icon_music" xml:space="preserve"><value>Музыка</value></data>
+  <data name="Icon_movie" xml:space="preserve"><value>Кино</value></data>
+  <data name="Icon_game" xml:space="preserve"><value>Игры</value></data>
+  <data name="Icon_camera" xml:space="preserve"><value>Фото</value></data>
+  <data name="Icon_gift" xml:space="preserve"><value>Подарок</value></data>
+  <data name="Icon_sun" xml:space="preserve"><value>Утро</value></data>
+  <data name="Icon_star" xml:space="preserve"><value>Важное</value></data>
+  <data name="Icon_money" xml:space="preserve"><value>Деньги</value></data>
+  <data name="Icon_target" xml:space="preserve"><value>Цель</value></data>
+  <data name="Icon_flower" xml:space="preserve"><value>Цветы</value></data>
   <data name="GoogleGroup" xml:space="preserve"><value>Google Календарь</value></data>
   <data name="SignInGoogle" xml:space="preserve"><value>Войти через Google</value></data>
   <data name="SignInAgainButton" xml:space="preserve"><value>Войти снова</value></data>
