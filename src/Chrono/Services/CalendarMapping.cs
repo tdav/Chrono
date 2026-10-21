@@ -51,6 +51,20 @@ public static class CalendarMapping
             }
         }
 
+        if (alarm.Repeat == RepeatKind.Monthly)
+        {
+            // Число месяца берётся из At, первый месяц — не раньше StartsOn; месяцы без такого числа пропускаются, как в NextAfter.
+            var floor = startDay;
+            for (var month = new DateOnly(floor.Year, floor.Month, 1); ; month = month.AddMonths(1))
+            {
+                if (alarm.At.Day <= DateTime.DaysInMonth(month.Year, month.Month) && new DateOnly(month.Year, month.Month, alarm.At.Day) is var candidate && candidate >= floor)
+                {
+                    startDay = candidate;
+                    break;
+                }
+            }
+        }
+
         // Только семь определённых битов: маска из одних лишних битов (повреждённый файл) иначе не нашла бы дня никогда.
         var mask = alarm.Days & (WeekDays)127;
         if (alarm.Repeat == RepeatKind.Weekly && mask != WeekDays.None)
@@ -69,10 +83,18 @@ public static class CalendarMapping
         {
             RepeatKind.Daily => ["RRULE:FREQ=DAILY"],
             RepeatKind.Yearly => ["RRULE:FREQ=YEARLY"],
+            RepeatKind.Monthly => ["RRULE:FREQ=MONTHLY"],
             RepeatKind.Weekly when alarm.Days == WeekDays.None => ["RRULE:FREQ=DAILY"],
             RepeatKind.Weekly => [$"RRULE:FREQ=WEEKLY;BYDAY={string.Join(',', DayCodes.Where((_, i) => alarm.Days.HasFlag((WeekDays)(1 << ((i + 1) % 7)))))}"],
             _ => null,
         };
+
+        if (recurrence is not null && alarm.EndsOn is { } endsOn)
+        {
+            // Последний день включительно: UNTIL — конец местного дня в UTC (в Google UNTIL с временем включает само это мгновение).
+            var endOfDay = endsOn.ToDateTime(new TimeOnly(23, 59, 59));
+            recurrence[0] += $";UNTIL={new DateTimeOffset(endOfDay, zone.GetUtcOffset(endOfDay)).UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture)}";
+        }
 
         return new GoogleEvent
         {
@@ -152,11 +174,12 @@ public static class CalendarMapping
             start = TimeZoneInfo.ConvertTime(parsed, zone).DateTime;
         }
 
-        // Разбор RRULE. Поддерживаются DAILY, WEEKLY (+BYDAY из двух букв) и YEARLY без INTERVAL≠1, COUNT, UNTIL и прочего;
-        // остальное — «чужая серия». Отдельного метода нет: разбор нужен только здесь.
+        // Разбор RRULE. Поддерживаются DAILY, WEEKLY (+BYDAY из двух букв), MONTHLY (BYMONTHDAY — только равный числу старта) и YEARLY
+        // с UNTIL (дата окончания), без INTERVAL≠1, COUNT и прочего; остальное — «чужая серия». Отдельного метода нет: разбор нужен только здесь.
         var rules = (ev.Recurrence ?? []).Where(r => r.StartsWith("RRULE:", StringComparison.OrdinalIgnoreCase)).ToList();
         var repeat = RepeatKind.None;
         var days = WeekDays.None;
+        DateOnly? endsOn = null;
         // RDATE и EXRULE Chrono выразить не может (их повторы молча потерялись бы); EXDATE игнорируется (6.6).
         var supported = rules.Count <= 1
             && !(ev.Recurrence ?? []).Any(r => r.StartsWith("RDATE", StringComparison.OrdinalIgnoreCase) || r.StartsWith("EXRULE", StringComparison.OrdinalIgnoreCase));
@@ -164,6 +187,8 @@ public static class CalendarMapping
         {
             string? freq = null;
             string? byDay = null;
+            string? byMonthDay = null;
+            DateOnly? until = null;
             foreach (var part in rules[0][6..].Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 var pair = part.Split('=', 2);
@@ -176,6 +201,25 @@ public static class CalendarMapping
                     case "BYDAY":
                         byDay = value;
                         break;
+                    case "BYMONTHDAY":
+                        byMonthDay = value;
+                        break;
+                    case "UNTIL":
+                        // UTC — переводим в местную дату; дата без времени и время без Z — уже местные.
+                        if (value.EndsWith('Z') && DateTime.TryParseExact(value, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var untilUtc))
+                        {
+                            until = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(untilUtc, zone));
+                        }
+                        else if (!value.EndsWith('Z') && DateTime.TryParseExact(value, ["yyyyMMdd", "yyyyMMdd'T'HHmmss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var untilLocal))
+                        {
+                            until = DateOnly.FromDateTime(untilLocal);
+                        }
+                        else
+                        {
+                            supported = false;
+                        }
+
+                        break;
                     case "INTERVAL" when value == "1":
                     case "WKST":
                         break;
@@ -185,8 +229,18 @@ public static class CalendarMapping
                 }
             }
 
+            // BYMONTHDAY понятен только у MONTHLY и только если равен числу старта (иначе число месяца у Chrono другое).
+            if (byMonthDay is not null && (freq != "MONTHLY" || byMonthDay != start.Day.ToString(CultureInfo.InvariantCulture)))
+            {
+                supported = false;
+            }
+
+            endsOn = until;
             switch (freq)
             {
+                case "MONTHLY" when byDay is null:
+                    repeat = RepeatKind.Monthly;
+                    break;
                 case "DAILY" when byDay is null:
                     repeat = RepeatKind.Daily;
                     break;
@@ -229,6 +283,7 @@ public static class CalendarMapping
             foreign = true;
             repeat = RepeatKind.None;
             days = WeekDays.None;
+            endsOn = null;
             start = allDay ? TimeZoneInfo.ConvertTime(instance, zone).Date : TimeZoneInfo.ConvertTime(instance, zone).DateTime;
         }
 
@@ -273,6 +328,7 @@ public static class CalendarMapping
             Alert = allDay ? AlertKind.None
                 : Enum.TryParse<AlertKind>(props?.GetValueOrDefault("alert"), out var alert) && Enum.IsDefined(alert) ? alert : AlertKind.Ring,
             StartsOn = startsOn,
+            EndsOn = endsOn,
             GoogleEventId = ev.Id,
             // useDefault считается «без напоминаний»: у календаря «Chrono» нет напоминаний по умолчанию; email-напоминания — не звонок.
             ReminderMinutes = ev.Reminders is { UseDefault: false, Overrides: { } overrides } ? string.Join(',', overrides.Where(o => o.Method == "popup").Select(o => o.Minutes)) : "",

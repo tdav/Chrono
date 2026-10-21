@@ -441,13 +441,15 @@ public sealed class CalendarMappingTests
     }
 
     [Theory]
-    [InlineData("RRULE:FREQ=MONTHLY")]
+    [InlineData("RRULE:FREQ=MONTHLY;BYDAY=1MO")]
     [InlineData("RRULE:FREQ=WEEKLY;INTERVAL=2")]
     [InlineData("RRULE:FREQ=DAILY;COUNT=5")]
-    [InlineData("RRULE:FREQ=DAILY;UNTIL=20261231T000000Z")]
+    [InlineData("RRULE:FREQ=MONTHLY;COUNT=5")]
     [InlineData("RRULE:FREQ=YEARLY;BYMONTHDAY=8")]
     [InlineData("RRULE:FREQ=WEEKLY;BYDAY=1MO")]
     [InlineData("RRULE:FREQ=DAILY;BYDAY=MO")]
+    [InlineData("RRULE:FREQ=MONTHLY;BYMONTHDAY=3")]
+    [InlineData("RRULE:FREQ=DAILY;UNTIL=garbage")]
     public void FromEvent_UnsupportedRule_NeedsInstance(string rule)
     {
         var ev = Timed("2026-10-26T07:15:00+05:00", "2026-10-26T07:45:00+05:00", [rule]);
@@ -468,7 +470,7 @@ public sealed class CalendarMappingTests
     [Fact]
     public void FromEvent_UnsupportedRuleInstanceInPast_Skip()
     {
-        var ev = Timed("2026-09-01T07:15:00+05:00", recurrence: ["RRULE:FREQ=MONTHLY"]);
+        var ev = Timed("2026-09-01T07:15:00+05:00", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]);
 
         var result = CalendarMapping.FromEvent(ev, Tashkent, Now, null, new DateTimeOffset(2026, 10, 1, 7, 15, 0, TimeSpan.FromHours(5)));
 
@@ -589,5 +591,100 @@ public sealed class CalendarMappingTests
         var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
 
         Assert.Equal("", alarm.ReminderMinutes);
+    }
+
+    [Fact]
+    public void ToEvent_Monthly_FreqMonthlyAndStartOnDayOfMonth()
+    {
+        var alarm = new Alarm { At = new DateTime(2026, 10, 15, 8, 0, 0), StartsOn = new DateOnly(2026, 10, 20), Repeat = RepeatKind.Monthly };
+
+        var ev = CalendarMapping.ToEvent(alarm, Tashkent);
+
+        Assert.Equal(["RRULE:FREQ=MONTHLY"], ev.Recurrence!);
+        Assert.Equal("2026-11-15T08:00:00+05:00", ev.Start!.DateTime);
+    }
+
+    [Fact]
+    public void ToEvent_EndsOn_UntilIsEndOfLocalDayInUtc()
+    {
+        var alarm = new Alarm { At = new DateTime(2026, 10, 26, 7, 15, 0), StartsOn = new DateOnly(2026, 10, 26), Repeat = RepeatKind.Daily, EndsOn = new DateOnly(2026, 11, 9) };
+
+        var ev = CalendarMapping.ToEvent(alarm, Tashkent);
+
+        Assert.Equal(["RRULE:FREQ=DAILY;UNTIL=20261109T185959Z"], ev.Recurrence!);
+    }
+
+    [Fact]
+    public void FromEvent_Monthly_Supported()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=MONTHLY"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(RepeatKind.Monthly, alarm.Repeat);
+        Assert.False(alarm.ForeignSeries);
+    }
+
+    [Fact]
+    public void FromEvent_MonthlyByMonthDayEqualToStartDay_Supported()
+    {
+        var ev = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=MONTHLY;BYMONTHDAY=26"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.Equal(RepeatKind.Monthly, alarm.Repeat);
+    }
+
+    [Fact]
+    public void FromEvent_UntilUtc_EndsOnLocalDate()
+    {
+        var utc = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261109T185959Z"]);
+        var date = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261109"]);
+        var local = Timed("2026-10-26T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261109T235959"]);
+
+        Assert.Equal(new DateOnly(2026, 11, 9), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(utc, Tashkent, Now, null)).Alarm.EndsOn);
+        Assert.Equal(new DateOnly(2026, 11, 9), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(date, Tashkent, Now, null)).Alarm.EndsOn);
+        Assert.Equal(new DateOnly(2026, 11, 9), Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(local, Tashkent, Now, null)).Alarm.EndsOn);
+    }
+
+    [Fact]
+    public void FromEvent_UntilInPast_ImportedEnabledWithoutChange()
+    {
+        var ev = Timed("2026-09-01T07:15:00+05:00", recurrence: ["RRULE:FREQ=DAILY;UNTIL=20261001T000000Z"]);
+
+        var alarm = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(ev, Tashkent, Now, null)).Alarm;
+
+        Assert.True(alarm.IsEnabled);
+        Assert.Equal(new DateOnly(2026, 10, 1), alarm.EndsOn);
+    }
+
+    [Fact]
+    public void RoundTrip_MonthlyWithEndsOn_Equal()
+    {
+        var seed = new Alarm
+        {
+            Id = Guid.NewGuid(), At = new DateTime(2026, 10, 15, 8, 0, 0), StartsOn = new DateOnly(2026, 10, 15),
+            Repeat = RepeatKind.Monthly, EndsOn = new DateOnly(2027, 3, 9), GoogleEventId = "evt1",
+        };
+        var a = seed with { At = seed.NextAfter(Now) };
+
+        var back = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(CalendarMapping.ToEvent(a, Tashkent), Tashkent, Now, a)).Alarm;
+
+        Assert.Equal(a, back);
+    }
+
+    [Fact]
+    public void RoundTrip_WeeklyWithEndsOn_Equal()
+    {
+        var seed = new Alarm
+        {
+            Id = Guid.NewGuid(), At = new DateTime(2026, 10, 26, 7, 15, 0), StartsOn = new DateOnly(2026, 10, 26),
+            Repeat = RepeatKind.Weekly, Days = WeekDays.Monday | WeekDays.Wednesday, EndsOn = new DateOnly(2026, 12, 31), GoogleEventId = "evt1",
+        };
+        var a = seed with { At = seed.NextAfter(Now) };
+
+        var back = Assert.IsType<ImportUpsert>(CalendarMapping.FromEvent(CalendarMapping.ToEvent(a, Tashkent), Tashkent, Now, a)).Alarm;
+
+        Assert.Equal(a, back);
     }
 }

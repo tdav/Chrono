@@ -362,7 +362,7 @@ public sealed class CalendarSyncTests : IDisposable
     public async Task Sync_ForeignSeries_NotPushed_DeleteIgnoredForever()
     {
         var instanceStart = Now.AddDays(5);
-        this.server.Add(Ev("g-m", Now.AddDays(1), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(1), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(new DateTimeOffset(instanceStart, TimeSpan.Zero), new DateTimeOffset(instanceStart.AddMinutes(30), TimeSpan.Zero))];
 
         await this.Sync();
@@ -401,7 +401,7 @@ public sealed class CalendarSyncTests : IDisposable
         // timeMin фильтрует по концу события: первым приходит идущий сейчас экземпляр, его начало позади; клиент берёт два и пропускает его.
         var running = new DateTimeOffset(Now.AddMinutes(-10), TimeSpan.Zero);
         var next = new DateTimeOffset(Now.AddDays(1), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-30), "Ежемесячно", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-30), "Ежемесячно", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(running, running.AddMinutes(30)), (next, next.AddMinutes(30))];
 
         await this.Sync();
@@ -416,7 +416,7 @@ public sealed class CalendarSyncTests : IDisposable
     [Fact]
     public async Task Sync_NextInstance_NoFutureInstance_SkipsEvent()
     {
-        this.server.Add(Ev("g-m", Now.AddDays(-30), "Закончилась", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-30), "Закончилась", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
 
         await this.Sync();
 
@@ -643,7 +643,7 @@ public sealed class CalendarSyncTests : IDisposable
     {
         var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
         var second = new DateTimeOffset(Now.AddDays(35), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(first, first.AddMinutes(30)), (second, second.AddMinutes(30))];
         await this.Sync();
         Assert.Equal(first.DateTime, Assert.Single(this.Alarms).At);
@@ -713,7 +713,7 @@ public sealed class CalendarSyncTests : IDisposable
     public async Task Sync_ForeignSeries_InstanceRequestTimesOut_SkipsRecordLikeNetworkError()
     {
         var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
         await this.Sync();
 
@@ -732,7 +732,7 @@ public sealed class CalendarSyncTests : IDisposable
     public async Task Sync_ForeignSeries_CallerCancelled_PropagatesCancellation()
     {
         var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
         await this.Sync();
 
@@ -756,7 +756,7 @@ public sealed class CalendarSyncTests : IDisposable
     public async Task Sync_ForeignSeries_NoNextInstance_DeletesRecordOnly()
     {
         var only = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-25), "Последний раз", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Последний раз", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(only, only.AddMinutes(30))];
         await this.Sync();
         Assert.Single(this.Alarms);
@@ -778,7 +778,7 @@ public sealed class CalendarSyncTests : IDisposable
     public async Task Sync_ForeignSeries_NextInstanceFails_SkipsRecordAndRestOfPassContinues()
     {
         var first = new DateTimeOffset(Now.AddDays(5), TimeSpan.Zero);
-        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY"]));
+        this.server.Add(Ev("g-m", Now.AddDays(-25), "Раз в месяц", recurrence: ["RRULE:FREQ=MONTHLY;BYDAY=1MO"]));
         this.server.Instances["g-m"] = [(first, first.AddMinutes(30))];
         await this.Sync();
 
