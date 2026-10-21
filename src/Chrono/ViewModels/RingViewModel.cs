@@ -1,4 +1,5 @@
 using System.Globalization;
+using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,6 +12,8 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     private readonly AlarmService alarmService;
     private readonly IAlarmScheduler scheduler;
     private Guid alarmId;
+    // Запись сигнала на момент Load; null, если её уже нет (GetAll удалил «Один раз и удалить» по таймауту).
+    private Alarm? ringingAlarm;
     private int expectedAnswer;
 
     public RingViewModel(AlarmService alarmService, IAlarmScheduler scheduler)
@@ -60,6 +63,8 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         if (this.alarmId != Guid.Empty && this.alarmId != id)
         {
             this.scheduler.Cancel(this.alarmId);
+            // Предыдущим мог быть звонок по напоминанию: Cancel снял и основной звонок той записи, ставим заново.
+            this.alarmService.RescheduleAll();
         }
 
         this.alarmId = id;
@@ -70,6 +75,7 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
             this.NewChallenge();
         }
         var alarm = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
+        this.ringingAlarm = alarm;
         this.TimeText = (alarm?.At ?? DateTime.Now).ToString("HH:mm");
         // Дата — сегодняшняя: у повторяющегося At уже указывает на следующее срабатывание.
         this.DateText = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
@@ -80,6 +86,18 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
     private async Task StopAsync()
     {
         this.scheduler.StopRinging(this.alarmId);
+        // «Один раз и удалить» удаляется только после начала (At <= now): «Стоп» звонка по напоминанию (At ещё впереди)
+        // и заранее выключенная запись, открытая по устаревшему баннеру, её не трогают.
+        if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
+        {
+            this.alarmService.Delete(this.alarmId);
+        }
+        else
+        {
+            // iOS: StopRinging снимает цепочку начала, а при звонке по напоминанию она ещё не сработала.
+            this.alarmService.RescheduleAll();
+        }
+
         await Shell.Current.GoToAsync("..");
     }
 
@@ -89,6 +107,15 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         if (answer == this.expectedAnswer)
         {
             this.scheduler.StopRinging(this.alarmId);
+            if (this.ringingAlarm?.Repeat == RepeatKind.OnceThenDelete && this.ringingAlarm.At <= DateTime.Now)
+            {
+                this.alarmService.Delete(this.alarmId);
+            }
+            else
+            {
+                this.alarmService.RescheduleAll();
+            }
+
             await Shell.Current.GoToAsync("..");
             return;
         }

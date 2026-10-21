@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             Shell.TabBarIsVisible="False"
              x:Class="Chrono.Views.ReliabilityPage"
              x:DataType="vm:ReliabilityViewModel">
 

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0-*" />
     <Using Include="Xunit" />
   </ItemGroup>
 
@@ -19,10 +20,20 @@
     <Compile Include="..\..\src\Chrono\Models\Sounds.cs" Link="Linked\Sounds.cs" />
     <Compile Include="..\..\src\Chrono\Services\PlatformContracts.cs" Link="Linked\PlatformContracts.cs" />
     <Compile Include="..\..\src\Chrono\Services\AlarmStore.cs" Link="Linked\AlarmStore.cs" />
+    <Compile Include="..\..\src\Chrono\Services\SyncStore.cs" Link="Linked\SyncStore.cs" />
     <Compile Include="..\..\src\Chrono\Services\AlarmService.cs" Link="Linked\AlarmService.cs" />
     <Compile Include="..\..\src\Chrono\Services\IosNotificationPlan.cs" Link="Linked\IosNotificationPlan.cs" />
     <Compile Include="..\..\src\Chrono\Services\SleepPhaseEstimator.cs" Link="Linked\SleepPhaseEstimator.cs" />
     <Compile Include="..\..\src\Chrono\Services\AlarmSchedule.cs" Link="Linked\AlarmSchedule.cs" />
+    <Compile Include="..\..\src\Chrono\Services\DayPlan.cs" Link="Linked\DayPlan.cs" />
+    <Compile Include="..\..\src\Chrono\Services\DialLayout.cs" Link="Linked\DialLayout.cs" />
+    <Compile Include="..\..\src\Chrono\Services\GoogleCalendarModels.cs" Link="Linked\GoogleCalendarModels.cs" />
+    <Compile Include="..\..\src\Chrono\Services\CalendarMapping.cs" Link="Linked\CalendarMapping.cs" />
+    <Compile Include="..\..\src\Chrono\Services\IGoogleAuth.cs" Link="Linked\IGoogleAuth.cs" />
+    <Compile Include="..\..\src\Chrono\Services\GoogleCalendarClient.cs" Link="Linked\GoogleCalendarClient.cs" />
+    <Compile Include="..\..\src\Chrono\Services\CalendarSync.cs" Link="Linked\CalendarSync.cs" />
+    <Compile Include="..\..\src\Chrono\Services\SyncLauncher.cs" Link="Linked\SyncLauncher.cs" />
+    <Compile Include="..\..\src\Chrono\Services\GoogleScopes.cs" Link="Linked\GoogleScopes.cs" />
   </ItemGroup>
 
 </Project>

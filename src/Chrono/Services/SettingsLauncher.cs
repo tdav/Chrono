@@ -22,6 +22,6 @@ public static class SettingsLauncher
         }
 
         Pending = false;
-        await Shell.Current.GoToAsync("settings");
+        await Shell.Current.GoToAsync("//settings");
     }
 }

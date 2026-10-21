@@ -85,4 +85,98 @@
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Next month</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>Previous week</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
+  <data name="UnmarkDone" xml:space="preserve"><value>Mark as not done</value></data>
+  <data name="Tab_Alarms" xml:space="preserve"><value>Alarms</value></data>
+  <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="Tab_Dial" xml:space="preserve"><value>Dial</value></data>
+  <data name="DialNow" xml:space="preserve"><value>Now</value></data>
+  <data name="DialEvening" xml:space="preserve"><value>Evening</value></data>
+  <data name="DialLeft" xml:space="preserve"><value>{0} left</value></data>
+  <data name="DialUntilEnd" xml:space="preserve"><value>{0} · ends in {1} · next {2} at {3}</value></data>
+  <data name="DialFree" xml:space="preserve"><value>Free · next {0} at {1}</value></data>
+  <data name="DialFreeAllDay" xml:space="preserve"><value>Nothing planned</value></data>
+  <data name="DialTapForActions" xml:space="preserve"><value>Tap for actions</value></data>
+  <data name="DialClearSelection" xml:space="preserve"><value>Clear selection</value></data>
+  <data name="DialAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
+  <data name="DialEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="DialDone" xml:space="preserve"><value>Done</value></data>
+  <data name="DialUndone" xml:space="preserve"><value>Undo</value></data>
+  <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Once, then delete</value></data>
+  <data name="RowIcon" xml:space="preserve"><value>Icon</value></data>
+  <data name="RowDuration" xml:space="preserve"><value>Duration</value></data>
+  <data name="RowAlert" xml:space="preserve"><value>Alert</value></data>
+  <data name="Alert_None" xml:space="preserve"><value>No notification</value></data>
+  <data name="Alert_Notify" xml:space="preserve"><value>Notification</value></data>
+  <data name="Alert_Ring" xml:space="preserve"><value>Ring like an alarm</value></data>
+  <data name="DurationNone" xml:space="preserve"><value>None</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="DurationCustom" xml:space="preserve"><value>Custom, min</value></data>
+  <data name="ScheduleEmpty" xml:space="preserve"><value>Nothing planned for this day</value></data>
+  <data name="ScheduleLeft" xml:space="preserve"><value>{0} min left</value></data>
+  <data name="ChannelSchedule" xml:space="preserve"><value>Schedule</value></data>
+  <data name="MarkDone" xml:space="preserve"><value>Mark as done</value></data>
+  <data name="Icon_bell" xml:space="preserve"><value>Alarm</value></data>
+  <data name="Icon_yoga" xml:space="preserve"><value>Yoga</value></data>
+  <data name="Icon_shower" xml:space="preserve"><value>Shower</value></data>
+  <data name="Icon_coffee" xml:space="preserve"><value>Coffee</value></data>
+  <data name="Icon_food" xml:space="preserve"><value>Food</value></data>
+  <data name="Icon_bike" xml:space="preserve"><value>Bike</value></data>
+  <data name="Icon_work" xml:space="preserve"><value>Work</value></data>
+  <data name="Icon_book" xml:space="preserve"><value>Book</value></data>
+  <data name="Icon_pill" xml:space="preserve"><value>Medicine</value></data>
+  <data name="Icon_phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Icon_walk" xml:space="preserve"><value>Walk</value></data>
+  <data name="Icon_sleep" xml:space="preserve"><value>Sleep</value></data>
+  <data name="Icon_run" xml:space="preserve"><value>Run</value></data>
+  <data name="Icon_dumbbell" xml:space="preserve"><value>Workout</value></data>
+  <data name="Icon_swim" xml:space="preserve"><value>Swim</value></data>
+  <data name="Icon_ball" xml:space="preserve"><value>Ball game</value></data>
+  <data name="Icon_heart" xml:space="preserve"><value>Health</value></data>
+  <data name="Icon_tooth" xml:space="preserve"><value>Teeth</value></data>
+  <data name="Icon_water" xml:space="preserve"><value>Water</value></data>
+  <data name="Icon_egg" xml:space="preserve"><value>Breakfast</value></data>
+  <data name="Icon_tea" xml:space="preserve"><value>Tea</value></data>
+  <data name="Icon_cake" xml:space="preserve"><value>Dessert</value></data>
+  <data name="Icon_apple" xml:space="preserve"><value>Fruit</value></data>
+  <data name="Icon_cart" xml:space="preserve"><value>Shopping</value></data>
+  <data name="Icon_home" xml:space="preserve"><value>Home</value></data>
+  <data name="Icon_broom" xml:space="preserve"><value>Cleaning</value></data>
+  <data name="Icon_laundry" xml:space="preserve"><value>Laundry</value></data>
+  <data name="Icon_plant" xml:space="preserve"><value>Plants</value></data>
+  <data name="Icon_pet" xml:space="preserve"><value>Pet</value></data>
+  <data name="Icon_child" xml:space="preserve"><value>Kids</value></data>
+  <data name="Icon_laptop" xml:space="preserve"><value>Laptop</value></data>
+  <data name="Icon_meeting" xml:space="preserve"><value>Meeting</value></data>
+  <data name="Icon_mail" xml:space="preserve"><value>Mail</value></data>
+  <data name="Icon_calendar" xml:space="preserve"><value>Calendar</value></data>
+  <data name="Icon_pen" xml:space="preserve"><value>Writing</value></data>
+  <data name="Icon_study" xml:space="preserve"><value>Study</value></data>
+  <data name="Icon_idea" xml:space="preserve"><value>Idea</value></data>
+  <data name="Icon_car" xml:space="preserve"><value>Car</value></data>
+  <data name="Icon_bus" xml:space="preserve"><value>Bus</value></data>
+  <data name="Icon_plane" xml:space="preserve"><value>Flight</value></data>
+  <data name="Icon_music" xml:space="preserve"><value>Music</value></data>
+  <data name="Icon_movie" xml:space="preserve"><value>Movie</value></data>
+  <data name="Icon_game" xml:space="preserve"><value>Games</value></data>
+  <data name="Icon_camera" xml:space="preserve"><value>Photo</value></data>
+  <data name="Icon_gift" xml:space="preserve"><value>Gift</value></data>
+  <data name="Icon_sun" xml:space="preserve"><value>Morning</value></data>
+  <data name="Icon_star" xml:space="preserve"><value>Important</value></data>
+  <data name="Icon_money" xml:space="preserve"><value>Money</value></data>
+  <data name="Icon_target" xml:space="preserve"><value>Goal</value></data>
+  <data name="Icon_flower" xml:space="preserve"><value>Flowers</value></data>
+  <data name="GoogleGroup" xml:space="preserve"><value>Google Calendar</value></data>
+  <data name="SignInGoogle" xml:space="preserve"><value>Sign in with Google</value></data>
+  <data name="SignInAgainButton" xml:space="preserve"><value>Sign in again</value></data>
+  <data name="GoogleAccount" xml:space="preserve"><value>Account</value></data>
+  <data name="SyncedAt" xml:space="preserve"><value>Synced at {0}</value></data>
+  <data name="SyncNoNetwork" xml:space="preserve"><value>No network</value></data>
+  <data name="SyncSignInAgain" xml:space="preserve"><value>Sign in again</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Sync now</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Sync failed</value></data>
+  <data name="SyncScopesMissing" xml:space="preserve"><value>Allow calendar access to sync</value></data>
 </root>

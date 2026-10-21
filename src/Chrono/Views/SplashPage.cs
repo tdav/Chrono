@@ -93,6 +93,38 @@ public sealed class SplashPage : ContentPage
         await Task.WhenAll(swing(), ripple(), this.title.FadeToAsync(1, 700, Easing.CubicIn));
         await Task.Delay(250);
 
+#if ANDROID
+        // Экран выключили, пока шёл splash (активити остановлена): MAUI откладывает транзакции фрагментов нового Shell
+        // до возобновления и выполняет их внутри onPostResume → «FragmentManager is already executing transactions»,
+        // процесс падает (D1). Ждём возобновления; продолжение после Delay приходит отдельным сообщением главного цикла,
+        // то есть уже после onPostResume.
+        if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is AndroidX.Lifecycle.ILifecycleOwner owner
+            && !owner.Lifecycle.CurrentState.IsAtLeast(AndroidX.Lifecycle.Lifecycle.State.Resumed))
+        {
+            // Состояние пишется в журнал: так видно, сколько splash ждал и чем кончилось (диагностика D2).
+            var waited = System.Diagnostics.Stopwatch.StartNew();
+            global::Android.Util.Log.Info("Chrono", $"splash: ждём возобновления активити, состояние {owner.Lifecycle.CurrentState}");
+            for (var tick = 1; !owner.Lifecycle.CurrentState.IsAtLeast(AndroidX.Lifecycle.Lifecycle.State.Resumed); tick++)
+            {
+                // Активити уничтожена (Назад во время splash): страницу уничтоженному окну не выставляем.
+                if (owner.Lifecycle.CurrentState.Equals(AndroidX.Lifecycle.Lifecycle.State.Destroyed))
+                {
+                    global::Android.Util.Log.Info("Chrono", $"splash: активити уничтожена через {waited.ElapsedMilliseconds} мс, выходим");
+                    return;
+                }
+
+                await Task.Delay(100);
+                // Раз в 2 с и только первую минуту: свёрнутый splash может ждать часами и вытеснил бы журнал.
+                if (tick % 20 == 0 && tick <= 600)
+                {
+                    global::Android.Util.Log.Info("Chrono", $"splash: всё ещё ждём {waited.ElapsedMilliseconds} мс, состояние {owner.Lifecycle.CurrentState}");
+                }
+            }
+
+            global::Android.Util.Log.Info("Chrono", $"splash: возобновлено через {waited.ElapsedMilliseconds} мс, состояние {owner.Lifecycle.CurrentState}");
+        }
+#endif
+
         this.Window!.Page = this.services.GetRequiredService<AppShell>();
     }
 }

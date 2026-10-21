@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell xmlns:views="clr-namespace:Chrono.Views"
+       xmlns:res="clr-namespace:Chrono.Resources.Strings"
        x:Class="Chrono.AppShell"
        Shell.NavBarIsVisible="False"
-       Shell.FlyoutBehavior="Disabled">
+       Shell.FlyoutBehavior="Disabled"
+       Shell.TabBarBackgroundColor="{StaticResource Surface}"
+       Shell.TabBarTitleColor="{StaticResource Text}"
+       Shell.TabBarForegroundColor="{StaticResource Text}"
+       Shell.TabBarUnselectedColor="{StaticResource TextMuted}">
 
-    <ShellContent ContentTemplate="{DataTemplate views:AlarmListPage}" Route="list" />
+    <!-- Нижнее меню. Порядок важен: первой открывается вкладка «Будильники» (см. AlarmListViewModel.AppearingAsync). -->
+    <TabBar>
+        <ShellContent Title="{x:Static res:AppResources.Tab_Alarms}" Icon="icon_tab_alarms.png" Route="alarms"
+                      ContentTemplate="{DataTemplate views:AlarmListPage}" />
+        <ShellContent Title="{x:Static res:AppResources.Tab_Schedule}" Icon="icon_tab_schedule.png" Route="schedule"
+                      ContentTemplate="{DataTemplate views:SchedulePage}" />
+        <ShellContent Title="{x:Static res:AppResources.Tab_Dial}" Icon="icon_tab_dial.png" Route="dial"
+                      ContentTemplate="{DataTemplate views:DialPage}" />
+        <ShellContent Title="{x:Static res:AppResources.SettingsTitle}" Icon="icon_gear.png" Route="settings"
+                      ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </TabBar>
 
 </Shell>

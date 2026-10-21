@@ -8,13 +8,19 @@ public sealed class AlarmService
     private readonly AlarmStore store;
     private readonly IAlarmScheduler scheduler;
     private readonly TimeProvider time;
+    private readonly SyncStore? sync;
 
-    public AlarmService(AlarmStore store, IAlarmScheduler scheduler, TimeProvider time)
+    /// <param name="sync">Очередь изменений для Google; все экземпляры приложения (UI, receiver'ы, сервисы) передают её, null — только тесты.</param>
+    public AlarmService(AlarmStore store, IAlarmScheduler scheduler, TimeProvider time, SyncStore? sync = null)
     {
         this.store = store;
         this.scheduler = scheduler;
         this.time = time;
+        this.sync = sync;
     }
+
+    /// <summary>Запись изменена пользователем (Save/Toggle/Delete без fromSync) или GetAll удалил сработавшую «Один раз и удалить»: повод запустить синхронизацию.</summary>
+    public event EventHandler? Changed;
 
     /// <summary>true, если при последнем чтении файл оказался повреждён и был отложен в сторону.</summary>
     public bool RecoveredFromCorruptFile { get; private set; }
@@ -23,8 +29,13 @@ public sealed class AlarmService
     public Exception? SchedulingError { get; private set; }
 
     /// <summary>
-    /// Все будильники по времени. Сработавшие (включённые с At ≤ now): разовые выключаются,
-    /// повторяющиеся переходят на следующее срабатывание; изменения сохраняются.
+    /// Все будильники по времени. Для каждой записи по порядку:
+    /// 1) нет StartsOn (старый файл) — миграция: у разовой это день At, у повторяющейся не позже сегодняшнего дня;
+    /// 2) «Один раз и удалить» с истёкшим ExpiresAt — удаляется, включена она или нет; отправленная в Google
+    /// запись уходит и из Google (Delete в очереди, Changed запускает синхронизацию);
+    /// 3) сработавшая (включённая с At ≤ now): разовая выключается, «Один раз и удалить» остаётся как есть,
+    /// повторяющаяся переходит на следующее срабатывание.
+    /// Изменения сохраняются.
     /// </summary>
     public IReadOnlyList<Alarm> GetAll()
     {
@@ -33,14 +44,45 @@ public sealed class AlarmService
 
         var now = this.time.GetLocalNow().DateTime;
         var changed = false;
-        for (var i = 0; i < alarms.Count; i++)
+        var expired = false;
+        for (var i = alarms.Count - 1; i >= 0; i--)
         {
+            if (alarms[i].StartsOn is null)
+            {
+                // Миграция старых записей: у разовой днём начала считаем день срабатывания. У повторяющейся At мог
+                // уже уйти на завтра, а сегодня она срабатывала, поэтому не позже сегодняшнего дня.
+                var atDay = DateOnly.FromDateTime(alarms[i].At);
+                var today = DateOnly.FromDateTime(now);
+                alarms[i] = alarms[i] with { StartsOn = alarms[i].IsOneShot() || atDay < today ? atDay : today };
+                changed = true;
+            }
+
+            if (alarms[i].Repeat == RepeatKind.OnceThenDelete && alarms[i].ExpiresAt() <= now)
+            {
+                // Всё, что удаляется в Chrono, удаляется и в Google; чужая серия (ForeignSeries) в Google не трогается.
+                if (this.sync is not null && alarms[i].GoogleEventId is { } eventId && !alarms[i].ForeignSeries)
+                {
+                    this.sync.Enqueue(new PendingChange(alarms[i].Id, SyncOp.Delete, eventId, this.time.GetUtcNow().UtcDateTime));
+                    expired = true;
+                }
+
+                alarms.RemoveAt(i);
+                changed = true;
+                continue;
+            }
+
             if (alarms[i].IsEnabled && alarms[i].At <= now)
             {
-                alarms[i] = alarms[i].Repeat == RepeatKind.None
-                    ? alarms[i] with { IsEnabled = false }
-                    : alarms[i] with { At = alarms[i].NextAfter(now) };
-                changed = true;
+                if (alarms[i].Repeat == RepeatKind.None)
+                {
+                    alarms[i] = alarms[i] with { IsEnabled = false };
+                    changed = true;
+                }
+                else if (alarms[i].Repeat != RepeatKind.OnceThenDelete)
+                {
+                    alarms[i] = alarms[i] with { At = alarms[i].NextAfter(now) };
+                    changed = true;
+                }
             }
         }
 
@@ -49,16 +91,33 @@ public sealed class AlarmService
             this.store.Save(alarms);
         }
 
+        if (expired)
+        {
+            // Цикла нет: Changed лишь взводит таймер синхронизации, а на следующем GetAll истёкших записей уже нет.
+            this.Changed?.Invoke(this, EventArgs.Empty);
+        }
+
         return alarms.OrderBy(a => a.At).ToList();
     }
 
-    /// <summary>Создать или заменить будильник. false — время уже прошло, ничего не сохранено.</summary>
-    public bool Save(Alarm alarm)
+    /// <summary>
+    /// Создать или заменить будильник. false — время уже прошло, ничего не сохранено.
+    /// fromSync = true — запись пришла из Google: в очередь не ставится, Changed не вызывается.
+    /// </summary>
+    public bool Save(Alarm alarm, bool fromSync = false)
     {
         // «Настенное» время храним без пояса: Kind=Local сериализуется со смещением,
         // и после смены часового пояса 06:30 превратилось бы в другой час.
         alarm = alarm with { At = DateTime.SpecifyKind(alarm.At, DateTimeKind.Unspecified) };
-        if (alarm.At <= this.time.GetLocalNow().DateTime)
+        alarm = alarm with { StartsOn = alarm.StartsOn ?? DateOnly.FromDateTime(alarm.At) };
+        var now = this.time.GetLocalNow().DateTime;
+        if (!alarm.IsOneShot() && alarm.At < alarm.StartsOn!.Value.ToDateTime(TimeOnly.MinValue))
+        {
+            // Планировщик Android берёт At как есть: без нормализации запись сработала бы раньше даты начала.
+            alarm = alarm with { At = alarm.NextAfter(now) };
+        }
+
+        if (alarm.At <= now)
         {
             return false;
         }
@@ -67,6 +126,13 @@ public sealed class AlarmService
         var index = alarms.FindIndex(a => a.Id == alarm.Id);
         if (index >= 0)
         {
+            if (!fromSync)
+            {
+                // Редактор мог открыть запись до того, как проход синхронизации связал её с Google: связь берём из
+                // хранилища, иначе устаревший снимок затёр бы её и следующая отправка создала бы дубль события.
+                alarm = alarm with { GoogleEventId = alarms[index].GoogleEventId, ForeignSeries = alarms[index].ForeignSeries };
+            }
+
             alarms[index] = alarm;
         }
         else
@@ -85,6 +151,13 @@ public sealed class AlarmService
         {
             // Будильник уже сохранён; UI покажет плашку «Будильник может не сработать».
             this.SchedulingError = ex;
+        }
+
+        if (!fromSync)
+        {
+            // Очередь пишем после планировщика: её сбой не должен мешать звонку.
+            this.sync?.Enqueue(new PendingChange(alarm.Id, SyncOp.Upsert, alarm.GoogleEventId, this.time.GetUtcNow().UtcDateTime));
+            this.Changed?.Invoke(this, EventArgs.Empty);
         }
 
         return true;
@@ -106,7 +179,7 @@ public sealed class AlarmService
         var now = this.time.GetLocalNow().DateTime;
         if (enabled && alarms[index].At <= now)
         {
-            if (alarms[index].Repeat == RepeatKind.None)
+            if (alarms[index].IsOneShot())
             {
                 return false;
             }
@@ -127,12 +200,20 @@ public sealed class AlarmService
             this.SchedulingError = ex;
         }
 
+        this.sync?.Enqueue(new PendingChange(id, SyncOp.Upsert, alarms[index].GoogleEventId, this.time.GetUtcNow().UtcDateTime));
+        this.Changed?.Invoke(this, EventArgs.Empty);
         return true;
     }
 
-    public void Delete(Guid id)
+    /// <summary>
+    /// Удалить. Без fromSync: у чужой серии id события попадает в IgnoredEventIds (чтобы не загрузить снова),
+    /// у отправленной в Google записи в очередь ставится Delete. fromSync = true — только локальное удаление.
+    /// </summary>
+    public void Delete(Guid id, bool fromSync = false)
     {
-        var alarms = this.GetAll().Where(a => a.Id != id).ToList();
+        var all = this.GetAll();
+        var removed = all.FirstOrDefault(a => a.Id == id);
+        var alarms = all.Where(a => a.Id != id).ToList();
         this.store.Save(alarms);
 
         try
@@ -145,6 +226,53 @@ public sealed class AlarmService
         {
             this.SchedulingError = ex;
         }
+
+        if (fromSync || removed is null)
+        {
+            return;
+        }
+
+        if (this.sync is not null && removed.GoogleEventId is { } eventId)
+        {
+            if (removed.ForeignSeries)
+            {
+                var state = this.sync.Load();
+                if (!state.IgnoredEventIds.Contains(eventId))
+                {
+                    state.IgnoredEventIds.Add(eventId);
+                    this.sync.Save(state);
+                }
+            }
+            else
+            {
+                this.sync.Enqueue(new PendingChange(id, SyncOp.Delete, eventId, this.time.GetUtcNow().UtcDateTime));
+            }
+        }
+
+        this.Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    public IReadOnlyDictionary<Guid, HashSet<DateOnly>> GetDone() => this.store.LoadDone();
+
+    /// <summary>Отметить запись сделанной (или снять отметку) на день. Планировщик не трогает.</summary>
+    public void SetDone(Guid id, DateOnly day, bool done)
+    {
+        var all = this.store.LoadDone();
+        if (!all.TryGetValue(id, out var days))
+        {
+            days = all[id] = [];
+        }
+
+        if (done)
+        {
+            days.Add(day);
+        }
+        else
+        {
+            days.Remove(day);
+        }
+
+        this.store.SaveDone(all);
     }
 
     /// <summary>Переустановить всё расписание (старт приложения, перезагрузка, смена времени/пояса).</summary>

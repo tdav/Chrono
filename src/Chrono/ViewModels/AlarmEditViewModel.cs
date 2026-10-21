@@ -22,6 +22,10 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.alarmService = alarmService;
         this.soundPlayer = soundPlayer;
         this.SoundSheet = new SoundSheetModel(soundPlayer);
+        this.AlertSheet = new OptionsSheetModel(Enum.GetValues<AlertKind>().Select(kind =>
+            new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Alert_{kind}", AppResources.Culture) ?? kind.ToString())));
+        this.IconSheet = new OptionsSheetModel(ItemIcons.Keys.Select(key =>
+            new ChoiceOption(key, AppResources.ResourceManager.GetString($"Icon_{key}", AppResources.Culture) ?? key)));
 
         var start = DateTime.Now.AddHours(1);
         this.Time = new TimeOnly(start.Hour, start.Minute);
@@ -86,6 +90,37 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             this.IsSoundSheetOpen = false;
         };
 
+        this.AlertSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.Alert = Enum.Parse<AlertKind>(this.AlertSheet.SelectedId);
+            }
+
+            this.IsAlertSheetOpen = false;
+        };
+
+        this.IconSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.Icon = this.IconSheet.SelectedId;
+            }
+
+            this.IsIconSheetOpen = false;
+        };
+
+        // Минуты читаются только при «Окей»: при «Отмена» поле своего значения может быть недопустимым.
+        this.DurationSheet.Done += (_, accepted) =>
+        {
+            if (accepted)
+            {
+                this.DurationMinutes = this.DurationSheet.Minutes;
+            }
+
+            this.IsDurationSheetOpen = false;
+        };
+
         // Начальные значения не считаются правками.
         this.IsDirty = false;
     }
@@ -97,6 +132,12 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     public RepeatSheetModel RepeatSheet { get; } = new();
 
     public SoundSheetModel SoundSheet { get; }
+
+    public OptionsSheetModel AlertSheet { get; }
+
+    public OptionsSheetModel IconSheet { get; }
+
+    public DurationSheetModel DurationSheet { get; } = new();
 
     [ObservableProperty]
     public partial bool IsTimeSheetOpen { get; set; }
@@ -110,7 +151,17 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [ObservableProperty]
     public partial bool IsSoundSheetOpen { get; set; }
 
-    public bool IsAnySheetOpen => this.IsTimeSheetOpen || this.IsDateSheetOpen || this.IsRepeatSheetOpen || this.IsSoundSheetOpen;
+    [ObservableProperty]
+    public partial bool IsAlertSheetOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsIconSheetOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsDurationSheetOpen { get; set; }
+
+    public bool IsAnySheetOpen => this.IsTimeSheetOpen || this.IsDateSheetOpen || this.IsRepeatSheetOpen || this.IsSoundSheetOpen
+        || this.IsAlertSheetOpen || this.IsIconSheetOpen || this.IsDurationSheetOpen;
 
     [ObservableProperty]
     public partial string Title { get; set; } = AppResources.NewAlarm;
@@ -150,6 +201,22 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     public partial bool VibrationEnabled { get; set; } = true;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IconImage))]
+    public partial string Icon { get; set; } = "bell";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DurationText))]
+    public partial int DurationMinutes { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AlertText), nameof(IsSoundRowsVisible))]
+    public partial AlertKind Alert { get; set; } = AlertKind.Ring;
+
+    /// <summary>Первый день действия записи; задаётся только при загрузке, поэтому правкой не считается.</summary>
+    [ObservableProperty]
+    public partial DateOnly StartsOn { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
     public partial string ErrorText { get; set; } = "";
 
@@ -164,8 +231,22 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         ? AppResources.Nearest
         : date.ToString(this.Repeat == RepeatKind.Yearly ? "d MMMM" : "dd.MM.yyyy", CultureInfo.CurrentUICulture);
 
-    /// <summary>Дата нужна разовому и ежегодному; ежедневному и по дням недели — только время.</summary>
-    public bool IsDateRowVisible => this.Repeat is RepeatKind.None or RepeatKind.Yearly;
+    /// <summary>Дата нужна разовому («Однократно», «Один раз и удалить») и ежегодному; ежедневному и по дням недели — только время.</summary>
+    public bool IsDateRowVisible => this.IsOneShot || this.Repeat == RepeatKind.Yearly;
+
+    /// <summary>Звук и вибрация имеют смысл только у звонящей записи.</summary>
+    public bool IsSoundRowsVisible => this.Alert == AlertKind.Ring;
+
+    public string IconImage => ItemIcons.ImageFor(this.Icon);
+
+    public string DurationText => this.DurationMinutes == 0
+        ? AppResources.DurationNone
+        : string.Format(AppResources.Culture ?? CultureInfo.CurrentUICulture, AppResources.DurationMinutes, this.DurationMinutes);
+
+    public string AlertText => AppResources.ResourceManager.GetString($"Alert_{this.Alert}", AppResources.Culture) ?? this.Alert.ToString();
+
+    /// <summary>Разовая запись: «Однократно» или «Один раз и удалить» — то же, что <see cref="Alarm.IsOneShot"/>.</summary>
+    private bool IsOneShot => this.Repeat is RepeatKind.None or RepeatKind.OnceThenDelete;
 
     public string RepeatText
     {
@@ -177,6 +258,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
                 return this.Repeat switch
                 {
                     RepeatKind.None => AppResources.Repeat_None,
+                    RepeatKind.OnceThenDelete => AppResources.Repeat_OnceThenDelete,
                     RepeatKind.Yearly => AppResources.Repeat_Yearly,
                     _ => AppResources.Repeat_Daily,
                 };
@@ -202,7 +284,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         get
         {
             var target = this.Target(this.Time);
-            return this.Repeat == RepeatKind.None && this.Date is null
+            return this.IsOneShot && this.Date is null
                 ? string.Format(
                     target.Date == DateTime.Today ? AppResources.PlateToday : AppResources.PlateTomorrow,
                     target.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture))
@@ -217,31 +299,67 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        if (!query.TryGetValue("id", out var value) || !Guid.TryParse(value?.ToString(), out var id))
+        if (query.TryGetValue("id", out var value) && Guid.TryParse(value?.ToString(), out var id))
         {
-            return;
+            this.existing = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
+            if (this.existing is null)
+            {
+                return;
+            }
+
+            this.Title = AppResources.EditAlarm;
+            this.IsExisting = true;
+            this.Time = new TimeOnly(this.existing.At.Hour, this.existing.At.Minute);
+            this.Repeat = this.existing.Repeat;
+            this.Date = this.existing.IsOneShot() || this.existing.Repeat == RepeatKind.Yearly ? DateOnly.FromDateTime(this.existing.At) : null;
+            this.Days = this.existing.Days;
+            this.Label = this.existing.Label;
+            this.SoundEnabled = this.existing.SoundEnabled;
+            this.SoundId = this.existing.SoundId;
+            this.VibrationEnabled = this.existing.VibrationEnabled;
+            this.Icon = this.existing.Icon;
+            this.DurationMinutes = this.existing.DurationMinutes;
+            this.Alert = this.existing.Alert;
+            this.StartsOn = this.existing.StartsOn ?? DateOnly.FromDateTime(this.existing.At);
+
+            if (query.ContainsKey("expired"))
+            {
+                this.ErrorText = AppResources.PickNewDate;
+            }
         }
-
-        this.existing = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
-        if (this.existing is null)
+        else
         {
-            return;
-        }
+            // Создание с экрана «Распорядок»: день (yyyy-MM-dd) и уровень оповещения (имя AlertKind).
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var day = query.TryGetValue("day", out var dayValue)
+                && DateOnly.TryParseExact(dayValue?.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDay)
+                    ? parsedDay
+                    : (DateOnly?)null;
+            if (query.TryGetValue("alert", out var alertValue)
+                && Enum.TryParse<AlertKind>(alertValue?.ToString(), out var alert)
+                && Enum.IsDefined(alert))
+            {
+                this.Alert = alert;
+            }
 
-        this.Title = AppResources.EditAlarm;
-        this.IsExisting = true;
-        this.Time = new TimeOnly(this.existing.At.Hour, this.existing.At.Minute);
-        this.Repeat = this.existing.Repeat;
-        this.Date = this.existing.Repeat is RepeatKind.None or RepeatKind.Yearly ? DateOnly.FromDateTime(this.existing.At) : null;
-        this.Days = this.existing.Days;
-        this.Label = this.existing.Label;
-        this.SoundEnabled = this.existing.SoundEnabled;
-        this.SoundId = this.existing.SoundId;
-        this.VibrationEnabled = this.existing.VibrationEnabled;
+            // Начало и длительность из циферблата: time=HH:mm, duration=N (минуты, 1..720 — как в шторке длительности).
+            if (query.TryGetValue("time", out var timeValue)
+                && TimeOnly.TryParseExact(timeValue?.ToString(), "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTime))
+            {
+                this.Time = parsedTime;
+            }
 
-        if (query.ContainsKey("expired"))
-        {
-            this.ErrorText = AppResources.PickNewDate;
+            if (query.TryGetValue("duration", out var durationValue)
+                && int.TryParse(durationValue?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedDuration)
+                && parsedDuration is > 0 and <= DurationSheetModel.MaxMinutes)
+            {
+                this.DurationMinutes = parsedDuration;
+            }
+
+            this.StartsOn = day ?? today;
+
+            // Для сегодняшнего дня дата не задаётся: «Ближайшее» само выберет сегодня или завтра по времени.
+            this.Date = day > today ? day : null;
         }
 
         // Загрузка — не правка: последней, после всех присваиваний.
@@ -280,6 +398,27 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     }
 
     [RelayCommand]
+    private void OpenAlert()
+    {
+        this.AlertSheet.Load(this.Alert.ToString());
+        this.IsAlertSheetOpen = true;
+    }
+
+    [RelayCommand]
+    private void OpenIcon()
+    {
+        this.IconSheet.Load(this.Icon);
+        this.IsIconSheetOpen = true;
+    }
+
+    [RelayCommand]
+    private void OpenDuration()
+    {
+        this.DurationSheet.Load(this.DurationMinutes);
+        this.IsDurationSheetOpen = true;
+    }
+
+    [RelayCommand]
     private void OpenSound()
     {
         this.SoundSheet.Load(this.SoundEnabled, this.SoundId);
@@ -306,14 +445,27 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         {
             this.SoundSheet.CancelCommand.Execute(null);
         }
+        else if (this.IsAlertSheetOpen)
+        {
+            this.AlertSheet.CancelCommand.Execute(null);
+        }
+        else if (this.IsIconSheetOpen)
+        {
+            this.IconSheet.CancelCommand.Execute(null);
+        }
+        else if (this.IsDurationSheetOpen)
+        {
+            this.DurationSheet.CancelCommand.Execute(null);
+        }
     }
 
     [RelayCommand]
     private async Task SaveAsync()
     {
+        var at = this.Target(this.Time);
         var alarm = (this.existing ?? new Alarm()) with
         {
-            At = this.Target(this.Time),
+            At = at,
             Label = this.Label.Trim(),
             SoundEnabled = this.SoundEnabled,
             SoundId = this.SoundId,
@@ -321,6 +473,13 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             IsEnabled = true,
             Repeat = this.Repeat,
             Days = this.Repeat == RepeatKind.Weekly ? this.Days : WeekDays.None,
+            Icon = this.Icon,
+            DurationMinutes = this.DurationMinutes,
+            Alert = this.Alert,
+            // Разовая начинается в день срабатывания (At уже равен Date + время; без даты StartsOn из ленты,
+            // ушедший вперёд, скрыл бы запись в её дне). Ежегодная — с выбранной даты. У ежедневной и «по дням
+            // недели» строка даты скрыта, поэтому оставшийся от прежнего выбора Date не сдвигает начало.
+            StartsOn = this.IsOneShot ? DateOnly.FromDateTime(at) : this.Date is { } start && this.IsDateRowVisible ? start : this.StartsOn,
         };
 
         if (!this.alarmService.Save(alarm))
@@ -358,10 +517,10 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         await Shell.Current.GoToAsync("..");
     }
 
-    // Четыре вызывающих (PlateTitle, RelText, TimeHint, сохранение). Повтор — ближайшее по правилу;
+    // Четыре вызывающих (PlateTitle, RelText, TimeHint, сохранение). Повтор — ближайшее по правилу не раньше StartsOn;
     // разовый с датой — ровно эта дата (может быть в прошлом: сохранение откажет); разовый без даты — «Ближайшее».
-    private DateTime Target(TimeOnly time) => this.Repeat != RepeatKind.None
-        ? new Alarm { At = (this.Date ?? DateOnly.FromDateTime(DateTime.Now)).ToDateTime(time), Repeat = this.Repeat, Days = this.Days }.NextAfter(DateTime.Now)
+    private DateTime Target(TimeOnly time) => !this.IsOneShot
+        ? new Alarm { At = (this.Date ?? DateOnly.FromDateTime(DateTime.Now)).ToDateTime(time), Repeat = this.Repeat, Days = this.Days, StartsOn = this.Date is { } start && this.IsDateRowVisible ? start : this.StartsOn }.NextAfter(DateTime.Now)
         : this.Date is { } date
             ? date.ToDateTime(time)
             : AlarmSchedule.ResolveNearest(time, DateTime.Now);
@@ -383,6 +542,12 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     partial void OnIsSoundSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
 
+    partial void OnIsAlertSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnIsIconSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
+    partial void OnIsDurationSheetOpenChanged(bool value) => this.OnPropertyChanged(nameof(this.IsAnySheetOpen));
+
     partial void OnTimeChanged(TimeOnly value) => this.MarkDirty();
 
     partial void OnDateChanged(DateOnly? value) => this.MarkDirty();
@@ -399,7 +564,13 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
     partial void OnVibrationEnabledChanged(bool value) => this.MarkDirty();
 
-    // Восемь вызывающих (по одному на каждое сохраняемое значение).
+    partial void OnIconChanged(string value) => this.MarkDirty();
+
+    partial void OnDurationMinutesChanged(int value) => this.MarkDirty();
+
+    partial void OnAlertChanged(AlertKind value) => this.MarkDirty();
+
+    // Одиннадцать вызывающих (по одному на каждое сохраняемое значение).
     private void MarkDirty()
     {
         this.IsDirty = true;

@@ -30,6 +30,14 @@ public class MainActivity : MauiAppCompatActivity
             RingLauncher.Request(alarmId);
         }
 
+        // Нажатие на уведомление распорядка: день запоминается до создания Shell. Поверх блокировки не показываемся.
+        if (DateOnly.TryParseExact(
+            this.Intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
+            "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var openDay))
+        {
+            ScheduleLauncher.Request(openDay);
+        }
+
         base.OnCreate(savedInstanceState);
 
         // Светлая тема «Кость»: тёмные значки статус-бара и панели навигации (иначе белые значки пропадают на светлом фоне).
@@ -56,6 +64,7 @@ public class MainActivity : MauiAppCompatActivity
     {
         base.OnActivityResult(requestCode, resultCode, data);
         SmartWake.OnActivityResult(requestCode);
+        GoogleAuth.OnActivityResult(requestCode, resultCode, data);
     }
 
     protected override void OnNewIntent(Intent? intent)
@@ -65,6 +74,14 @@ public class MainActivity : MauiAppCompatActivity
         if (intent?.Action == ActionShowHealthRationale)
         {
             SettingsLauncher.Request();
+            return;
+        }
+
+        if (DateOnly.TryParseExact(
+            intent?.GetStringExtra(ScheduleReceiver.ExtraOpenDay),
+            "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var openDay))
+        {
+            ScheduleLauncher.Request(openDay);
             return;
         }
 

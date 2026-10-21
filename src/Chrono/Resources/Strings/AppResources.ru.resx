@@ -85,4 +85,98 @@
   <data name="Back" xml:space="preserve"><value>Назад</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Предыдущий месяц</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Следующий месяц</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>Предыдущая неделя</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Следующая неделя</value></data>
+  <data name="UnmarkDone" xml:space="preserve"><value>Снять отметку</value></data>
+  <data name="Tab_Alarms" xml:space="preserve"><value>Будильники</value></data>
+  <data name="Tab_Schedule" xml:space="preserve"><value>Распорядок</value></data>
+  <data name="Tab_Dial" xml:space="preserve"><value>Циферблат</value></data>
+  <data name="DialNow" xml:space="preserve"><value>Сейчас</value></data>
+  <data name="DialEvening" xml:space="preserve"><value>Вечер</value></data>
+  <data name="DialLeft" xml:space="preserve"><value>ещё {0}</value></data>
+  <data name="DialUntilEnd" xml:space="preserve"><value>{0} · до конца {1} · далее {2} в {3}</value></data>
+  <data name="DialFree" xml:space="preserve"><value>Свободно · далее {0} в {1}</value></data>
+  <data name="DialFreeAllDay" xml:space="preserve"><value>Ничего не запланировано</value></data>
+  <data name="DialTapForActions" xml:space="preserve"><value>Нажмите, чтобы открыть действия</value></data>
+  <data name="DialClearSelection" xml:space="preserve"><value>Снять выбор</value></data>
+  <data name="DialAdd" xml:space="preserve"><value>Добавить</value></data>
+  <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
+  <data name="DialEdit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="DialDone" xml:space="preserve"><value>Сделано</value></data>
+  <data name="DialUndone" xml:space="preserve"><value>Снять отметку</value></data>
+  <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Один раз и удалить</value></data>
+  <data name="RowIcon" xml:space="preserve"><value>Иконка</value></data>
+  <data name="RowDuration" xml:space="preserve"><value>Длительность</value></data>
+  <data name="RowAlert" xml:space="preserve"><value>Оповещение</value></data>
+  <data name="Alert_None" xml:space="preserve"><value>Без уведомления</value></data>
+  <data name="Alert_Notify" xml:space="preserve"><value>Уведомление</value></data>
+  <data name="Alert_Ring" xml:space="preserve"><value>Звонить как будильник</value></data>
+  <data name="DurationNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="DurationCustom" xml:space="preserve"><value>Своё, мин</value></data>
+  <data name="ScheduleEmpty" xml:space="preserve"><value>На этот день ничего нет</value></data>
+  <data name="ScheduleLeft" xml:space="preserve"><value>осталось {0} мин</value></data>
+  <data name="ChannelSchedule" xml:space="preserve"><value>Распорядок</value></data>
+  <data name="MarkDone" xml:space="preserve"><value>Отметить выполненным</value></data>
+  <data name="Icon_bell" xml:space="preserve"><value>Будильник</value></data>
+  <data name="Icon_yoga" xml:space="preserve"><value>Йога</value></data>
+  <data name="Icon_shower" xml:space="preserve"><value>Душ</value></data>
+  <data name="Icon_coffee" xml:space="preserve"><value>Кофе</value></data>
+  <data name="Icon_food" xml:space="preserve"><value>Еда</value></data>
+  <data name="Icon_bike" xml:space="preserve"><value>Велосипед</value></data>
+  <data name="Icon_work" xml:space="preserve"><value>Работа</value></data>
+  <data name="Icon_book" xml:space="preserve"><value>Книга</value></data>
+  <data name="Icon_pill" xml:space="preserve"><value>Лекарство</value></data>
+  <data name="Icon_phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Icon_walk" xml:space="preserve"><value>Прогулка</value></data>
+  <data name="Icon_sleep" xml:space="preserve"><value>Сон</value></data>
+  <data name="Icon_run" xml:space="preserve"><value>Бег</value></data>
+  <data name="Icon_dumbbell" xml:space="preserve"><value>Тренировка</value></data>
+  <data name="Icon_swim" xml:space="preserve"><value>Плавание</value></data>
+  <data name="Icon_ball" xml:space="preserve"><value>Игра в мяч</value></data>
+  <data name="Icon_heart" xml:space="preserve"><value>Здоровье</value></data>
+  <data name="Icon_tooth" xml:space="preserve"><value>Зубы</value></data>
+  <data name="Icon_water" xml:space="preserve"><value>Вода</value></data>
+  <data name="Icon_egg" xml:space="preserve"><value>Завтрак</value></data>
+  <data name="Icon_tea" xml:space="preserve"><value>Чай</value></data>
+  <data name="Icon_cake" xml:space="preserve"><value>Десерт</value></data>
+  <data name="Icon_apple" xml:space="preserve"><value>Фрукты</value></data>
+  <data name="Icon_cart" xml:space="preserve"><value>Покупки</value></data>
+  <data name="Icon_home" xml:space="preserve"><value>Дом</value></data>
+  <data name="Icon_broom" xml:space="preserve"><value>Уборка</value></data>
+  <data name="Icon_laundry" xml:space="preserve"><value>Стирка</value></data>
+  <data name="Icon_plant" xml:space="preserve"><value>Растения</value></data>
+  <data name="Icon_pet" xml:space="preserve"><value>Питомец</value></data>
+  <data name="Icon_child" xml:space="preserve"><value>Дети</value></data>
+  <data name="Icon_laptop" xml:space="preserve"><value>Ноутбук</value></data>
+  <data name="Icon_meeting" xml:space="preserve"><value>Встреча</value></data>
+  <data name="Icon_mail" xml:space="preserve"><value>Почта</value></data>
+  <data name="Icon_calendar" xml:space="preserve"><value>Календарь</value></data>
+  <data name="Icon_pen" xml:space="preserve"><value>Письмо</value></data>
+  <data name="Icon_study" xml:space="preserve"><value>Учёба</value></data>
+  <data name="Icon_idea" xml:space="preserve"><value>Идея</value></data>
+  <data name="Icon_car" xml:space="preserve"><value>Машина</value></data>
+  <data name="Icon_bus" xml:space="preserve"><value>Автобус</value></data>
+  <data name="Icon_plane" xml:space="preserve"><value>Перелёт</value></data>
+  <data name="Icon_music" xml:space="preserve"><value>Музыка</value></data>
+  <data name="Icon_movie" xml:space="preserve"><value>Кино</value></data>
+  <data name="Icon_game" xml:space="preserve"><value>Игры</value></data>
+  <data name="Icon_camera" xml:space="preserve"><value>Фото</value></data>
+  <data name="Icon_gift" xml:space="preserve"><value>Подарок</value></data>
+  <data name="Icon_sun" xml:space="preserve"><value>Утро</value></data>
+  <data name="Icon_star" xml:space="preserve"><value>Важное</value></data>
+  <data name="Icon_money" xml:space="preserve"><value>Деньги</value></data>
+  <data name="Icon_target" xml:space="preserve"><value>Цель</value></data>
+  <data name="Icon_flower" xml:space="preserve"><value>Цветы</value></data>
+  <data name="GoogleGroup" xml:space="preserve"><value>Google Календарь</value></data>
+  <data name="SignInGoogle" xml:space="preserve"><value>Войти через Google</value></data>
+  <data name="SignInAgainButton" xml:space="preserve"><value>Войти снова</value></data>
+  <data name="GoogleAccount" xml:space="preserve"><value>Аккаунт</value></data>
+  <data name="SyncedAt" xml:space="preserve"><value>Синхронизировано в {0}</value></data>
+  <data name="SyncNoNetwork" xml:space="preserve"><value>Нет сети</value></data>
+  <data name="SyncSignInAgain" xml:space="preserve"><value>Нужно войти снова</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
+  <data name="SignOut" xml:space="preserve"><value>Выйти</value></data>
+  <data name="SyncFailed" xml:space="preserve"><value>Ошибка синхронизации</value></data>
+  <data name="SyncScopesMissing" xml:space="preserve"><value>Разрешите доступ к календарю для синхронизации</value></data>
 </root>

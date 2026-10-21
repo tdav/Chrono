@@ -32,6 +32,7 @@ public sealed partial class AlarmItem : ObservableObject
                 .Select(d => culture.TextInfo.ToUpper(format.AbbreviatedDayNames[d][0]) + format.AbbreviatedDayNames[d][1..])),
             RepeatKind.Weekly => AppResources.Repeat_Daily,
             RepeatKind.Yearly => $"{AppResources.Repeat_Yearly}, {alarm.At.ToString("d MMM", CultureInfo.CurrentUICulture)}",
+            RepeatKind.OnceThenDelete => $"{alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture)} · {AppResources.Repeat_OnceThenDelete}",
             _ => alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture),
         };
         this.Details = $"{when} · {label}";
@@ -80,6 +81,7 @@ public sealed partial class AlarmListViewModel : ObservableObject
     {
         await RingLauncher.ShowPendingAsync();
         await SettingsLauncher.ShowPendingAsync();
+        await ScheduleLauncher.ShowPendingAsync();
 
         if (!Preferences.Default.Get(FirstRunKey, false))
         {
@@ -102,7 +104,8 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
     public void Load()
     {
-        var alarms = this.alarmService.GetAll();
+        // Вкладка «Будильники» — только записи со звонком; «Уведомление» живёт в «Распорядке».
+        var alarms = this.alarmService.GetAll().Where(a => a.Alert == AlertKind.Ring).ToList();
         this.Alarms.Clear();
         foreach (var alarm in alarms)
         {
@@ -111,14 +114,17 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
         this.IsEmpty = this.Alarms.Count == 0;
 
-        var next = alarms.Where(a => a.IsEnabled).Select(a => (DateTime?)a.At).FirstOrDefault();
+        // Ближайший момент оповещения: напоминание звонит раньше At. Сработавшие, но не истёкшие записи
+        // («Один раз и удалить» с At <= now до конца звонка) не считаются: берутся только моменты позже now.
+        var now = DateTime.Now;
+        var next = alarms.Where(a => a.IsEnabled).SelectMany(a => a.AlertTimes(a.At)).Where(t => t > now).Select(t => (DateTime?)t).Min();
         if (next is null)
         {
             this.NextAlarmText = AppResources.NoActiveAlarms;
             return;
         }
 
-        var left = next.Value - DateTime.Now;
+        var left = next.Value - now;
         this.NextAlarmText = left.TotalHours >= 1
             ? string.Format(AppResources.NextInHours, (int)left.TotalHours, left.Minutes)
             : string.Format(AppResources.NextInMinutes, Math.Max(1, (int)Math.Ceiling(left.TotalMinutes)));
@@ -155,7 +161,4 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenReliabilityAsync() => Shell.Current.GoToAsync("reliability");
-
-    [RelayCommand]
-    private Task OpenSettingsAsync() => Shell.Current.GoToAsync("settings");
 }
