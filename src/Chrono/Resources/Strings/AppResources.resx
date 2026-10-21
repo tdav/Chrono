@@ -130,6 +130,44 @@
   <data name="Icon_phone" xml:space="preserve"><value>Phone</value></data>
   <data name="Icon_walk" xml:space="preserve"><value>Walk</value></data>
   <data name="Icon_sleep" xml:space="preserve"><value>Sleep</value></data>
+  <data name="Icon_run" xml:space="preserve"><value>Run</value></data>
+  <data name="Icon_dumbbell" xml:space="preserve"><value>Workout</value></data>
+  <data name="Icon_swim" xml:space="preserve"><value>Swim</value></data>
+  <data name="Icon_ball" xml:space="preserve"><value>Ball game</value></data>
+  <data name="Icon_heart" xml:space="preserve"><value>Health</value></data>
+  <data name="Icon_tooth" xml:space="preserve"><value>Teeth</value></data>
+  <data name="Icon_water" xml:space="preserve"><value>Water</value></data>
+  <data name="Icon_egg" xml:space="preserve"><value>Breakfast</value></data>
+  <data name="Icon_tea" xml:space="preserve"><value>Tea</value></data>
+  <data name="Icon_cake" xml:space="preserve"><value>Dessert</value></data>
+  <data name="Icon_apple" xml:space="preserve"><value>Fruit</value></data>
+  <data name="Icon_cart" xml:space="preserve"><value>Shopping</value></data>
+  <data name="Icon_home" xml:space="preserve"><value>Home</value></data>
+  <data name="Icon_broom" xml:space="preserve"><value>Cleaning</value></data>
+  <data name="Icon_laundry" xml:space="preserve"><value>Laundry</value></data>
+  <data name="Icon_plant" xml:space="preserve"><value>Plants</value></data>
+  <data name="Icon_pet" xml:space="preserve"><value>Pet</value></data>
+  <data name="Icon_child" xml:space="preserve"><value>Kids</value></data>
+  <data name="Icon_laptop" xml:space="preserve"><value>Laptop</value></data>
+  <data name="Icon_meeting" xml:space="preserve"><value>Meeting</value></data>
+  <data name="Icon_mail" xml:space="preserve"><value>Mail</value></data>
+  <data name="Icon_calendar" xml:space="preserve"><value>Calendar</value></data>
+  <data name="Icon_pen" xml:space="preserve"><value>Writing</value></data>
+  <data name="Icon_study" xml:space="preserve"><value>Study</value></data>
+  <data name="Icon_idea" xml:space="preserve"><value>Idea</value></data>
+  <data name="Icon_car" xml:space="preserve"><value>Car</value></data>
+  <data name="Icon_bus" xml:space="preserve"><value>Bus</value></data>
+  <data name="Icon_plane" xml:space="preserve"><value>Flight</value></data>
+  <data name="Icon_music" xml:space="preserve"><value>Music</value></data>
+  <data name="Icon_movie" xml:space="preserve"><value>Movie</value></data>
+  <data name="Icon_game" xml:space="preserve"><value>Games</value></data>
+  <data name="Icon_camera" xml:space="preserve"><value>Photo</value></data>
+  <data name="Icon_gift" xml:space="preserve"><value>Gift</value></data>
+  <data name="Icon_sun" xml:space="preserve"><value>Morning</value></data>
+  <data name="Icon_star" xml:space="preserve"><value>Important</value></data>
+  <data name="Icon_money" xml:space="preserve"><value>Money</value></data>
+  <data name="Icon_target" xml:space="preserve"><value>Goal</value></data>
+  <data name="Icon_flower" xml:space="preserve"><value>Flowers</value></data>
   <data name="GoogleGroup" xml:space="preserve"><value>Google Calendar</value></data>
   <data name="SignInGoogle" xml:space="preserve"><value>Sign in with Google</value></data>
   <data name="SignInAgainButton" xml:space="preserve"><value>Sign in again</value></data>
