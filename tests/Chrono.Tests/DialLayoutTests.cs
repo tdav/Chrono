@@ -152,6 +152,20 @@ public sealed class DialLayoutTests
     }
 
     [Fact]
+    public void Current_EqualDuration_PicksTopmostLikeHitTest()
+    {
+        // Два идущих дела одной длины: «текущим» должно быть то же, что выбирает касание, — верхнее (последнее в порядке отрисовки).
+        var first = E("10:00", 60);
+        var second = E("10:15", 60);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        var current = DialLayout.Current([first, second], At(10, 30))!.Value;
+        var touched = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(10, 30)), 0.8)!.Value;
+
+        Assert.Equal(touched.Alarm.Id, current.Alarm.Id);
+    }
+
+    [Fact]
     public void Next_FirstStartAfterNow()
     {
         var next = E("09:00", 30);
@@ -197,7 +211,115 @@ public sealed class DialLayoutTests
         }
 
         var fixedId = Guid.Parse("27b5a2fb-0874-4db1-98aa-c02174d89ebf");
-        Assert.Equal(fixedId.ToByteArray().Sum(b => b) % 12, DialLayout.ColorIndex(fixedId));
+        // Литерал: сумма байт Guid.ToByteArray() = 2239, 2239 % 12 = 7. Смена свёртки должна краснить тест.
+        Assert.Equal(7, DialLayout.ColorIndex(fixedId));
+    }
+
+    [Fact]
+    public void HitTest_ShortestByFullDuration_NotByClippedSlice()
+    {
+        // A 11:00-13:00 в Morning режется до 30°, B 10:30-11:45 занимает 37,5°; по полной длительности короче B.
+        var a = E("11:00", 120);
+        var b = E("10:30", 75);
+        var entries = new[] { a, b };
+        var slices = DialLayout.Slices(entries, Day, DialHalf.Morning);
+
+        Assert.Equal(b.Alarm.Id, slices[^1].Entry.Alarm.Id);
+        Assert.Equal(b.Alarm.Id, DialLayout.HitTest(slices, 345, 0.8)!.Value.Alarm.Id);
+        Assert.Equal(b.Alarm.Id, DialLayout.Current(entries, At(11, 30))!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_EqualDuration_PicksTopmost()
+    {
+        var first = E("10:00", 60);
+        var second = E("10:00", 60);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        Assert.Equal(second.Alarm.Id, DialLayout.HitTest(slices, 315, 0.8)!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_NormalizesNegativeAndOverFullTurn()
+    {
+        var near350 = E("11:40", 10);
+        var near10 = E("00:10", 30);
+        var slices = DialLayout.Slices([near350, near10], Day, DialHalf.Morning);
+
+        Assert.Equal(near350.Alarm.Id, DialLayout.HitTest(slices, -10, 0.8)!.Value.Alarm.Id);
+        Assert.Equal(near10.Alarm.Id, DialLayout.HitTest(slices, 370, 0.8)!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_Tick_NormalizesAngleBeforeComparing()
+    {
+        var tick = E("07:00", 0);
+        var slices = DialLayout.Slices([tick], Day, DialHalf.Morning);
+
+        // 570 = 210, -150 = 210: те же засечка; 730 = 10 и -170 = 190 засечку не задевают.
+        Assert.NotNull(DialLayout.HitTest(slices, 570, 0.8));
+        Assert.NotNull(DialLayout.HitTest(slices, -150, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, 730, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, -170, 0.8));
+    }
+
+    [Fact]
+    public void HitTest_TickAtMidnight_WrapsAcrossZero()
+    {
+        var tick = E("00:00", 0);
+        var slices = DialLayout.Slices([tick], Day, DialHalf.Morning);
+
+        Assert.Equal(tick.Alarm.Id, DialLayout.HitTest(slices, 358, 0.8)!.Value.Alarm.Id);
+        Assert.Equal(tick.Alarm.Id, DialLayout.HitTest(slices, 3, 0.8)!.Value.Alarm.Id);
+        Assert.Null(DialLayout.HitTest(slices, 355, 0.8));
+    }
+
+    [Fact]
+    public void HitTest_Tick_ExactlyFourDegreesHits()
+    {
+        var tick = E("07:00", 0);
+        var slices = DialLayout.Slices([tick], Day, DialHalf.Morning);
+
+        Assert.NotNull(DialLayout.HitTest(slices, 214, 0.8));
+        Assert.NotNull(DialLayout.HitTest(slices, 206, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, 214.1, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, 205.9, 0.8));
+    }
+
+    [Fact]
+    public void HitTest_SectorEnd_IsHalfOpen()
+    {
+        var slices = DialLayout.Slices([E("09:00", 60)], Day, DialHalf.Morning);
+
+        Assert.NotNull(DialLayout.HitTest(slices, 270, 0.8));
+        Assert.NotNull(DialLayout.HitTest(slices, 299.9, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, 300, 0.8));
+        Assert.Null(DialLayout.HitTest(slices, 269.9, 0.8));
+    }
+
+    [Fact]
+    public void HitTest_TickOverCoveringSector_PicksTick()
+    {
+        var tick = E("10:15", 0);
+        var slices = DialLayout.Slices([E("10:00", 60), tick], Day, DialHalf.Morning);
+
+        Assert.Equal(tick.Alarm.Id, DialLayout.HitTest(slices, 307.5, 0.8)!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void FreeSlot_NoFreeBoundaryToday_FallsBackToNextBoundary()
+    {
+        // По §6.7 фолбэк — ближайшая граница после now в её собственном дне, даже если она занята.
+        Assert.Equal(At(23, 30), DialLayout.FreeSlot([E("23:30", 30)], At(23, 10)));
+        Assert.Equal(At(15, 30), DialLayout.FreeSlot([E("14:00", 600)], At(15, 10)));
+    }
+
+    [Fact]
+    public void FreeSlot_KeepsKindOfNow()
+    {
+        var now = DateTime.SpecifyKind(At(9, 50), DateTimeKind.Local);
+
+        Assert.Equal(DateTimeKind.Local, DialLayout.FreeSlot([], now).Kind);
     }
 
     [Fact]
