@@ -93,6 +93,18 @@ public sealed class SplashPage : ContentPage
         await Task.WhenAll(swing(), ripple(), this.title.FadeToAsync(1, 700, Easing.CubicIn));
         await Task.Delay(250);
 
+#if ANDROID
+        // Экран выключили, пока шёл splash (активити остановлена): MAUI откладывает транзакции фрагментов нового Shell
+        // до возобновления и выполняет их внутри onPostResume → «FragmentManager is already executing transactions»,
+        // процесс падает (D1). Ждём возобновления; продолжение после Delay приходит отдельным сообщением главного цикла,
+        // то есть уже после onPostResume.
+        while (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is AndroidX.Lifecycle.ILifecycleOwner owner
+            && !owner.Lifecycle.CurrentState.IsAtLeast(AndroidX.Lifecycle.Lifecycle.State.Resumed))
+        {
+            await Task.Delay(100);
+        }
+#endif
+
         this.Window!.Page = this.services.GetRequiredService<AppShell>();
     }
 }
