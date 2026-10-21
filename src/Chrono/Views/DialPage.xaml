@@ -103,14 +103,15 @@
 
                 <!-- С выбором: карточка записи; нажатие раскрывает действия. -->
                 <Border Style="{StaticResource Card}" Stroke="{StaticResource Metal700}" StrokeThickness="2"
-                        IsVisible="{Binding HasSelection}"
-                        SemanticProperties.Description="{Binding CardDescription}"
-                        SemanticProperties.Hint="{x:Static res:AppResources.DialTapForActions}">
+                        IsVisible="{Binding HasSelection}">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ToggleExpandedCommand}" />
                     </Border.GestureRecognizers>
                     <VerticalStackLayout Spacing="8">
-                        <HorizontalStackLayout Spacing="10">
+                        <!-- Подпись доступности — на заголовке, не на Border: на iOS описание контейнера скрывает от VoiceOver кнопки внутри. -->
+                        <HorizontalStackLayout Spacing="10"
+                                               SemanticProperties.Description="{Binding CardDescription}"
+                                               SemanticProperties.Hint="{x:Static res:AppResources.DialTapForActions}">
                             <BoxView WidthRequest="12" HeightRequest="12" CornerRadius="6" Color="{Binding SelectedColor}" VerticalOptions="Center" />
                             <Label Text="{Binding SelectedTitle}" FontFamily="ManropeExtraBold" FontSize="18" VerticalOptions="Center" />
                         </HorizontalStackLayout>
