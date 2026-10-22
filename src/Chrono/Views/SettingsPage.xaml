@@ -4,12 +4,10 @@
              x:Class="Chrono.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel">
 
-    <Grid RowDefinitions="Auto,*" Padding="20,12,20,16" SafeAreaEdges="Container">
+    <!-- Без заголовка вкладки: название уже есть в нижней панели. -->
+    <Grid Padding="20,12,20,16" SafeAreaEdges="Container">
 
-        <!-- Шапка: заголовок вкладки. -->
-        <Label Text="{x:Static res:AppResources.SettingsTitle}" Style="{StaticResource ScreenTitle}" Padding="0,6,0,14" />
-
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+        <ScrollView VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="0">
                 <!-- Умное пробуждение: переключатель, описание, состояние доступа к данным часов. -->
                 <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}" />

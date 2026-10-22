@@ -1,9 +1,11 @@
+using Chrono.Services;
 using Chrono.ViewModels;
 
 namespace Chrono.Views.Sheets;
 
 public partial class TimeWheelSheet : ContentView
 {
+    private readonly ISoundPlayer? sound = IPlatformApplication.Current?.Services.GetService<ISoundPlayer>();
     private TimeSheetModel? model;
     private IDispatcherTimer? settleTimer;
 
@@ -24,6 +26,9 @@ public partial class TimeWheelSheet : ContentView
         if (this.model is not null)
         {
             this.model.ScrollRequested += this.OnScrollRequested;
+
+            // Шторка создаётся при первом открытии, уже после Load: его запрос прокрутки ушёл без подписчика.
+            this.OnScrollRequested(this, EventArgs.Empty);
         }
     }
 
@@ -50,10 +55,16 @@ public partial class TimeWheelSheet : ContentView
         // VerticalOffset на Android копит только пользовательскую прокрутку (программный ScrollTo не учитывает),
         // а CenterItemIndex ошибается на строку — поэтому на Android центр берётся по геометрии списка.
         var index = e.CenterItemIndex;
+
+        // Щелчок — только когда барабан крутит палец или он докатывается; программный ScrollTo при открытии
+        // шторки прыгает без прокрутки (состояние Idle) и щёлкать не должен.
+        var userScroll = true;
 #if ANDROID
         if (wheel.Handler?.PlatformView is AndroidX.RecyclerView.Widget.RecyclerView list
             && list.FindChildViewUnder(list.Width / 2f, list.Height / 2f) is { } center)
         {
+            userScroll = list.ScrollState != AndroidX.RecyclerView.Widget.RecyclerView.ScrollStateIdle;
+
             // Позиция 0 в адаптере — заголовок-отступ; NO_POSITION (−1) бывает во время анимации адаптера.
             var position = list.GetChildAdapterPosition(center);
             if (position < 0)
@@ -101,6 +112,10 @@ public partial class TimeWheelSheet : ContentView
             if (this.model.Hour != index)
             {
                 this.model.Hour = index;
+                if (userScroll)
+                {
+                    this.sound?.Tick();
+                }
             }
         }
         else
@@ -109,7 +124,14 @@ public partial class TimeWheelSheet : ContentView
             if (this.model.Minute != index)
             {
                 this.model.Minute = index;
+                if (userScroll)
+                {
+                    this.sound?.Tick();
+                }
             }
         }
     }
+
+    // Нажатие на строку барабана или на быстрое время («06:30», «Сейчас»): значение меняется прыжком, без прокрутки.
+    private void OnTick(object? sender, EventArgs e) => this.sound?.Tick();
 }

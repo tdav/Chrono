@@ -1,4 +1,6 @@
+using Android.Content;
 using Android.Media;
+using Android.OS;
 using Chrono.Services;
 
 namespace Chrono.Platform;
@@ -6,7 +8,24 @@ namespace Chrono.Platform;
 /// <summary>Мелодия из assets ({id}.wav) через поток будильника; при ошибке — системный звук будильника.</summary>
 public sealed class SoundPlayer : ISoundPlayer
 {
+    private readonly SoundPool tickPool;
+    private readonly int tickSound;
     private MediaPlayer? player;
+
+    public SoundPlayer()
+    {
+        // Щелчок — свой tick.wav, а не системный звук касаний: тот у многих выключен (sound_effects_enabled=0).
+        // SoundPool загружает звук заранее и играет без задержки; загрузка асинхронная, поэтому — в конструкторе.
+        this.tickPool = new SoundPool.Builder()
+            .SetMaxStreams(2)!
+            .SetAudioAttributes(new AudioAttributes.Builder()
+                .SetUsage(AudioUsageKind.AssistanceSonification)!
+                .SetContentType(AudioContentType.Sonification)!
+                .Build())!
+            .Build()!;
+        using var fd = global::Android.App.Application.Context.Assets!.OpenFd("tick.wav");
+        this.tickSound = this.tickPool.Load(fd, 1);
+    }
 
     public void Play(string soundId, bool loop)
     {
@@ -59,5 +78,18 @@ public sealed class SoundPlayer : ISoundPlayer
 
         this.player.Release();
         this.player = null;
+    }
+
+    public void Tick()
+    {
+        this.tickPool.Play(this.tickSound, 0.6f, 0.6f, 1, 0, 1f);
+
+        var context = global::Android.App.Application.Context;
+        var vibrator = OperatingSystem.IsAndroidVersionAtLeast(31)
+            ? ((VibratorManager)context.GetSystemService(Context.VibratorManagerService)!).DefaultVibrator
+            : (Vibrator)context.GetSystemService(Context.VibratorService)!;
+        vibrator.Vibrate(OperatingSystem.IsAndroidVersionAtLeast(29)
+            ? VibrationEffect.CreatePredefined(VibrationEffect.EffectTick)
+            : VibrationEffect.CreateOneShot(10, VibrationEffect.DefaultAmplitude));
     }
 }

@@ -2,7 +2,8 @@
 
 Только стандартная библиотека Python. Лицензионно чисто: звуки создаются математически.
 Запуск из корня репозитория:  python tools/gen_sounds.py
-Результат: src/Chrono/Resources/Raw/{bell,chime,digital,rising,soft}.wav и beep.wav (короткий сигнал, 2,3 с)
+Результат: src/Chrono/Resources/Raw/{bell,chime,digital,rising,soft}.wav, beep.wav (короткий сигнал, 2,3 с)
+и tick.wav (щелчок барабанов и календаря в шторках, 15 мс)
 """
 import math
 import os
@@ -17,6 +18,8 @@ BEEP_FREQ = 1760
 BEEP_ON = 0.12
 BEEP_PERIOD = 1.0
 BEEP_DURATION = 2.3
+# Щелчок выбора: звучит на каждую строку барабана, поэтому короткий — иначе при быстрой прокрутке щелчки сливаются.
+TICK_DURATION = 0.015
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else os.path.join("src", "Chrono", "Resources", "Raw")
 
 
@@ -72,6 +75,11 @@ def beep(t):
     return env * math.sin(2 * math.pi * BEEP_FREQ * t)
 
 
+def tick(t):
+    env = min(1.0, t / 0.0005) * math.exp(-t / 0.0025)  # атака 0,5 мс, затухание ~2,5 мс
+    return env * (0.65 * math.sin(2 * math.pi * 2600 * t) + 0.35 * math.sin(2 * math.pi * 5200 * t))
+
+
 def render(name, fn, duration=DURATION):
     frames = [fn(i / RATE) for i in range(int(RATE * duration))]
     peak = max(abs(x) for x in frames) or 1.0
@@ -90,3 +98,4 @@ if __name__ == "__main__":
     for sound_name, sound_fn in [("bell", bell), ("chime", chime), ("digital", digital), ("rising", rising), ("soft", soft)]:
         render(sound_name, sound_fn)
     render("beep", beep, BEEP_DURATION)
+    render("tick", tick, TICK_DURATION)

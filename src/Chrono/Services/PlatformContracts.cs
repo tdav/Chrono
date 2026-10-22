@@ -21,6 +21,9 @@ public interface ISoundPlayer
     void Play(string soundId, bool loop);
 
     void Stop();
+
+    /// <summary>Щелчок выбора в шторках даты и времени: короткий звук и вибрация отклика.</summary>
+    void Tick();
 }
 
 /// <summary>Доступ к данным часов для умного пробуждения (Android — через Health Connect).</summary>

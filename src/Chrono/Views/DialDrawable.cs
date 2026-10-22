@@ -138,12 +138,12 @@ public sealed class DialDrawable : IDrawable
         canvas.DrawCircle(cx, cy, r * 0.52f);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontSize = 13;
+        canvas.FontSize = 26;
         canvas.FontColor = Ink.WithAlpha(0.7f);
         for (var hour = 1; hour <= 12; hour++)
         {
             var p = At(cx, cy, r * 0.76f, hour * 30);
-            canvas.DrawString(hour.ToString(), p.X - 12, p.Y - 10, 24, 20, HorizontalAlignment.Center, VerticalAlignment.Center);
+            canvas.DrawString(hour.ToString(), p.X - 24, p.Y - 20, 48, 40, HorizontalAlignment.Center, VerticalAlignment.Center);
         }
 
         if (this.ArrowAngle is { } arrow)

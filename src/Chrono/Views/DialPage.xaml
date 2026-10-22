@@ -22,12 +22,6 @@
         <ScrollView VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Padding="20,12,20,110" Spacing="14">
 
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="{x:Static res:AppResources.Tab_Dial}" Style="{StaticResource ScreenTitle}" Padding="0,6,0,0" />
-                    <Label Grid.Column="1" Text="{Binding TitleDate}" Style="{StaticResource Muted}" FontFamily="ManropeBold" FontSize="13"
-                           VerticalOptions="Center" Padding="0,6,0,0" />
-                </Grid>
-
                 <!-- Сегмент: «Сейчас» — половина суток с текущим временем, «Вечер» — 12:00–24:00. -->
                 <Border Background="{StaticResource Divider}" Stroke="{StaticResource Divider}" StrokeThickness="1"
                         StrokeShape="RoundRectangle 23" Padding="3">
@@ -78,10 +72,19 @@
                             <TapGestureRecognizer Tapped="OnDialTapped" />
                         </GraphicsView.GestureRecognizers>
                     </GraphicsView>
-                    <VerticalStackLayout WidthRequest="140" Spacing="2" HorizontalOptions="Center" VerticalOptions="Center"
+                    <!-- Время крупно (36), под ним дата; название выбранного дела длиннее времени — ему 18, как раньше. -->
+                    <VerticalStackLayout WidthRequest="150" Spacing="2" HorizontalOptions="Center" VerticalOptions="Center"
                                          InputTransparent="True" CascadeInputTransparent="True">
-                        <Label Text="{Binding CenterTitle}" FontFamily="ManropeExtraBold" FontSize="18" TextColor="{StaticResource Text}"
-                               HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" />
+                        <Label Text="{Binding CenterTitle}" FontFamily="ManropeExtraBold" FontSize="36" TextColor="{StaticResource Text}"
+                               HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding HasSelection}" Value="True">
+                                    <Setter Property="FontSize" Value="18" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                        <Label Text="{Binding TitleDate}" Style="{StaticResource Muted}" FontFamily="ManropeBold" FontSize="14"
+                               HorizontalTextAlignment="Center" />
                         <Label Text="{Binding CenterSub}" Style="{StaticResource Muted}" FontSize="12"
                                HorizontalTextAlignment="Center" MaxLines="2" LineBreakMode="TailTruncation" />
                     </VerticalStackLayout>

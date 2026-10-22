@@ -7,7 +7,18 @@ public partial class BottomSheet : ContentView
 {
     public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(
         nameof(IsOpen), typeof(bool), typeof(BottomSheet), false,
-        propertyChanged: (b, _, n) => ((BottomSheet)b).IsVisible = (bool)n);
+        propertyChanged: (b, _, n) =>
+        {
+            // Содержимое создаётся при первом открытии: восемь шторок редактора со списками,
+            // собранные вместе со страницей, задерживали её открытие почти на секунду.
+            var sheet = (BottomSheet)b;
+            if ((bool)n && sheet.Body.Content is null && sheet.SheetTemplate is { } template)
+            {
+                sheet.Body.Content = (View)template.CreateContent();
+            }
+
+            sheet.IsVisible = (bool)n;
+        });
 
     public static readonly BindableProperty TitleProperty = BindableProperty.Create(
         nameof(Title), typeof(string), typeof(BottomSheet), string.Empty);
@@ -15,9 +26,8 @@ public partial class BottomSheet : ContentView
     public static readonly BindableProperty HintProperty = BindableProperty.Create(
         nameof(Hint), typeof(string), typeof(BottomSheet), string.Empty);
 
-    public static readonly BindableProperty SheetContentProperty = BindableProperty.Create(
-        nameof(SheetContent), typeof(View), typeof(BottomSheet), null,
-        propertyChanged: (b, _, n) => ((BottomSheet)b).Body.Content = (View?)n);
+    public static readonly BindableProperty SheetTemplateProperty = BindableProperty.Create(
+        nameof(SheetTemplate), typeof(DataTemplate), typeof(BottomSheet), null);
 
     public static readonly BindableProperty CancelCommandProperty = BindableProperty.Create(
         nameof(CancelCommand), typeof(ICommand), typeof(BottomSheet), null);
@@ -45,10 +55,11 @@ public partial class BottomSheet : ContentView
         set => this.SetValue(HintProperty, value);
     }
 
-    public View? SheetContent
+    /// <summary>Шаблон содержимого; разворачивается при первом открытии шторки.</summary>
+    public DataTemplate? SheetTemplate
     {
-        get => (View?)this.GetValue(SheetContentProperty);
-        set => this.SetValue(SheetContentProperty, value);
+        get => (DataTemplate?)this.GetValue(SheetTemplateProperty);
+        set => this.SetValue(SheetTemplateProperty, value);
     }
 
     /// <summary>Выполняется при нажатии на затемнение.</summary>

@@ -37,7 +37,7 @@
                                 </Label.Triggers>
                             </Label>
                             <Grid.GestureRecognizers>
-                                <TapGestureRecognizer CommandParameter="{Binding .}"
+                                <TapGestureRecognizer CommandParameter="{Binding .}" Tapped="OnTick"
                                                       Command="{Binding PickHourCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
                             </Grid.GestureRecognizers>
                         </Grid>
@@ -73,7 +73,7 @@
                                 </Label.Triggers>
                             </Label>
                             <Grid.GestureRecognizers>
-                                <TapGestureRecognizer CommandParameter="{Binding .}"
+                                <TapGestureRecognizer CommandParameter="{Binding .}" Tapped="OnTick"
                                                       Command="{Binding PickMinuteCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
                             </Grid.GestureRecognizers>
                         </Grid>
@@ -90,25 +90,25 @@
             <Border Style="{StaticResource Chip}">
                 <Label Text="06:30" Style="{StaticResource ChipText}" />
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="06:30" />
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="06:30" />
                 </Border.GestureRecognizers>
             </Border>
             <Border Grid.Column="1" Style="{StaticResource Chip}">
                 <Label Text="07:00" Style="{StaticResource ChipText}" />
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="07:00" />
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="07:00" />
                 </Border.GestureRecognizers>
             </Border>
             <Border Grid.Column="2" Style="{StaticResource Chip}">
                 <Label Text="08:00" Style="{StaticResource ChipText}" />
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding QuickCommand}" CommandParameter="08:00" />
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="08:00" />
                 </Border.GestureRecognizers>
             </Border>
             <Border Grid.Column="3" Style="{StaticResource Chip}">
                 <Label Text="{x:Static res:AppResources.Now}" Style="{StaticResource ChipText}" />
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding NowCommand}" />
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding NowCommand}" />
                 </Border.GestureRecognizers>
             </Border>
         </Grid>

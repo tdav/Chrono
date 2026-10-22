@@ -4,7 +4,7 @@
              xmlns:controls="clr-namespace:Chrono.Controls"
              xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
              Shell.TabBarIsVisible="False"
-             Shell.PresentationMode="ModalAnimated"
+             Shell.PresentationMode="ModalNotAnimated"
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 
@@ -166,51 +166,67 @@
         <!-- Шторки поверх страницы; каждая получает модель через BindingContext. -->
         <controls:BottomSheet IsOpen="{Binding IsTimeSheetOpen}" Title="{x:Static res:AppResources.RowTime}"
                               Hint="{Binding TimeHint}" CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsDateSheetOpen}" Title="{x:Static res:AppResources.RowDate}"
                               Hint="{Binding CalendarSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsEndsSheetOpen}" Title="{x:Static res:AppResources.RowEnds}"
                               Hint="{Binding EndsSheet.Hint}" CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:CalendarSheet BindingContext="{Binding EndsSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:CalendarSheet BindingContext="{Binding EndsSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsSoundSheetOpen}" Title="{x:Static res:AppResources.Sound}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsDurationSheetOpen}" Title="{x:Static res:AppResources.RowDuration}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:DurationSheet BindingContext="{Binding DurationSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:DurationSheet BindingContext="{Binding DurationSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsIconSheetOpen}" Title="{x:Static res:AppResources.RowIcon}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:IconSheet BindingContext="{Binding IconSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:IconSheet BindingContext="{Binding IconSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsAlertSheetOpen}" Title="{x:Static res:AppResources.RowAlert}"
                               CancelCommand="{Binding CloseSheetCommand}">
-            <controls:BottomSheet.SheetContent>
-                <sheets:AlertSheet BindingContext="{Binding AlertSheet}" />
-            </controls:BottomSheet.SheetContent>
+            <controls:BottomSheet.SheetTemplate>
+                <DataTemplate x:DataType="vm:AlarmEditViewModel">
+                    <sheets:AlertSheet BindingContext="{Binding AlertSheet}" />
+                </DataTemplate>
+            </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
     </Grid>
 </ContentPage>
