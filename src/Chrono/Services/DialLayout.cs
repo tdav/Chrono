@@ -76,9 +76,11 @@ public static class DialLayout
 
     /// <summary>
     /// Запись под касанием. radiusFraction — расстояние от центра к радиусу обода; вне кольца [0.52, 1.0] выбора нет.
-    /// Из нескольких попаданий берётся самое короткое (засечка короче любого сектора).
+    /// Из нескольких попаданий берётся самое короткое (засечка короче любого сектора), при равных — последнее в порядке отрисовки.
+    /// Если выбранная запись selectedId сама под касанием и попаданий не меньше двух, повторное касание
+    /// переходит к следующему попаданию в порядке отрисовки (после последнего — к первому), чтобы дотянуться до перекрытых засечек.
     /// </summary>
-    public static DayEntry? HitTest(IReadOnlyList<DialSlice> slices, double angle, double radiusFraction)
+    public static DayEntry? HitTest(IReadOnlyList<DialSlice> slices, double angle, double radiusFraction, Guid? selectedId = null)
     {
         if (radiusFraction < InnerRadius || radiusFraction > 1.0)
         {
@@ -86,7 +88,7 @@ public static class DialLayout
         }
 
         var touch = (angle % 360 + 360) % 360;
-        DialSlice? best = null;
+        var hits = new List<DialSlice>();
         foreach (var slice in slices)
         {
             bool hit;
@@ -101,14 +103,37 @@ public static class DialLayout
                 hit = offset < slice.SweepAngle;
             }
 
-            // <=: при равной длительности берётся последний в порядке отрисовки, то есть лежащий сверху.
-            if (hit && (best is null || slice.Entry.Alarm.DurationMinutes <= best.Value.Entry.Alarm.DurationMinutes))
+            if (hit)
             {
-                best = slice;
+                hits.Add(slice);
             }
         }
 
-        return best?.Entry;
+        if (hits.Count == 0)
+        {
+            return null;
+        }
+
+        if (selectedId is { } id && hits.Count >= 2)
+        {
+            var index = hits.FindIndex(h => h.Entry.Alarm.Id == id);
+            if (index >= 0)
+            {
+                return hits[(index + 1) % hits.Count].Entry;
+            }
+        }
+
+        // <=: при равной длительности берётся последний в порядке отрисовки, то есть лежащий сверху.
+        var best = hits[0];
+        foreach (var hit in hits)
+        {
+            if (hit.Entry.Alarm.DurationMinutes <= best.Entry.Alarm.DurationMinutes)
+            {
+                best = hit;
+            }
+        }
+
+        return best.Entry;
     }
 
     /// <summary>Идущее сейчас дело; при нескольких — самое короткое, при равных — последнее (верхнее, как в HitTest).</summary>

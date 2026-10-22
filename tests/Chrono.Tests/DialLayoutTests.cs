@@ -240,6 +240,53 @@ public sealed class DialLayoutTests
     }
 
     [Fact]
+    public void HitTest_OverlappingTicks_NoSelection_PicksLastDrawn()
+    {
+        var first = E("08:00", 0);
+        var second = E("08:01", 0);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        var hit = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(8, 0)), 0.8);
+
+        Assert.Equal(second.Alarm.Id, hit!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_OverlappingTicks_SelectedLast_CyclesToFirst()
+    {
+        var first = E("08:00", 0);
+        var second = E("08:01", 0);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        var hit = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(8, 0)), 0.8, second.Alarm.Id);
+
+        Assert.Equal(first.Alarm.Id, hit!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_OverlappingTicks_SelectedFirst_CyclesToNext()
+    {
+        var first = E("08:00", 0);
+        var second = E("08:01", 0);
+        var slices = DialLayout.Slices([first, second], Day, DialHalf.Morning);
+
+        var hit = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(8, 0)), 0.8, first.Alarm.Id);
+
+        Assert.Equal(second.Alarm.Id, hit!.Value.Alarm.Id);
+    }
+
+    [Fact]
+    public void HitTest_SingleHit_Selected_ReturnsSame()
+    {
+        var only = E("08:00", 0);
+        var slices = DialLayout.Slices([only], Day, DialHalf.Morning);
+
+        var hit = DialLayout.HitTest(slices, DialLayout.AngleOf(new TimeOnly(8, 0)), 0.8, only.Alarm.Id);
+
+        Assert.Equal(only.Alarm.Id, hit!.Value.Alarm.Id);
+    }
+
+    [Fact]
     public void HitTest_NormalizesNegativeAndOverFullTurn()
     {
         var near350 = E("11:40", 10);

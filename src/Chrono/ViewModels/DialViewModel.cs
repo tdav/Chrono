@@ -181,7 +181,7 @@ public sealed partial class DialViewModel : ObservableObject
     /// <summary>Касание циферблата: угол от «12 часов» по часовой и доля радиуса обода. Сектор выделяется; пустое место снимает выделение.</summary>
     public void SelectAt(double angle, double radiusFraction)
     {
-        if (DialLayout.HitTest(this.Slices, angle, radiusFraction) is not { } hit)
+        if (DialLayout.HitTest(this.Slices, angle, radiusFraction, this.SelectedId) is not { } hit)
         {
             if (this.selected is not null)
             {
