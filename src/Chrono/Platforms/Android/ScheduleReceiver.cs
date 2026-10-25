@@ -20,8 +20,9 @@ public sealed class ScheduleReceiver : BroadcastReceiver
     public const string ExtraOpenDay = "open_day";
 
     // Время срабатывания (At записи) входит в Data-URI ключа PendingIntent: следующее срабатывание повторяющейся записи
-    // и правка времени не затирают ещё не доставленный таймер (Doze откладывает SetExactAndAllowWhileIdle). Подпись и длительность
-    // едут в extras: к запуску приёмника GetAll соседнего приёмника уже мог удалить «Один раз и удалить» без длительности (D3).
+    // и правка времени не затирают ещё не доставленный таймер (доставка бывает отложена: выключенный телефон, холодный старт
+    // процесса). Подпись и длительность едут в extras: к запуску приёмника GetAll соседнего приёмника уже мог удалить
+    // «Один раз и удалить» без длительности (D3).
     private const string ExtraAtTicks = "at_ticks";
     private const string ExtraLabel = "label";
     private const string ExtraDuration = "duration_minutes";

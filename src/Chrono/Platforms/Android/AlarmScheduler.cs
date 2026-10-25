@@ -15,8 +15,8 @@ internal sealed partial class NotifyKeysJsonContext : JsonSerializerContext
 }
 
 /// <summary>
-/// Планирование через AlarmManager по уровню оповещения: Ring — SetAlarmClock (точный, не ограничивается Doze),
-/// Notify — точный будильник с уведомлением, None — ничего.
+/// Планирование через AlarmManager по уровню оповещения: Ring — SetAlarmClock со звонком, Notify — SetAlarmClock
+/// с уведомлением (короткий сигнал), None — ничего. SetAlarmClock не ограничивают Doze, группы ожидания и выгрузка процесса.
 /// </summary>
 public sealed class AlarmScheduler : IAlarmScheduler
 {
@@ -79,8 +79,10 @@ public sealed class AlarmScheduler : IAlarmScheduler
                         manager.Cancel(operation);
                     }
 
-                    // Уведомление без звонка: обычный точный будильник, SetAlarmClock занял бы значок будильника в статус-баре.
-                    // Нужные таймеры — начало и ещё не прошедшие напоминания; ключ каждого содержит At.
+                    // Уведомление без звонка тоже через SetAlarmClock: SetExactAndAllowWhileIdle при выгруженном приложении
+                    // система и оболочки производителей откладывают или не доставляют вовсе, и короткий сигнал не звучал.
+                    // Цена — значок будильника в статус-баре и на этих временах. Нужные таймеры — начало и ещё не прошедшие
+                    // напоминания; ключ каждого содержит At.
                     var wanted = new List<string>();
                     if (notify)
                     {
@@ -139,9 +141,10 @@ public sealed class AlarmScheduler : IAlarmScheduler
                         var parts = key.Split('/');
                         var minutes = parts.Length > 1 ? int.Parse(parts[1], CultureInfo.InvariantCulture) : 0;
                         var triggerMs = new DateTimeOffset(DateTime.SpecifyKind(alarm.At.AddMinutes(-minutes), DateTimeKind.Local)).ToUnixTimeMilliseconds();
-                        manager.SetExactAndAllowWhileIdle(
-                            AlarmType.RtcWakeup,
-                            triggerMs,
+                        var notifyShow = PendingIntent.GetActivity(
+                            context, 3, new Intent(context, typeof(MainActivity)), PendingIntentFlags.Immutable);
+                        manager.SetAlarmClock(
+                            new AlarmManager.AlarmClockInfo(triggerMs, notifyShow),
                             ScheduleReceiver.CreatePendingIntent(context, alarm.Id, alarm.At, minutes, alarm.Label, alarm.DurationMinutes));
                     }
 
