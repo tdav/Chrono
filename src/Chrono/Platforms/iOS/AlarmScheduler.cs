@@ -15,6 +15,8 @@ public sealed class AlarmScheduler : IAlarmScheduler
     /// <summary>День (yyyy-MM-dd), который открывает нажатие на уведомление Notify; признак уведомления распорядка.</summary>
     public const string OpenDayKey = "open_day";
 
+    private const string ScheduleThreadId = "schedule";
+
     private readonly ISoundPlayer soundPlayer;
 
     public AlarmScheduler(ISoundPlayer soundPlayer)
@@ -48,7 +50,12 @@ public sealed class AlarmScheduler : IAlarmScheduler
             };
             if (isNotify)
             {
-                content.Sound = UNNotificationSound.Default;
+                // Несколько дел в один момент: одна группа в центре уведомлений и один звук (см. Quiet).
+                content.ThreadIdentifier = ScheduleThreadId;
+                if (!planned.Quiet)
+                {
+                    content.Sound = UNNotificationSound.Default;
+                }
             }
             else if (planned.Alarm.SoundEnabled)
             {

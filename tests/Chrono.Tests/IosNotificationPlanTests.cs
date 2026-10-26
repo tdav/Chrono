@@ -127,6 +127,25 @@ public sealed class IosNotificationPlanTests
     }
 
     [Fact]
+    public void Build_NotifySameMoment_OnlyFirstSounds()
+    {
+        // Два дела и напоминание третьего в 13:00 — один звук; дело в 14:00 звучит само; звонок не глушится.
+        var first = new Alarm { At = Now.AddHours(1), Alert = AlertKind.Notify };
+        var second = new Alarm { At = Now.AddHours(1), Alert = AlertKind.Notify };
+        var reminded = new Alarm { At = Now.AddHours(1).AddMinutes(10), Alert = AlertKind.Notify, ReminderMinutes = "10" };
+        var later = new Alarm { At = Now.AddHours(2), Alert = AlertKind.Notify };
+        var ring = new Alarm { At = Now.AddHours(1), Alert = AlertKind.Ring };
+
+        var plan = IosNotificationPlan.Build([first, second, reminded, later, ring], Now);
+
+        var notifyAtOne = plan.Where(p => p.Alarm.Alert == AlertKind.Notify && p.FireAt == Now.AddHours(1)).ToList();
+        Assert.Equal(3, notifyAtOne.Count);
+        Assert.Single(notifyAtOne, p => !p.Quiet);
+        Assert.False(plan.Single(p => p.Alarm.Id == later.Id).Quiet);
+        Assert.All(plan.Where(p => p.Alarm.Id == ring.Id), p => Assert.False(p.Quiet));
+    }
+
+    [Fact]
     public void Build_PastReminder_Skipped()
     {
         // Напоминание за 30 минут до начала через 20 минут уже в прошлом: остаётся только начало.
