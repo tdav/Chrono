@@ -169,10 +169,15 @@
                             </Border>
                         </Border>
 
-                        <VerticalStackLayout Grid.Column="2" VerticalOptions="Start" Margin="0,4,0,0" Spacing="1">
-                            <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" IsVisible="{Binding HasRange}" />
-                            <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" />
-                        </VerticalStackLayout>
+                        <!-- Текст по центру круга иконки (42): название на одной линии со временем и отметкой; две строки раздвигают
+                             зону. Высоту даёт распорка: MinimumHeightRequest у Grid не растит строку, и центрировать было бы не в чем. -->
+                        <Grid Grid.Column="2" VerticalOptions="Start">
+                            <BoxView HeightRequest="42" Color="Transparent" InputTransparent="True" />
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                                <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" IsVisible="{Binding HasRange}" />
+                                <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" />
+                            </VerticalStackLayout>
+                        </Grid>
 
                         <!-- Отметка «сделано»: кружок 22 в области нажатия 44. -->
                         <Grid Grid.Column="3" WidthRequest="44" HeightRequest="44" VerticalOptions="Start" HorizontalOptions="End"

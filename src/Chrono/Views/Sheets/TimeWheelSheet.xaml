@@ -26,7 +26,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:WheelItem">
                         <Grid HeightRequest="56">
-                            <Label Text="{Binding Label}" HorizontalOptions="Center" VerticalOptions="Center"
+                            <Label Text="{Binding Label}" StyleClass="Digits" HorizontalOptions="Center" VerticalOptions="Center"
                                    FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
@@ -45,8 +45,9 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label Grid.Column="2" Text=":" FontFamily="ManropeExtraBold" FontSize="32" TextColor="{StaticResource Text}"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <!-- Точки двоеточия у Manrope на середине строчных, а не цифр: TranslationY поднимает их к центру цифр (замер на экране). -->
+            <Label Grid.Column="2" Text=":" StyleClass="Digits" FontFamily="ManropeExtraBold" FontSize="32" TextColor="{StaticResource Text}"
+                   HorizontalOptions="Center" VerticalOptions="Center" TranslationY="-3" />
 
             <CollectionView x:Name="MinuteWheel" Grid.Column="3" ItemsSource="{Binding Minutes}" SelectionMode="None"
                             VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
@@ -62,7 +63,7 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:WheelItem">
                         <Grid HeightRequest="56">
-                            <Label Text="{Binding Label}" HorizontalOptions="Center" VerticalOptions="Center"
+                            <Label Text="{Binding Label}" StyleClass="Digits" HorizontalOptions="Center" VerticalOptions="Center"
                                    FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">

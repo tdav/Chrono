@@ -195,6 +195,11 @@
         <Setter Property="FontFamily" Value="ManropeMedium" />
         <Setter Property="FontSize" Value="15" />
         <Setter Property="BackgroundColor" Value="Transparent" />
+        <!-- Поле по центру строки, на одной линии с подписью. Растянуть его на всю строку нельзя: EditText центрирует
+             текст по измеренной высоте, а MAUI растягивает поле без перемера, и текст уходит к верху. Высота 44 —
+             зона касания; она входит в измерение, поэтому текст внутри тоже по центру. -->
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
     </Style>
 
 </ResourceDictionary>

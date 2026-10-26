@@ -41,6 +41,7 @@
                 <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowValue}" />
                 <Entry x:Name="CustomEntry" Grid.Column="1" Text="{Binding CustomText}" Keyboard="Numeric" MaxLength="3"
                        HorizontalTextAlignment="End" WidthRequest="80" Placeholder="0"
+                       FontFamily="ManropeBold" FontSize="14.5"
                        SemanticProperties.Description="{x:Static res:AppResources.DurationCustom}" />
             </Grid>
         </Border>
