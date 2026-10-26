@@ -1,6 +1,7 @@
 using System.Globalization;
 using Android.App;
 using Android.Content;
+using Android.OS;
 using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
@@ -26,6 +27,13 @@ public sealed class ScheduleReceiver : BroadcastReceiver
     private const string ExtraAtTicks = "at_ticks";
     private const string ExtraLabel = "label";
     private const string ExtraDuration = "duration_minutes";
+
+    // Несколько записей в один момент (одна минута или пачка после отложенной доставки) звучат одним сигналом: таймеры
+    // доставляются подряд, и уведомление, показанное в течение QuietWindow после предыдущего, идёт без звука и вибрации.
+    // Время — SystemClock.ElapsedRealtime: не зависит от перевода часов; после перезагрузки сохранённое значение больше текущего.
+    private const string LastShownPref = "schedule_last_shown";
+    private const string QuietGroup = "schedule_quiet";
+    private static readonly TimeSpan QuietWindow = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// PendingIntent срабатывания. От будильника (chrono://alarm/{id}) отличается и классом, и Data-URI:
@@ -106,14 +114,24 @@ public sealed class ScheduleReceiver : BroadcastReceiver
                         .AddFlags(ActivityFlags.NewTask | ActivityFlags.SingleTop),
                     PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
 
-                var notification = new Notification.Builder(context, ChannelId)
+                var builder = new Notification.Builder(context, ChannelId)
                     .SetSmallIcon(Resource.Drawable.ic_stat_alarm)!
                     .SetContentTitle(label)!
                     .SetContentText(timeText)!
                     .SetContentIntent(content)!
-                    .SetAutoCancel(true)!
-                    .Build()!;
-                notifications.Notify(notificationId, notification);
+                    .SetAutoCancel(true)!;
+
+                var nowMs = SystemClock.ElapsedRealtime();
+                var lastMs = Preferences.Default.Get(LastShownPref, long.MinValue);
+                if (lastMs <= nowMs && lastMs > nowMs - (long)QuietWindow.TotalMilliseconds)
+                {
+                    // Тихий показ без отдельного канала (как NotificationCompat.setSilent): у дочернего уведомления группы
+                    // с оповещением только по сводке нет ни звука, ни вибрации. Сводки у группы нет — уведомление видно как обычно.
+                    builder.SetGroup(QuietGroup)!.SetGroupAlertBehavior(NotificationGroupAlertBehavior.Summary);
+                }
+
+                notifications.Notify(notificationId, builder.Build()!);
+                Preferences.Default.Set(LastShownPref, nowMs);
             }
         }
         finally

@@ -3,12 +3,14 @@ using Chrono.Models;
 namespace Chrono.Services;
 
 /// <param name="ReminderMinutes">За сколько минут до начала срабатывает уведомление; 0 — само начало.</param>
-public readonly record struct PlannedNotification(string Id, Alarm Alarm, DateTime FireAt, int ReminderMinutes = 0);
+/// <param name="Quiet">Notify без звука: в тот же момент уже звучит другое уведомление Notify.</param>
+public readonly record struct PlannedNotification(string Id, Alarm Alarm, DateTime FireAt, int ReminderMinutes = 0, bool Quiet = false);
 
 /// <summary>
 /// Цепочка уведомлений iOS: 4 уведомления на срабатывание Ring (0/30/60/90 с) и одно на Notify (смещение 0),
 /// не более 16 ближайших срабатываний на оба вида — iOS хранит не более 64 запланированных уведомлений.
 /// Напоминания (Alarm.AlertTimes) — отдельные цепочки того же вида за N минут до начала; лимит считается на моменты.
+/// Несколько Notify в один момент звучат одним сигналом: звук только у первого, остальные Quiet.
 /// Записи с Alert == None не планируются. Повторяющийся будильник разворачивается в несколько
 /// срабатываний: без запуска приложения iOS не переставит следующее.
 /// </summary>
@@ -43,7 +45,7 @@ public static class IosNotificationPlan
 
         // Номера цепочки: срабатывание k получает k*4..k*4+3 — у ближайшего начала это ChainIds,
         // и снятие его хвоста не трогает следующие срабатывания. У напоминания тот же счёт со своим префиксом.
-        return moments
+        var plan = moments
             .OrderBy(o => o.At)
             .Take(MaxAlarms)
             .SelectMany(o => Offsets
@@ -53,6 +55,11 @@ public static class IosNotificationPlan
                     o.Alarm,
                     o.At + offset,
                     o.Minutes)))
+            .ToList();
+
+        var sounded = new HashSet<DateTime>();
+        return plan
+            .Select(p => p.Alarm.Alert == AlertKind.Notify && !sounded.Add(p.FireAt) ? p with { Quiet = true } : p)
             .ToList();
     }
 

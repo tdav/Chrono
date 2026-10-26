@@ -40,9 +40,26 @@ public static class MauiProgram
             });
 
 #if ANDROID
-        // Нативное подчёркивание Android у полей лишнее: поля уже стоят в карточках с рамкой.
+        // Нативное подчёркивание Android у полей лишнее: поля уже стоят в карточках с рамкой. Фон снимается целиком, а не
+        // только красится прозрачным: у фона-подчёркивания нижний отступ больше верхнего, и текст поля стоял выше подписи строки.
         Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (handler, view) =>
-            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+        {
+            handler.PlatformView.Background = null;
+            handler.PlatformView.SetPadding(0, 0, 0, 0);
+            handler.PlatformView.SetIncludeFontPadding(false);
+        });
+
+        // Подписи и значения строк форм (RowKey, RowValue): без верхнего запаса шрифта Manrope текст стоит по центру строки
+        // вровень с шевроном, иконкой, полем и тумблером, а не ниже них.
+        Microsoft.Maui.Handlers.LabelHandler.Mapper.AppendToMapping("RowFontPadding", (handler, view) =>
+        {
+            if (view is Label { Style: { } style } && Application.Current?.Resources is { } resources
+                && ((resources.TryGetValue("RowKey", out var rowKey) && rowKey == style)
+                    || (resources.TryGetValue("RowValue", out var rowValue) && rowValue == style)))
+            {
+                handler.PlatformView.SetIncludeFontPadding(false);
+            }
+        });
 
         // Выключенный тумблер на белой карточке почти не виден (серая дорожка платформы): красим дорожку и бегунок
         // по состоянию. Вешаем на ключи MAUI (OnColor, ThumbColor, IsOn), чтобы отработать после их собственных

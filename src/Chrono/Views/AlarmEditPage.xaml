@@ -78,7 +78,7 @@
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*">
                                 <Label Text="{x:Static res:AppResources.RowName}" Style="{StaticResource RowKey}" />
                                 <Entry Grid.Column="1" Text="{Binding Label}" Placeholder="{x:Static res:AppResources.DefaultLabel}"
-                                       MaxLength="60" HorizontalTextAlignment="End" VerticalOptions="Center"
+                                       MaxLength="60" HorizontalTextAlignment="End" VerticalTextAlignment="Center" VerticalOptions="Fill"
                                        FontFamily="ManropeBold" FontSize="14.5" ReturnType="Done" />
                             </Grid>
                             <BoxView Style="{StaticResource RowDivider}" />
