@@ -248,4 +248,5 @@
   <data name="RepeatPickDay" xml:space="preserve"><value>Pick at least one day.</value></data>
   <data name="StepperDecrease" xml:space="preserve"><value>Decrease</value></data>
   <data name="StepperIncrease" xml:space="preserve"><value>Increase</value></data>
+  <data name="SheetSaveChanges" xml:space="preserve"><value>Save changes?</value></data>
 </root>

@@ -849,4 +849,7 @@
   <data name="StepperIncrease" xml:space="preserve">
     <value>Увеличить</value>
   </data>
+  <data name="SheetSaveChanges" xml:space="preserve">
+    <value>Сохранить изменения?</value>
+  </data>
 </root>
