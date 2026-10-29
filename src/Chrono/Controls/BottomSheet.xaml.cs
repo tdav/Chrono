@@ -259,7 +259,8 @@ public partial class BottomSheet : ContentView
                 // (DisplayActionSheetAsync) выглядел как старый серый диалог. Любой другой выход — «Назад», касание вне диалога — это «Отменить».
                 else if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is { } activity)
                 {
-                    var answer = new TaskCompletionSource<string>();
+                    // Продолжение (Confirm, навигация) — после обработчика клика диалога, а не внутри него.
+                    var answer = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
                     var dialog = new MaterialAlertDialogBuilder(activity)
                         .SetTitle(AppResources.SheetSaveChanges)!
                         .SetPositiveButton(AppResources.Save, (_, _) => answer.TrySetResult(AppResources.Save))!

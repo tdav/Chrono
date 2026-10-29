@@ -84,9 +84,10 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:CalendarDayItem">
                                 <Grid Grid.Row="{Binding Row}" Grid.Column="{Binding Column}">
-                                    <!-- Пустые ячейки перед первым числом месяца: TalkBack не должен останавливаться на пустоте. -->
+                                    <!-- Пустые ячейки перед первым числом месяца: TalkBack не должен останавливаться на пустоте.
+                                         Условие по Label == "", а не Cell.Date == null: DataTrigger с Value={x:Null} при начальном null не срабатывает. -->
                                     <Grid.Triggers>
-                                        <DataTrigger TargetType="Grid" Binding="{Binding Cell.Date}" Value="{x:Null}">
+                                        <DataTrigger TargetType="Grid" Binding="{Binding Label}" Value="">
                                             <Setter Property="AutomationProperties.IsInAccessibleTree" Value="False" />
                                         </DataTrigger>
                                     </Grid.Triggers>
