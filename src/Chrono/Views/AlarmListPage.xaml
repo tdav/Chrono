@@ -125,14 +125,14 @@
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
                     </Border>
+
+                    <!-- Пусто: под подсказкой, в прокрутке. Поверх экрана по центру оно наезжало на подсказку, выросшую от крупного шрифта. -->
+                    <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource TextCallout}" TextColor="{DynamicResource SecondaryLabel}"
+                           HorizontalOptions="Center" HorizontalTextAlignment="Center" Margin="16,96,16,0"
+                           IsVisible="{Binding IsEmpty}" />
                 </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
-
-        <!-- Пусто: по центру экрана. -->
-        <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource TextCallout}" TextColor="{DynamicResource SecondaryLabel}"
-               HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" Margin="32,0" InputTransparent="True"
-               IsVisible="{Binding IsEmpty}" />
 
         <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" Title="{x:Static res:AppResources.Tab_Alarms}"
                                    Subtitle="{Binding NextAlarmText}" ScrollView="{x:Reference Scroller}">

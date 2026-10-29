@@ -71,6 +71,8 @@
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="HorizontalOptions" Value="End" />
         <Setter Property="HorizontalTextAlignment" Value="End" />
+        <!-- Значение в колонке *, название — Auto: при крупном шрифте усекается значение, а не название строки. -->
+        <Setter Property="LineBreakMode" Value="TailTruncation" />
     </Style>
 
     <Style x:Key="RowSubtitle" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">

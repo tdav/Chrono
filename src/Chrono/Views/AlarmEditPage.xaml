@@ -54,7 +54,7 @@
                                 <VerticalStackLayout Spacing="0">
                                     <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="Auto,*,Auto"
                                                   SemanticProperties.Description="{Binding RepeatText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RepeatHeader}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnRepeatTapped" />
@@ -111,7 +111,7 @@
                                     <Label Text="{x:Static res:AppResources.SignalHeader}" Style="{StaticResource SectionHeader}" SemanticProperties.HeadingLevel="Level2" />
                                     <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="Auto,*,Auto"
                                                   SemanticProperties.Description="{Binding AlertText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RowAlert}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnAlertTapped" />
@@ -124,7 +124,7 @@
 
                                             <VerticalStackLayout Spacing="0" IsVisible="{Binding IsSoundRowsVisible}">
                                                 <BoxView Style="{StaticResource RowSeparator}" />
-                                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="Auto,*,Auto"
                                                       SemanticProperties.Description="{Binding SoundText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.Sound}}">
                                                     <Grid.GestureRecognizers>
                                                         <TapGestureRecognizer Tapped="OnSoundTapped" />
@@ -142,7 +142,7 @@
                                             </VerticalStackLayout>
 
                                             <BoxView Style="{StaticResource RowSeparator}" />
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="Auto,*,Auto"
                                                   SemanticProperties.Description="{Binding DurationText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RowDuration}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnDurationTapped" />
