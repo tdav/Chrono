@@ -9,10 +9,13 @@ namespace Chrono.ViewModels;
 
 public sealed partial class CalendarDayItem : ObservableObject
 {
-    public CalendarDayItem(CalendarCell cell)
+    // index — позиция в сетке месяца: по ней InlineCalendar ставит ячейку в строку и столбец (неделя с понедельника, 7 столбцов).
+    public CalendarDayItem(CalendarCell cell, int index = 0)
     {
         this.Cell = cell;
         this.Label = cell.Date?.Day.ToString(CultureInfo.CurrentUICulture) ?? "";
+        this.Row = index / 7;
+        this.Column = index % 7;
     }
 
     public CalendarCell Cell { get; }
@@ -25,11 +28,30 @@ public sealed partial class CalendarDayItem : ObservableObject
 
     public bool IsDisabled => this.Cell.Date is not null && !this.Cell.IsEnabled;
 
+    public int Row { get; }
+
+    public int Column { get; }
+
+    // Вид ячейки (DESIGN.md §3.3) — взаимоисключающие состояния, чтобы разметке не зависеть от порядка триггеров:
+    // «сегодня» и выбранный день — Semibold; выбранный — круг TintFill, выбранное «сегодня» — круг Tint.
+    public bool IsEmphasized => this.IsToday || this.IsSelected;
+
+    public bool IsPlain => !this.IsEmphasized;
+
+    public bool IsSelectedToday => this.IsSelected && this.IsToday;
+
+    public bool IsSelectedOther => this.IsSelected && !this.IsToday;
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEmphasized), nameof(IsPlain), nameof(IsSelectedToday), nameof(IsSelectedOther))]
     public partial bool IsSelected { get; set; }
 }
 
-/// <summary>Черновик шторки даты. Selected == null — «Ближайшее» (сегодня или завтра по времени).</summary>
+/// <summary>
+/// Модель календаря: обслуживает <c>Controls/InlineCalendar</c> (чип в строке и календарь в форме, DESIGN.md §3.3).
+/// Selected == null — «Ближайшее» (сегодня или завтра по времени) или «Не выбрано» (<see cref="EmptyChipText"/>).
+/// Выбор применяется сразу: форма следит за <see cref="Selected"/>, кнопок «Ок» и «Отмена» у календаря в форме нет.
+/// </summary>
 public sealed partial class CalendarSheetModel : ObservableObject
 {
     private DateOnly today;
@@ -51,7 +73,7 @@ public sealed partial class CalendarSheetModel : ObservableObject
     public IReadOnlyList<string> WeekDayNames { get; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Hint))]
+    [NotifyPropertyChangedFor(nameof(Hint), nameof(ChipText))]
     public partial DateOnly? Selected { get; set; }
 
     [ObservableProperty]
@@ -59,6 +81,14 @@ public sealed partial class CalendarSheetModel : ObservableObject
 
     /// <summary>Подсказка, пока дата не выбрана: «Ближайшее» для даты записи, «Выберите последний день» для окончания.</summary>
     public string EmptyHint { get; init; } = AppResources.NearestHint;
+
+    /// <summary>Значение чипа строки, пока дата не выбрана; им же подписана кнопка сброса под календарём: «Ближайшее» для даты записи, «Не выбрано» для окончания.</summary>
+    public string EmptyChipText { get; init; } = AppResources.Nearest;
+
+    /// <summary>Значение чипа строки (§3.3): «сб, 24 окт.» — с годом, если он не текущий, — или <see cref="EmptyChipText"/>.</summary>
+    public string ChipText => this.Selected is { } date
+        ? date.ToString(date.Year == this.today.Year ? "ddd, d MMM" : "ddd, d MMM yyyy", CultureInfo.CurrentUICulture)
+        : this.EmptyChipText;
 
     public string Hint => this.Selected is { } date
         ? date.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture)
@@ -155,9 +185,10 @@ public sealed partial class CalendarSheetModel : ObservableObject
     private void Rebuild()
     {
         this.Cells.Clear();
+        var index = 0;
         foreach (var cell in AlarmSchedule.Month(this.year, this.month, this.today, this.allowPast))
         {
-            this.Cells.Add(new CalendarDayItem(cell) { IsSelected = cell.Date is not null && cell.Date == this.Selected });
+            this.Cells.Add(new CalendarDayItem(cell, index++) { IsSelected = cell.Date is not null && cell.Date == this.Selected });
         }
 
         // «MMMM yyyy» без числа — именительный падеж («октябрь 2026»); первая буква заглавная.

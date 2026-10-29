@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Controls.InlineCalendar"
+             x:Name="Root" x:DataType="controls:InlineCalendar">
+    <!-- Календарь в форме (DESIGN.md §3.3): строка с названием и чипом значения, под ней — раскрывающийся календарь.
+         Нажатие на строку раскрывает календарь, повторное — сворачивает. Выбор применяется сразу (Model.Selected), кнопок «Ок» и «Отмена» нет.
+         Вид чипа (обычный или раскрытый) ставит UpdateExpanded; цвета — только DynamicResource. -->
+    <ContentView.Content>
+        <VerticalStackLayout>
+            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRowTapped" />
+                </Grid.GestureRecognizers>
+                <Label Style="{StaticResource RowTitle}" Text="{Binding Title, Source={x:Reference Root}}" />
+                <!-- Чип: 34, скругление 8 (как в эталоне SheetCalendar), значение Tint; фон — TertiarySystemFill, раскрытый — TintFill. -->
+                <Border x:Name="Chip" Grid.Column="1" HeightRequest="{StaticResource SizeButtonM}" Padding="11,0" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                    <Label Style="{StaticResource TextBody}" TextColor="{DynamicResource Tint}" LineBreakMode="NoWrap"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           Text="{Binding Model.ChipText, Source={x:Reference Root}}" />
+                </Border>
+            </Grid>
+
+            <!-- Календарь: высота при раскрытии и сворачивании меняет код (Panel.HeightRequest), содержимое обрезается по границам. -->
+            <Grid x:Name="Panel" IsVisible="False" IsClippedToBounds="True">
+                <VerticalStackLayout VerticalOptions="Start" Padding="8,4,8,12">
+                    <!-- Месяц и шеврон слева, ‹ › справа: 44 × 44, цвет Tint. Шеврон у месяца — только вид, по §3.3 нажатие на него ничего не открывает. -->
+                    <Grid ColumnDefinitions="*,Auto" HeightRequest="{StaticResource SizeHit}" Padding="8,0">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Style="{StaticResource TextHeadline}" TextColor="{DynamicResource Label}" VerticalOptions="Center"
+                                   Text="{Binding Model.MonthTitle, Source={x:Reference Root}}" />
+                            <Image Source="icon_chevron.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center" InputTransparent="True"
+                                   design:IconTint.Color="{DynamicResource Tint}" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}"
+                                  SemanticProperties.Description="{x:Static res:AppResources.PrevMonth}">
+                                <Image Source="icon_back.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Tint}" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Model.PrevMonthCommand, Source={x:Reference Root}}" Tapped="OnTick" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                            <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}"
+                                  SemanticProperties.Description="{x:Static res:AppResources.NextMonth}">
+                                <Image Source="icon_next.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Tint}" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Model.NextMonthCommand, Source={x:Reference Root}}" Tapped="OnTick" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <!-- Дни недели с понедельника: Caption 1 Semibold, TertiaryLabel, капсом (как в эталоне); выходные не выделяются. -->
+                    <Grid ColumnDefinitions="*,*,*,*,*,*,*" HeightRequest="22">
+                        <Label Grid.Column="0" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[0], Source={x:Reference Root}}" />
+                        <Label Grid.Column="1" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[1], Source={x:Reference Root}}" />
+                        <Label Grid.Column="2" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[2], Source={x:Reference Root}}" />
+                        <Label Grid.Column="3" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[3], Source={x:Reference Root}}" />
+                        <Label Grid.Column="4" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[4], Source={x:Reference Root}}" />
+                        <Label Grid.Column="5" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[5], Source={x:Reference Root}}" />
+                        <Label Grid.Column="6" Style="{StaticResource TextCaption1Emphasized}" TextColor="{DynamicResource TertiaryLabel}" TextTransform="Uppercase"
+                               HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Model.WeekDayNames[6], Source={x:Reference Root}}" />
+                    </Grid>
+
+                    <!-- Сетка месяца: всегда 6 строк по 44 (форма не прыгает между месяцами в 5 и 6 недель); ячейку ставят Row и Column элемента.
+                         Круг 40: сегодня — число Tint Semibold; выбранный — круг TintFill с числом Tint; выбранное «сегодня» — круг Tint с числом OnTint;
+                         недоступные дни — TertiaryLabel. Два Label вместо смены шрифта триггером: шрифт в разметке задают только стили. -->
+                    <Grid RowDefinitions="44,44,44,44,44,44" ColumnDefinitions="*,*,*,*,*,*,*"
+                          BindableLayout.ItemsSource="{Binding Model.Cells, Source={x:Reference Root}}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:CalendarDayItem">
+                                <Grid Grid.Row="{Binding Row}" Grid.Column="{Binding Column}">
+                                    <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                            BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelectedOther}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource TintFill}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelectedToday}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Grid>
+                                            <Label Style="{StaticResource TextTitle3}" TextColor="{DynamicResource Label}" IsVisible="{Binding IsPlain}"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Label}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsDisabled}" Value="True">
+                                                        <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                            <Label Style="{StaticResource TextTitle3Emphasized}" TextColor="{DynamicResource Tint}" IsVisible="{Binding IsEmphasized}"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding Label}">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelectedToday}" Value="True">
+                                                        <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Grid>
+                                    </Border>
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnDayTapped" />
+                                    </Grid.GestureRecognizers>
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </Grid>
+
+                    <!-- Действия календаря: «Ближайшее» (или «Не выбрано» у окончания) сбрасывает дату, «Сегодня» выбирает сегодня. -->
+                    <Grid ColumnDefinitions="*,*">
+                        <Button Grid.Column="0" Style="{StaticResource PlainButton}" HeightRequest="{StaticResource SizeHit}"
+                                Text="{Binding Model.EmptyChipText, Source={x:Reference Root}}"
+                                Command="{Binding Model.ClearCommand, Source={x:Reference Root}}"
+                                IsVisible="{Binding Model.IsClearVisible, Source={x:Reference Root}}" Clicked="OnTick" />
+                        <Button Grid.Column="1" Style="{StaticResource PlainButton}" HeightRequest="{StaticResource SizeHit}"
+                                Text="{x:Static res:AppResources.Today}"
+                                Command="{Binding Model.TodayCommand, Source={x:Reference Root}}" Clicked="OnTick" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Grid>
+        </VerticalStackLayout>
+    </ContentView.Content>
+</ContentView>
