@@ -28,7 +28,7 @@
                                      рисуется под ними, барабаны прозрачные. Высота сноски — не меньше двух строк footnote (2 × 18): фраза то
                                      переносится, то нет, и без запаса форма под барабаном прыгала бы вместе с ним. -->
                                 <VerticalStackLayout Spacing="0">
-                                    <Border Style="{StaticResource Section}" Padding="8,0">
+                                    <Border Style="{StaticResource SheetSection}" Padding="8,0">
                                         <Grid HeightRequest="{StaticResource SizeWheel}" ColumnDefinitions="*,90,Auto,90,*">
                                             <Border Grid.ColumnSpan="5" HeightRequest="{StaticResource SizeWheelRow}" VerticalOptions="Center" InputTransparent="True"
                                                     BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 8" />
@@ -47,7 +47,7 @@
 
                                 <!-- Повтор, дата, окончание, название, иконка. Ошибки и подсказка — сноской под секцией. -->
                                 <VerticalStackLayout Spacing="0">
-                                    <Border Style="{StaticResource Section}">
+                                    <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
                                             <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
                                                 <Grid.GestureRecognizers>
@@ -103,7 +103,7 @@
                                 <!-- Сигнал: оповещение, звук (меню) и вибрация — только у звонящей записи, длительность. -->
                                 <VerticalStackLayout Spacing="0">
                                     <Label Text="{x:Static res:AppResources.SignalHeader}" Style="{StaticResource SectionHeader}" SemanticProperties.HeadingLevel="Level2" />
-                                    <Border Style="{StaticResource Section}">
+                                    <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
                                             <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
                                                 <Grid.GestureRecognizers>
@@ -149,7 +149,7 @@
                                 </VerticalStackLayout>
 
                                 <!-- Удаление — отдельной секцией внизу и только у существующей записи; подтверждение — диалог из этой строки. -->
-                                <Border Style="{StaticResource Section}" IsVisible="{Binding IsExisting}">
+                                <Border Style="{StaticResource SheetSection}" IsVisible="{Binding IsExisting}">
                                     <Grid Style="{StaticResource Row}" BackgroundColor="Transparent">
                                         <Grid.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding DeleteCommand}" />

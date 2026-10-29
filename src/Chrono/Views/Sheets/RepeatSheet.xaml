@@ -13,7 +13,7 @@
     <VerticalStackLayout Spacing="{StaticResource Space6}">
 
         <!-- Варианты повтора: галочка Tint справа у выбранного, фон строки не меняется. -->
-        <Border Style="{StaticResource Section}">
+        <Border Style="{StaticResource SheetSection}">
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChoiceOption">
@@ -44,7 +44,7 @@
         <!-- Дни недели: видны только при «По дням недели». Под кругами — итог («Пн, Ср, Пт») или, если дней нет, ошибка. -->
         <VerticalStackLayout IsVisible="{Binding IsDaysVisible}">
             <Label Text="{x:Static res:AppResources.RepeatDays}" Style="{StaticResource SectionHeader}" />
-            <Border Style="{StaticResource Section}" Padding="8">
+            <Border Style="{StaticResource SheetSection}" Padding="8">
                 <controls:DayToggles Days="{Binding Days}" ToggleCommand="{Binding ToggleDayCommand}" />
             </Border>
             <Label Text="{Binding DaysSummary}" Style="{StaticResource SectionFooter}" IsVisible="{Binding HasDays}" />

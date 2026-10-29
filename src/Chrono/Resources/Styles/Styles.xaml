@@ -123,6 +123,12 @@
         <Setter Property="Padding" Value="0" />
     </Style>
 
+    <!-- Секция в шторке на большом детенте (DESIGN.md §2.2): фон шторки — elevatedGroupedBackground, ячейки — elevatedSecondaryGroupedBackground.
+         В тёмной теме обычная Section (#1C1C1E) сливалась бы с шторкой; в светлой обе белые. -->
+    <Style x:Key="SheetSection" TargetType="Border" BasedOn="{StaticResource Section}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource ElevatedSecondaryGroupedBackground}" />
+    </Style>
+
     <!-- Строка: 52 при обычном размере текста и растёт вместе с ним; поля 16. -->
     <Style x:Key="Row" TargetType="Grid">
         <Setter Property="MinimumHeightRequest" Value="{StaticResource SizeRow}" />

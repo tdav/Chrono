@@ -13,7 +13,7 @@
 
     <!-- Вид иконки (DESIGN.md §3.7): превью 88 и сетка значков по 6 в ряд в одной секции. Выбор применяется сразу — превью следит за SelectedId.
          Самостоятельный View: кнопок «Ок» и «Отмена» нет — ✓ и ✕ в панели шторки. -->
-    <Border Style="{StaticResource Section}" Padding="8,16,8,8">
+    <Border Style="{StaticResource SheetSection}" Padding="8,16,8,8">
         <VerticalStackLayout Spacing="{StaticResource Space4}">
 
             <!-- Превью: круг 88 TintFill, значок 40 Tint. Название выбранного уже читается в сетке, поэтому для TalkBack превью лишнее. -->

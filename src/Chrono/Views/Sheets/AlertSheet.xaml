@@ -9,7 +9,7 @@
     <!-- Вид оповещения (DESIGN.md §3.6): список выбора, галочка Tint справа у выбранного, фон строки не меняется.
          Самостоятельный View: кнопок «Ок» и «Отмена» нет — ✓ и ✕ в панели шторки. -->
     <VerticalStackLayout>
-        <Border Style="{StaticResource Section}">
+        <Border Style="{StaticResource SheetSection}">
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChoiceOption">

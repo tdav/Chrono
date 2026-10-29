@@ -12,7 +12,7 @@
     <VerticalStackLayout Spacing="{StaticResource Space6}">
 
         <!-- Готовые значения: галочка Tint справа у выбранного, фон строки не меняется. -->
-        <Border Style="{StaticResource Section}">
+        <Border Style="{StaticResource SheetSection}">
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChoiceOption">
@@ -42,7 +42,7 @@
 
         <!-- «Своё, мин»: название и значение («35 мин») слева, степпер справа — капсула 94 × 32 на TertiarySystemFill с разделителем;
              у каждой половины область нажатия 47 × 44. На границе диапазона (5 и 720) символ неактивной половины — TertiaryLabel. -->
-        <Border Style="{StaticResource Section}">
+        <Border Style="{StaticResource SheetSection}">
             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
                 <VerticalStackLayout VerticalOptions="Center">
                     <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowTitle}" />
