@@ -102,6 +102,8 @@ public partial class BottomSheet : ContentView
     // Вложенные шаги: что было в шторке до Push — содержимое и заголовок.
     private readonly Stack<(View? Content, string Title)> steps = new();
     private double panY;
+    // На экране диалог «Не сохранять / Сохранить / Отменить».
+    private bool asking;
     // Ожидание перемера после смены детента: панель доплывает со старого места на новое.
     private EventHandler? resized;
 
@@ -249,15 +251,30 @@ public partial class BottomSheet : ContentView
 
         if (this.IsDirty)
         {
+            // Диалог уже на экране: второе ✕ или «Назад» не открывает второй поверх.
+            if (this.asking)
+            {
+                return;
+            }
+
             Element? element = this.Parent;
             while (element is not null and not Page)
             {
                 element = element.Parent;
             }
 
-            var choice = element is Page page
-                ? await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save)
-                : AppResources.DontSave;
+            string? choice;
+            this.asking = true;
+            try
+            {
+                choice = element is Page page
+                    ? await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save)
+                    : AppResources.DontSave;
+            }
+            finally
+            {
+                this.asking = false;
+            }
 
             // Пока висел диалог, шторку закрыли другим путём: второй раз не отменяем.
             if (!this.IsOpen)
