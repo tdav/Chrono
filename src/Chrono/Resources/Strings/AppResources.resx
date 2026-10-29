@@ -192,4 +192,5 @@
   <data name="SheetCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="SheetDone" xml:space="preserve"><value>Done</value></data>
   <data name="DontSave" xml:space="preserve"><value>Don't save</value></data>
+  <data name="SheetResize" xml:space="preserve"><value>Resize sheet</value></data>
 </root>

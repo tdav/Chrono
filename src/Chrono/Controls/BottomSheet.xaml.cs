@@ -92,7 +92,12 @@ public partial class BottomSheet : ContentView
 
     public static readonly BindableProperty ShowGrabberProperty = BindableProperty.Create(
         nameof(ShowGrabber), typeof(bool), typeof(BottomSheet), true,
-        propertyChanged: (b, _, n) => ((BottomSheet)b).Grabber.Opacity = (bool)n ? 1 : 0);
+        propertyChanged: (b, _, n) =>
+        {
+            var sheet = (BottomSheet)b;
+            sheet.Grabber.Opacity = (bool)n ? 1 : 0;
+            sheet.Grabber.InputTransparent = !(bool)n;
+        });
 
     // Вложенные шаги: что было в шторке до Push — содержимое и заголовок.
     private readonly Stack<(View? Content, string Title)> steps = new();
@@ -234,6 +239,12 @@ public partial class BottomSheet : ContentView
     /// </summary>
     public async Task CancelAsync()
     {
+        // Шторка уже уезжает: повторное ✕ или свайп не должны второй раз отменять и показывать диалог.
+        if (!this.IsOpen)
+        {
+            return;
+        }
+
         if (this.IsDirty)
         {
             Element? element = this.Parent;
@@ -251,10 +262,9 @@ public partial class BottomSheet : ContentView
                 return;
             }
 
+            // «Отменить»: шторка остаётся открытой.
             if (choice != AppResources.DontSave)
             {
-                // «Отменить»: шторка остаётся, после свайпа возвращается на место.
-                await this.Panel.TranslateToAsync(0, 0, 250, Spring);
                 return;
             }
         }
@@ -265,7 +275,8 @@ public partial class BottomSheet : ContentView
 
     private void Confirm()
     {
-        if (!this.CanConfirm || this.ConfirmCommand?.CanExecute(null) == false)
+        // !IsOpen: шторка уже уезжает после ✕ — ✓ не должна принять правки задним числом.
+        if (!this.IsOpen || !this.CanConfirm || this.ConfirmCommand?.CanExecute(null) == false)
         {
             return;
         }
@@ -313,6 +324,17 @@ public partial class BottomSheet : ContentView
             return;
         }
 
+        // Страница позади возвращается вместе с выездом панели, а не скачком после него.
+        if (this.Parent is Layout behind)
+        {
+            var back = reduceMotion ? 0u : 250u;
+            foreach (var view in behind.Children.OfType<VisualElement>().Where(v => v is not BottomSheet))
+            {
+                _ = view.ScaleToAsync(1, back, Easing.CubicIn);
+                _ = view.TranslateToAsync(0, 0, back, Easing.CubicIn);
+            }
+        }
+
         if (reduceMotion)
         {
             await this.FadeToAsync(0, 200);
@@ -339,9 +361,8 @@ public partial class BottomSheet : ContentView
             this.Pop();
         }
 
-        // Страница позади возвращается на место, следующее открытие начнётся со среднего детента.
+        // Следующее открытие начнётся со среднего детента.
         this.Detent = SheetDetent.Medium;
-        this.ApplyDetent(animate: false);
     }
 
     // Вид детента: средний — стекло по содержимому с отступом 8 и углами 47; большой — непрозрачный фон почти на весь экран,
@@ -349,6 +370,9 @@ public partial class BottomSheet : ContentView
     private void ApplyDetent(bool animate)
     {
         var large = this.Detent == SheetDetent.Large && this.IsOpen;
+        var reduceMotion = ReduceMotion;
+        var motion = animate && this.IsOpen && this.IsVisible;
+        var oldY = this.Panel.Y;
         if (large)
         {
             this.Panel.Margin = new Thickness(0, 12, 0, 0);
@@ -364,12 +388,34 @@ public partial class BottomSheet : ContentView
             this.Panel.SetDynamicResource(BackgroundColorProperty, "GlassFillLarge");
         }
 
+        // Тень shadowGlass — только у среднего детента: 10 % в светлой теме, 45 % в тёмной.
+        this.Panel.Shadow.Opacity = large ? 0 : Application.Current?.RequestedTheme == AppTheme.Dark ? 0.45f : 0.10f;
+
+        // Смена детента: панель плывёт со старого места на новое пружиной 0.5 с (новое место известно после перемера);
+        // при «Уменьшении движения» — растворяется.
+        if (motion && reduceMotion)
+        {
+            this.Panel.Opacity = 0;
+            _ = this.Panel.FadeToAsync(1, 200);
+        }
+        else if (motion)
+        {
+            void OnResized(object? sender, EventArgs e)
+            {
+                this.Panel.SizeChanged -= OnResized;
+                this.Panel.TranslationY = oldY - this.Panel.Y;
+                _ = this.Panel.TranslateToAsync(0, 0, 500, Spring);
+            }
+
+            this.Panel.SizeChanged += OnResized;
+        }
+
         if (this.Parent is not Layout layout)
         {
             return;
         }
 
-        var duration = animate && !ReduceMotion ? 500u : 0u;
+        var duration = motion && !reduceMotion ? 500u : 0u;
         foreach (var view in layout.Children.OfType<VisualElement>().Where(v => v is not BottomSheet))
         {
             _ = view.ScaleToAsync(large ? 0.92 : 1, duration, Spring);
@@ -410,14 +456,14 @@ public partial class BottomSheet : ContentView
         }
     }
 
-    // Свайп по грабберу и панели: панель едет за пальцем вниз; отпустили — закрытие, большой детент или возврат.
+    // Свайп по грабберу и панели: решение — по завершении жеста (вниз — закрыть, вверх — большой детент). Панель за пальцем
+    // не едет: на Android TotalY считается от касаемого элемента, и сдвиг его родителя сбивал бы расстояние.
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
         switch (e.StatusType)
         {
             case GestureStatus.Running:
                 this.panY = e.TotalY;
-                this.Panel.TranslationY = Math.Max(0, e.TotalY);
                 break;
             case GestureStatus.Completed:
             case GestureStatus.Canceled:
@@ -425,14 +471,9 @@ public partial class BottomSheet : ContentView
                 {
                     _ = this.CancelAsync();
                 }
-                else
+                else if (this.panY < -SwipeDistance && this.ShowGrabber && this.AllowedDetents.HasFlag(SheetDetents.Large))
                 {
-                    if (this.panY < -SwipeDistance && this.ShowGrabber && this.AllowedDetents.HasFlag(SheetDetents.Large))
-                    {
-                        this.Detent = SheetDetent.Large;
-                    }
-
-                    _ = this.Panel.TranslateToAsync(0, 0, 250, Spring);
+                    this.Detent = SheetDetent.Large;
                 }
 
                 this.panY = 0;

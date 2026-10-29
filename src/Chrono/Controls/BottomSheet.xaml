@@ -20,7 +20,7 @@
             <Border x:Name="Panel" VerticalOptions="End" Margin="8" Padding="16,0,16,16" StrokeThickness="0"
                     BackgroundColor="{DynamicResource GlassFillLarge}" StrokeShape="RoundRectangle 47">
                 <Border.Shadow>
-                    <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.15" />
+                    <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.10" />
                 </Border.Shadow>
                 <!-- Пустой обработчик нажатия: тап по панели не должен проваливаться в затемнение под ней. -->
                 <Border.GestureRecognizers>
@@ -32,15 +32,18 @@
                         <VerticalStackLayout.GestureRecognizers>
                             <PanGestureRecognizer PanUpdated="OnPanUpdated" />
                         </VerticalStackLayout.GestureRecognizers>
-                        <ContentView x:Name="Grabber" HeightRequest="16">
+                        <!-- Область нажатия граббера 44 (SizeHit); отрицательный отступ снизу оставляет видимый просвет 16 до панели. -->
+                        <ContentView x:Name="Grabber" HeightRequest="{StaticResource SizeHit}" Margin="0,0,0,-28"
+                                     SemanticProperties.Description="{x:Static res:AppResources.SheetResize}">
                             <ContentView.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnGrabberTapped" />
                             </ContentView.GestureRecognizers>
-                            <BoxView WidthRequest="36" HeightRequest="5" CornerRadius="2.5" Color="{DynamicResource TertiaryLabel}"
-                                     HorizontalOptions="Center" VerticalOptions="End" />
+                            <BoxView WidthRequest="{StaticResource SizeGrabberW}" HeightRequest="{StaticResource SizeGrabberH}" CornerRadius="2.5"
+                                     Color="{DynamicResource TertiaryLabel}" HorizontalOptions="Center" VerticalOptions="Start" Margin="0,11,0,0" />
                         </ContentView>
                         <!-- Панель: ✕ «Отменить» слева, заголовок по центру, ✓ «Готово» справа; во вложенном шаге — «назад» слева и ничего справа. -->
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                        <!-- Колонки кнопок по 44: заголовок остаётся по центру, когда ✓ во вложенном шаге скрыта. -->
+                        <Grid ColumnDefinitions="44,*,44" ColumnSpacing="8" Margin="0,0,0,4">
                             <Border x:Name="CancelButton" Style="{StaticResource GlassButton}"
                                     SemanticProperties.Description="{x:Static res:AppResources.SheetCancel}">
                                 <Border.GestureRecognizers>

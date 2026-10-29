@@ -35,7 +35,7 @@
             </BindableLayout.ItemTemplate>
         </FlexLayout>
 
-        <!-- Своё значение: только цифры 1…720. Код поле не переписывает (маски нет, курсор не трогаем); «Окей» активен только при корректной строке. -->
+        <!-- Своё значение: только цифры 1…720. Код поле не переписывает (маски нет, курсор не трогаем); ✓ шторки активна только при корректной строке. -->
         <Border Style="{StaticResource RowGroup}">
             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowTitle}" />

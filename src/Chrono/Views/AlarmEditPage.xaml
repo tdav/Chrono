@@ -173,7 +173,7 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsDateSheetOpen}" Title="{x:Static res:AppResources.RowDate}"
-                              Hint="{Binding CalendarSheet.Hint}" ConfirmCommand="{Binding CalendarSheet.OkCommand}" CancelCommand="{Binding CloseSheetCommand}">
+                              Hint="{Binding CalendarSheet.Hint}" ConfirmCommand="{Binding CalendarSheet.OkCommand}" CancelCommand="{Binding CalendarSheet.CancelCommand}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
@@ -181,7 +181,7 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsEndsSheetOpen}" Title="{x:Static res:AppResources.RowEnds}"
-                              Hint="{Binding EndsSheet.Hint}" ConfirmCommand="{Binding EndsSheet.OkCommand}" CancelCommand="{Binding CloseSheetCommand}">
+                              Hint="{Binding EndsSheet.Hint}" ConfirmCommand="{Binding EndsSheet.OkCommand}" CancelCommand="{Binding EndsSheet.CancelCommand}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:CalendarSheet BindingContext="{Binding EndsSheet}" />

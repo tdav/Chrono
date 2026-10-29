@@ -681,4 +681,7 @@
   <data name="DontSave" xml:space="preserve">
     <value>Не сохранять</value>
   </data>
+  <data name="SheetResize" xml:space="preserve">
+    <value>Изменить высоту шторки</value>
+  </data>
 </root>
