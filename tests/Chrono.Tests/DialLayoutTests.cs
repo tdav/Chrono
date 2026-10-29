@@ -206,13 +206,13 @@ public sealed class DialLayoutTests
         {
             var id = Guid.NewGuid();
             var index = DialLayout.ColorIndex(id);
-            Assert.InRange(index, 0, 11);
+            Assert.InRange(index, 0, DialLayout.Categories - 1);
             Assert.Equal(index, DialLayout.ColorIndex(id));
         }
 
         var fixedId = Guid.Parse("27b5a2fb-0874-4db1-98aa-c02174d89ebf");
-        // Литерал: сумма байт Guid.ToByteArray() = 2239, 2239 % 12 = 7. Смена свёртки должна краснить тест.
-        Assert.Equal(7, DialLayout.ColorIndex(fixedId));
+        // Литерал: сумма байт Guid.ToByteArray() = 2239, 2239 % 6 = 1. Смена свёртки должна краснить тест.
+        Assert.Equal(1, DialLayout.ColorIndex(fixedId));
     }
 
     [Fact]
@@ -370,10 +370,18 @@ public sealed class DialLayoutTests
     }
 
     [Fact]
-    public void Palette_TwelveColorsWithoutClockRed()
+    public void ColorIndex_UsesAllSixCategories()
     {
-        Assert.Equal(12, DialLayout.Palette.Count);
-        Assert.DoesNotContain("#B5482F", DialLayout.Palette);
-        Assert.Equal(12, DialLayout.Palette.Distinct().Count());
+        // Категорий шесть (Cat1…Cat6): на 500 случайных Id встречается каждая — иначе часть цветов никогда не покажется.
+        var indexes = Enumerable.Range(0, 500).Select(_ => DialLayout.ColorIndex(Guid.NewGuid())).ToHashSet();
+
+        Assert.Equal(DialLayout.Categories, indexes.Count);
+    }
+
+    [Fact]
+    public void CategoryKey_MapsIndexToThemeResource()
+    {
+        Assert.Equal("Cat1", DialLayout.CategoryKey(0));
+        Assert.Equal("Cat6", DialLayout.CategoryKey(DialLayout.Categories - 1));
     }
 }

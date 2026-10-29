@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Chrono.Controls.SegmentedControl">
+    <!-- Сегменты (DESIGN.md §3): трек — капсула 32 на TertiarySystemFill, выбранный — капсула SegmentThumb с тенью, подписи Subheadline
+         (выбранная — Semibold), сегменты равной ширины. Весь элемент высотой 44 — область нажатия; трек и бегунок по центру.
+         Подписи и жесты собирает код (OnItemsChanged): число сегментов задаёт Items. -->
+    <ContentView.Resources>
+        <Style x:Key="SegmentText" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="MaxLines" Value="1" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+        </Style>
+        <Style x:Key="SegmentTextSelected" TargetType="Label" BasedOn="{StaticResource TextSubheadlineEmphasized}">
+            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="MaxLines" Value="1" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+        </Style>
+    </ContentView.Resources>
+    <Grid HeightRequest="{StaticResource SizeHit}">
+        <Border HeightRequest="{StaticResource SizeSegment}" VerticalOptions="Center" StrokeThickness="0"
+                StrokeShape="RoundRectangle 16" BackgroundColor="{DynamicResource TertiarySystemFill}" />
+        <!-- Бегунок: отступ 2 от трека; ширину и сдвиг задаёт PlaceThumb. Тень shadowSegment — только в светлой теме. -->
+        <Border x:Name="Thumb" HeightRequest="28" VerticalOptions="Center" HorizontalOptions="Start" Margin="2,0,0,0"
+                StrokeThickness="0" StrokeShape="RoundRectangle 14" BackgroundColor="{DynamicResource SegmentThumb}">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,3" Radius="8" Opacity="{AppThemeBinding Light=0.12, Dark=0}" />
+            </Border.Shadow>
+        </Border>
+        <Grid x:Name="Cells" Padding="2,0" />
+    </Grid>
+</ContentView>

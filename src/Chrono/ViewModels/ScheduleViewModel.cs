@@ -30,35 +30,45 @@ public sealed record DayCell(DateOnly Date, int DotCount, bool IsSelected, bool 
     /// <summary>Для озвучивания TalkBack: «понедельник, 20 октября».</summary>
     public string AccessibleText => this.Date.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
 
-    /// <summary>Золотая подпись выходного; у выбранного дня текст светлый на металле.</summary>
-    public bool IsWeekendInk => this.Date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday && !this.IsSelected;
+    public bool IsNotToday => !this.IsToday;
+
+    /// <summary>Выбранное «сегодня»: круг цвета Tint (выбранный другой день — круг цвета Label).</summary>
+    public bool IsSelectedToday => this.IsSelected && this.IsToday;
 
     public IReadOnlyList<int> Dots => Enumerable.Range(0, this.DotCount).ToList();
 }
 
-/// <summary>Строка ленты дня: запись и готовые к показу тексты. RangeText входит в равенство — «осталось N мин» меняется со временем.</summary>
-public sealed record DayEntryItem(DayEntry Entry, string RangeText)
+/// <summary>
+/// Строка ленты дня: запись и готовые к показу тексты. RangeText и Progress входят в равенство — «осталось N мин» и полоса меняются со временем.
+/// ShowSeparator — разделитель над строкой: у первой строки секции его нет.
+/// </summary>
+public sealed record DayEntryItem(DayEntry Entry, string RangeText, double Progress, bool ShowSeparator)
 {
     public string TimeText => this.Entry.Start.ToString("HH:mm");
 
     public string Title => string.IsNullOrWhiteSpace(this.Entry.Alarm.Label) ? AppResources.DefaultLabel : this.Entry.Alarm.Label;
 
+    /// <summary>Название для чтения с экрана: у текущей записи добавляется «идёт сейчас».</summary>
+    public string TitleDescription => this.IsCurrent ? $"{this.Title}, {AppResources.ScheduleNowRunning}" : this.Title;
+
     public string IconImage => ItemIcons.ImageFor(this.Entry.Alarm.Icon);
 
+    /// <summary>Категория дела 0–5: цвет значка Cat1…Cat6 берётся из ресурсов, чтобы следовать теме.</summary>
+    public int CategoryIndex => DialLayout.ColorIndex(this.Entry.Alarm.Id);
+
     public bool IsCurrent => this.Entry.IsCurrent;
+
+    public bool IsNotCurrent => !this.Entry.IsCurrent;
 
     public bool IsDone => this.Entry.IsDone;
 
     /// <summary>Без длительности строки диапазона нет: время уже стоит в колонке слева.</summary>
     public bool HasRange => this.RangeText.Length > 0;
 
-    /// <summary>Подпись кружка для TalkBack зависит от состояния: у отмеченного — «Снять отметку».</summary>
+    /// <summary>Подпись отметки для TalkBack зависит от состояния: у отмеченного — «Снять отметку».</summary>
     public string DoneDescription => this.Entry.IsDone ? AppResources.UnmarkDone : AppResources.MarkDone;
 
     public bool IsMuted => this.Entry.IsMuted;
-
-    /// <summary>Текущее дело — вертикальная капсула: 1,2 pt на минуту, но не ниже круга 42.</summary>
-    public double CapsuleHeight => this.Entry.IsCurrent ? Math.Max(42, this.Entry.Alarm.DurationMinutes * 1.2) : 42;
 }
 
 public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttributable
@@ -81,14 +91,15 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
     [ObservableProperty]
     public partial DateOnly SelectedDay { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 
+    /// <summary>Подстрока шапки — выбранная дата: «Среда, 21 октября».</summary>
     [ObservableProperty]
-    public partial string TitleDay { get; set; } = "";
+    public partial string Subtitle { get; set; } = "";
 
     [ObservableProperty]
-    public partial string TitleYear { get; set; } = "";
-
-    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasEntries))]
     public partial bool IsEmpty { get; set; }
+
+    public bool HasEntries => !this.IsEmpty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCommand))]
@@ -115,28 +126,34 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
         var done = this.alarmService.GetDone();
         var selected = this.SelectedDay;
 
-        // Пробел между днём и годом — часть значения: хвостовой пробел в StringFormat внутри Span XAML обрезает.
-        this.TitleDay = selected.ToString("d MMMM", CultureInfo.CurrentUICulture) + " ";
-        this.TitleYear = selected.Year.ToString(CultureInfo.CurrentUICulture);
+        // В ru платформа отдаёт день недели строчными: первая буква заглавная.
+        var date = selected.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
+        this.Subtitle = CultureInfo.CurrentUICulture.TextInfo.ToUpper(date[0]) + date[1..];
         this.IsAddEnabled = selected >= today;
 
+        // Не больше трёх точек под числом (DESIGN.md §4.9).
         var days = DayPlan.Week(selected)
-            .Select(d => new DayCell(d, Math.Min(DayPlan.For(alarms, done, d, now).Count, 5), d == selected, d == today))
+            .Select(d => new DayCell(d, Math.Min(DayPlan.For(alarms, done, d, now).Count, 3), d == selected, d == today))
             .ToList();
 
         var items = DayPlan.For(alarms, done, selected, now)
-            .Select(e =>
+            .Select((e, index) =>
             {
                 if (e.Alarm.DurationMinutes <= 0)
                 {
-                    return new DayEntryItem(e, string.Empty);
+                    return new DayEntryItem(e, string.Empty, 0, index > 0);
                 }
 
-                var range = $"{e.Start:HH:mm}–{e.End:HH:mm} · ";
-                range += e.IsCurrent && AlarmSchedule.Until(e.End, now) is { } left
-                    ? string.Format(AppResources.ScheduleLeft, left.Days * 1440 + left.Hours * 60 + left.Minutes)
-                    : string.Format(AppResources.DurationMinutes, e.Alarm.DurationMinutes);
-                return new DayEntryItem(e, range);
+                // У текущей записи вместо диапазона — «до 12:00 · осталось 80 мин» и доля прошедшего для полосы.
+                if (e.IsCurrent && AlarmSchedule.Until(e.End, now) is { } left)
+                {
+                    var current = $"{string.Format(AppResources.ScheduleUntil, e.End.ToString("HH:mm"))} · "
+                        + string.Format(AppResources.ScheduleLeft, left.Days * 1440 + left.Hours * 60 + left.Minutes);
+                    return new DayEntryItem(e, current, Math.Clamp((now - e.Start).TotalMinutes / e.Alarm.DurationMinutes, 0, 1), index > 0);
+                }
+
+                var range = $"{e.Start:HH:mm}–{e.End:HH:mm} · {string.Format(AppResources.DurationMinutes, e.Alarm.DurationMinutes)}";
+                return new DayEntryItem(e, range, 0, index > 0);
             })
             .ToList();
 
@@ -181,6 +198,9 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
 
     [RelayCommand]
     private void SelectDay(DateOnly day) => this.SelectedDay = day;
+
+    [RelayCommand]
+    private void Today() => this.SelectedDay = DateOnly.FromDateTime(this.timeProvider.GetLocalNow().DateTime);
 
     [RelayCommand]
     private void NextWeek() => this.SelectedDay = this.SelectedDay.AddDays(7);

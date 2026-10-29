@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
+             x:Class="Chrono.Controls.DoneToggle"
+             x:Name="Root" x:DataType="controls:DoneToggle">
+    <!-- Отметка «сделано» (DESIGN.md §4.9): круг 24 в области нажатия 44. Пустой — кольцо TertiaryLabel, сделано — круг Tint с ✓ OnTint.
+         Кольцо и круг — два слоя, переключает UpdateLook: так в обоих состояниях цвет задан ролью, без триггеров поверх локальных значений. -->
+    <ContentView.Content>
+        <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent"
+              SemanticProperties.Description="{Binding Description, Source={x:Reference Root}}">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding Command, Source={x:Reference Root}}"
+                                      CommandParameter="{Binding CommandParameter, Source={x:Reference Root}}" />
+            </Grid.GestureRecognizers>
+            <Border x:Name="Ring" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"
+                    StrokeShape="RoundRectangle 12" Stroke="{DynamicResource TertiaryLabel}" StrokeThickness="1.5" />
+            <Border x:Name="Disc" IsVisible="False" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center"
+                    StrokeShape="RoundRectangle 12" StrokeThickness="0" BackgroundColor="{DynamicResource Tint}">
+                <Image Source="icon_check.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"
+                       design:IconTint.Color="{DynamicResource OnTint}" />
+            </Border>
+        </Grid>
+    </ContentView.Content>
+</ContentView>

@@ -1,222 +1,207 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
              x:Class="Chrono.Views.SchedulePage"
              x:DataType="vm:ScheduleViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,*" Padding="20,12,20,0" SafeAreaEdges="Container">
+    <ContentPage.Resources>
+        <!-- День недели над числом: Caption 1 Semibold, SecondaryLabel (DESIGN.md §4.9). -->
+        <Style x:Key="WeekdayName" TargetType="Label" BasedOn="{StaticResource TextCaption1Emphasized}">
+            <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+        </Style>
+    </ContentPage.Resources>
 
-        <!-- Заголовок: «20 октября» и год золотыми чернилами; справа стрелки недели (свайп по строке дней ненадёжен). -->
-        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-            <Label Style="{StaticResource ScreenTitle}" Padding="0,6,0,0">
-                <Label.FormattedText>
-                    <FormattedString>
-                        <Span Text="{Binding TitleDay}" />
-                        <Span Text="{Binding TitleYear}" TextColor="{StaticResource GoldInk}" />
-                    </FormattedString>
-                </Label.FormattedText>
-            </Label>
-            <Border Grid.Column="1" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.PrevWeek}">
-                <Image Source="icon_back.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding PrevWeekCommand}" />
-                </Border.GestureRecognizers>
-            </Border>
-            <Border Grid.Column="2" Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.NextWeek}">
-                <Image Source="icon_next.png" WidthRequest="18" HeightRequest="18" HorizontalOptions="Center" VerticalOptions="Center" />
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding NextWeekCommand}" />
-                </Border.GestureRecognizers>
-            </Border>
-        </Grid>
+    <!-- DESIGN.md §4.9. Шапка лежит поверх прокрутки: неделя и лента прокручиваются вместе, Large Title сворачивается в inline-заголовок.
+         Первым элементом содержимого — отступ высотой в шапку. -->
+    <Grid SafeAreaEdges="Container">
+        <!-- Панель: «Сегодня» слева, «+» справа (на прошедшем дне неактивна: команда не выполняется, кнопка бледная). Объявлена первой, чтобы на неё
+             можно было сослаться из отступа ниже, и поднята над прокруткой через ZIndex; прокрутку страница передаёт шапке в коде. -->
+        <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" ZIndex="1"
+                                   Title="{x:Static res:AppResources.Tab_Schedule}" Subtitle="{Binding Subtitle}">
+            <controls:LargeTitleHeader.LeadingContent>
+                <controls:GlassIconButton Text="{x:Static res:AppResources.Today}" Command="{Binding TodayCommand}" />
+            </controls:LargeTitleHeader.LeadingContent>
+            <controls:LargeTitleHeader.TrailingContent>
+                <controls:GlassIconButton Source="icon_plus.png" Description="{x:Static res:AppResources.NewAlarm}"
+                                          Command="{Binding AddCommand}">
+                    <controls:GlassIconButton.Triggers>
+                        <DataTrigger TargetType="controls:GlassIconButton" Binding="{Binding IsAddEnabled}" Value="False">
+                            <Setter Property="Opacity" Value="0.35" />
+                        </DataTrigger>
+                    </controls:GlassIconButton.Triggers>
+                </controls:GlassIconButton>
+            </controls:LargeTitleHeader.TrailingContent>
+        </controls:LargeTitleHeader>
 
-        <!-- Неделя с понедельника: семь колонок поровну; снизу 35 — отступ от точек до списка (просьба пользователя). Свайп — на каждой колонке: распознаватель на родителе перекрывался нажатием дочерних. -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*,*,*,*" Margin="0,14,0,35"
-              BindableLayout.ItemsSource="{Binding Days}">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="vm:DayCell">
-                    <VerticalStackLayout Grid.Column="{Binding Column}" Spacing="3"
-                                         SemanticProperties.Description="{Binding AccessibleText}">
-                        <VerticalStackLayout.Resources>
-                            <!-- Кружок 40: выбранный — металл, сегодня — золотое кольцо 1,5. Базовые значения — в стиле, не локально. -->
-                            <Style x:Key="DayCircle" TargetType="Border">
-                                <Setter Property="WidthRequest" Value="40" />
-                                <Setter Property="HeightRequest" Value="40" />
-                                <Setter Property="HorizontalOptions" Value="Center" />
-                                <Setter Property="StrokeShape" Value="RoundRectangle 20" />
-                                <Setter Property="StrokeThickness" Value="1.5" />
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="Stroke" Value="Transparent" />
-                                <Style.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsToday}" Value="True">
-                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </VerticalStackLayout.Resources>
-                        <VerticalStackLayout.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding SelectDayCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
-                                CommandParameter="{Binding Date}" />
-                            <SwipeGestureRecognizer Direction="Left"
-                                Command="{Binding NextWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
-                            <SwipeGestureRecognizer Direction="Right"
-                                Command="{Binding PrevWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
-                        </VerticalStackLayout.GestureRecognizers>
-                        <Label Text="{Binding Label}" Style="{StaticResource Eyebrow}" HorizontalOptions="Center">
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsWeekendInk}" Value="True">
-                                    <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
-                        <Border Style="{StaticResource DayCircle}">
-                            <Label Text="{Binding Number}" FontFamily="ManropeBold" FontSize="15"
-                                   HorizontalOptions="Center" VerticalOptions="Center">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsWeekendInk}" Value="True">
-                                        <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                        </Border>
-                        <!-- Точки: не больше пяти по числу записей дня. -->
-                        <HorizontalStackLayout HeightRequest="5" Spacing="3" HorizontalOptions="Center"
-                                               BindableLayout.ItemsSource="{Binding Dots}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:Int32">
-                                    <BoxView WidthRequest="4" HeightRequest="4" CornerRadius="2" Color="{StaticResource Hairline}" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </Grid>
+        <ScrollView x:Name="Scroll" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="0,0,0,24">
+                <Grid HeightRequest="{Binding HeaderHeight, Source={x:Reference Header}, x:DataType=controls:LargeTitleHeader, Mode=OneWay}" />
 
-        <CollectionView Grid.Row="2" ItemsSource="{Binding Entries}" SelectionMode="None" VerticalScrollBarVisibility="Never">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:DayEntryItem">
-                    <Grid ColumnDefinitions="46,42,*,44" ColumnSpacing="10" Margin="0,0,0,14">
-                        <Grid.Resources>
-                            <!-- Базовые значения — в стилях с триггерами внутри, чтобы локальное значение не перекрывало триггер. -->
-                            <Style x:Key="EntryTime" TargetType="Label" BasedOn="{StaticResource Footnote}">
-                                <Style.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
-                                        <Setter Property="TextColor" Value="{StaticResource Hairline}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                            <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowTitle}">
-                                <Setter Property="TextColor" Value="{StaticResource Text}" />
-                                <Style.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
-                                        <Setter Property="TextColor" Value="{StaticResource Hairline}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                            <Style x:Key="IconCapsule" TargetType="Border">
-                                <Setter Property="WidthRequest" Value="42" />
-                                <Setter Property="VerticalOptions" Value="Start" />
-                                <Setter Property="StrokeShape" Value="RoundRectangle 21" />
-                                <Setter Property="StrokeThickness" Value="1" />
-                                <Setter Property="Background" Value="{StaticResource Surface}" />
-                                <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-                                <Style.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsCurrent}" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                            <Style x:Key="DoneCircle" TargetType="Border">
-                                <Setter Property="WidthRequest" Value="22" />
-                                <Setter Property="HeightRequest" Value="22" />
-                                <Setter Property="HorizontalOptions" Value="Center" />
-                                <Setter Property="VerticalOptions" Value="Center" />
-                                <Setter Property="StrokeShape" Value="RoundRectangle 11" />
-                                <Setter Property="StrokeThickness" Value="1.5" />
-                                <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-                                <Setter Property="Background" Value="Transparent" />
-                                <Style.Triggers>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsDone}" Value="True">
-                                        <Setter Property="Background" Value="{StaticResource Gold}" />
-                                        <Setter Property="Stroke" Value="{StaticResource Gold}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Resources>
-                        <Grid.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
-                                CommandParameter="{Binding .}" />
-                        </Grid.GestureRecognizers>
-
-                        <Label Text="{Binding TimeText}" Style="{StaticResource EntryTime}" VerticalOptions="Start" Margin="0,13,0,0" />
-
-                        <!-- Иконка: круг 42; у текущего дела — капсула на металле, иконка в круге 30 у верхнего края. -->
-                        <Border Grid.Column="1" Style="{StaticResource IconCapsule}" HeightRequest="{Binding CapsuleHeight}">
-                            <Border WidthRequest="30" HeightRequest="30" StrokeShape="RoundRectangle 15" StrokeThickness="0"
-                                    Background="{StaticResource Surface}" VerticalOptions="Start" HorizontalOptions="Center" Margin="0,5,0,0">
-                                <Image Source="{Binding IconImage}" WidthRequest="20" HeightRequest="20"
-                                       HorizontalOptions="Center" VerticalOptions="Center" />
-                            </Border>
-                        </Border>
-
-                        <!-- Текст по центру круга иконки (42): название на одной линии со временем и отметкой; две строки раздвигают
-                             зону. Высоту даёт распорка: MinimumHeightRequest у Grid не растит строку, и центрировать было бы не в чем. -->
-                        <Grid Grid.Column="2" VerticalOptions="Start">
-                            <BoxView HeightRequest="42" Color="Transparent" InputTransparent="True" />
-                            <VerticalStackLayout VerticalOptions="Center" Spacing="1">
-                                <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" IsVisible="{Binding HasRange}" />
-                                <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" />
+                <!-- Неделя с понедельника: семь колонок поровну. Касание выбирает день; свайп — на каждой колонке:
+                     распознаватель на родителе перекрывался бы нажатием дочерних. -->
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Margin="8,8,8,0"
+                      BindableLayout.ItemsSource="{Binding Days}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DayCell">
+                            <VerticalStackLayout Grid.Column="{Binding Column}" Spacing="2"
+                                                 SemanticProperties.Description="{Binding AccessibleText}">
+                                <VerticalStackLayout.Resources>
+                                    <!-- Круг 40: выбранный день — Label, выбранное «сегодня» — Tint. Базовые значения — в стиле, не локально:
+                                         локальное значение перекрыло бы триггер. -->
+                                    <Style x:Key="DayCircle" TargetType="Border">
+                                        <Setter Property="WidthRequest" Value="40" />
+                                        <Setter Property="HeightRequest" Value="40" />
+                                        <Setter Property="HorizontalOptions" Value="Center" />
+                                        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+                                        <Setter Property="StrokeThickness" Value="0" />
+                                        <Setter Property="BackgroundColor" Value="Transparent" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource Label}" />
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelectedToday}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                    <!-- Число: Title 3; сегодня — Semibold цветом Tint. Выбранный день — число на круге. -->
+                                    <Style x:Key="DayNumber" TargetType="Label" BasedOn="{StaticResource TextTitle3}">
+                                        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+                                        <Setter Property="HorizontalOptions" Value="Center" />
+                                        <Setter Property="VerticalOptions" Value="Center" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{DynamicResource SystemBackground}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                    <Style x:Key="DayNumberToday" TargetType="Label" BasedOn="{StaticResource TextTitle3Emphasized}">
+                                        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+                                        <Setter Property="HorizontalOptions" Value="Center" />
+                                        <Setter Property="VerticalOptions" Value="Center" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </VerticalStackLayout.Resources>
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding SelectDayCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
+                                        CommandParameter="{Binding Date}" />
+                                    <SwipeGestureRecognizer Direction="Left"
+                                        Command="{Binding NextWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
+                                    <SwipeGestureRecognizer Direction="Right"
+                                        Command="{Binding PrevWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
+                                </VerticalStackLayout.GestureRecognizers>
+                                <Label Text="{Binding Label}" Style="{StaticResource WeekdayName}" />
+                                <Border Style="{StaticResource DayCircle}">
+                                    <Grid>
+                                        <Label Text="{Binding Number}" Style="{StaticResource DayNumber}" IsVisible="{Binding IsNotToday}" />
+                                        <Label Text="{Binding Number}" Style="{StaticResource DayNumberToday}" IsVisible="{Binding IsToday}" />
+                                    </Grid>
+                                </Border>
+                                <!-- Точки: не больше трёх по числу записей дня. -->
+                                <HorizontalStackLayout HeightRequest="6" Spacing="4" HorizontalOptions="Center"
+                                                       BindableLayout.ItemsSource="{Binding Dots}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="x:Int32">
+                                            <BoxView WidthRequest="6" HeightRequest="6" CornerRadius="3" Color="{DynamicResource TertiaryLabel}" />
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </HorizontalStackLayout>
                             </VerticalStackLayout>
-                        </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </Grid>
 
-                        <!-- Отметка «сделано»: кружок 22 в области нажатия 44. -->
-                        <Grid Grid.Column="3" WidthRequest="44" HeightRequest="44" VerticalOptions="Start" HorizontalOptions="End"
-                              SemanticProperties.Description="{Binding DoneDescription}">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
-                                    CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
-                            <Border Style="{StaticResource DoneCircle}" />
-                        </Grid>
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.Footer>
-                <BoxView HeightRequest="96" Color="Transparent" />
-            </CollectionView.Footer>
-        </CollectionView>
+                <!-- Лента: одна секция. Слева время, значок 18 на круге цвета категории, название и подробности, справа отметка «сделано». -->
+                <Border Style="{StaticResource Section}" Margin="16,16,16,0" IsVisible="{Binding HasEntries}">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DayEntryItem">
+                                <VerticalStackLayout>
+                                    <VerticalStackLayout.Resources>
+                                        <!-- Базовые значения — в стилях с триггерами внутри: локальное значение перекрыло бы триггер.
+                                             Текущая запись (время Tint Semibold, название bodyEmphasized) — отдельные подписи с IsVisible:
+                                             начертание стилем не переключить. -->
+                                        <Style x:Key="EntryTime" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+                                            <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+                                            <Setter Property="VerticalOptions" Value="Center" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
+                                                    <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                        <Style x:Key="EntryTimeNow" TargetType="Label" BasedOn="{StaticResource TextSubheadlineEmphasized}">
+                                            <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+                                            <Setter Property="VerticalOptions" Value="Center" />
+                                        </Style>
+                                        <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowTitle}">
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
+                                                    <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                        <Style x:Key="EntryTitleNow" TargetType="Label" BasedOn="{StaticResource TextBodyEmphasized}">
+                                            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+                                            <Setter Property="VerticalOptions" Value="Center" />
+                                        </Style>
+                                    </VerticalStackLayout.Resources>
 
-        <Label Grid.Row="2" Text="{x:Static res:AppResources.ScheduleEmpty}" Style="{StaticResource Muted}" FontSize="14"
-               IsVisible="{Binding IsEmpty}" HorizontalOptions="Center" VerticalOptions="Start" Margin="24,48" />
+                                    <BoxView Style="{StaticResource RowSeparator}" IsVisible="{Binding ShowSeparator}" />
+                                    <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,32,*,Auto" Padding="16,8,6,8">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
+                                                CommandParameter="{Binding .}" />
+                                        </Grid.GestureRecognizers>
 
-        <!-- Плавающая кнопка «+»; на прошедшем дне неактивна (CanExecute команды) и бледная. -->
-        <Border Grid.Row="2" WidthRequest="60" HeightRequest="60" StrokeShape="RoundRectangle 30"
-                Background="{StaticResource MetalBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
-                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,4,24"
-                SemanticProperties.Description="{x:Static res:AppResources.NewAlarm}">
-            <Border.Triggers>
-                <DataTrigger TargetType="Border" Binding="{Binding IsAddEnabled}" Value="False">
-                    <Setter Property="Opacity" Value="0.35" />
-                </DataTrigger>
-            </Border.Triggers>
-            <Border.Shadow>
-                <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
-            </Border.Shadow>
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding AddCommand}" />
-            </Border.GestureRecognizers>
-            <Image Source="icon_plus.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
-        </Border>
+                                        <Label Text="{Binding TimeText}" Style="{StaticResource EntryTime}" IsVisible="{Binding IsNotCurrent}" />
+                                        <Label Text="{Binding TimeText}" Style="{StaticResource EntryTimeNow}" IsVisible="{Binding IsCurrent}" />
+
+                                        <!-- Значок 18 белым на круге 32 цвета категории (цвет — роль Cat1…Cat6, следует теме). -->
+                                        <Border Grid.Column="1" WidthRequest="32" HeightRequest="32" VerticalOptions="Center"
+                                                StrokeShape="RoundRectangle 16" StrokeThickness="0"
+                                                design:CategoryColor.Index="{Binding CategoryIndex}">
+                                            <Image Source="{Binding IconImage}" WidthRequest="18" HeightRequest="18"
+                                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                                   design:IconTint.Color="{DynamicResource OnTint}" />
+                                        </Border>
+
+                                        <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
+                                            <Label Text="{Binding Title}" Style="{StaticResource EntryTitle}" IsVisible="{Binding IsNotCurrent}" />
+                                            <Label Text="{Binding Title}" Style="{StaticResource EntryTitleNow}" IsVisible="{Binding IsCurrent}"
+                                                   SemanticProperties.Description="{Binding TitleDescription}" />
+                                            <Label Text="{Binding RangeText}" Style="{StaticResource Footnote}" IsVisible="{Binding HasRange}" />
+                                            <!-- Полоса прогресса текущей записи: трек SystemFill 4, заполнение Tint растягивается от левого края. -->
+                                            <Border IsVisible="{Binding IsCurrent}" HeightRequest="{StaticResource SizeProgress}" Margin="0,6,12,0"
+                                                    StrokeThickness="0" StrokeShape="RoundRectangle 2" BackgroundColor="{DynamicResource SystemFill}">
+                                                <BoxView Color="{DynamicResource Tint}" AnchorX="0" ScaleX="{Binding Progress}" />
+                                            </Border>
+                                        </VerticalStackLayout>
+
+                                        <controls:DoneToggle Grid.Column="3" VerticalOptions="Center"
+                                            IsDone="{Binding IsDone}" Description="{Binding DoneDescription}"
+                                            Command="{Binding ToggleDoneCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
+                                            CommandParameter="{Binding .}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="{x:Static res:AppResources.ScheduleEmpty}" Style="{StaticResource TextSubheadline}"
+                       TextColor="{DynamicResource SecondaryLabel}" HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                       IsVisible="{Binding IsEmpty}" Margin="24,48" />
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </ContentPage>

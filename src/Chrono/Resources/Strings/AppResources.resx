@@ -142,6 +142,11 @@
   <data name="DialFreeAllDay" xml:space="preserve"><value>Nothing planned</value></data>
   <data name="DialAdd" xml:space="preserve"><value>Add</value></data>
   <data name="DialSectorDescription" xml:space="preserve"><value>{0}, {1}–{2}</value></data>
+  <data name="DialEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="DialMarkDone" xml:space="preserve"><value>Done</value></data>
+  <data name="DialUnmarkDone" xml:space="preserve"><value>Unmark</value></data>
+  <data name="DialClearSelection" xml:space="preserve"><value>Deselect</value></data>
+  <data name="SegmentSelected" xml:space="preserve"><value>Selected</value></data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve"><value>Once, then delete</value></data>
   <data name="RowIcon" xml:space="preserve"><value>Icon</value></data>
   <data name="RowDuration" xml:space="preserve"><value>Duration</value></data>
@@ -154,6 +159,8 @@
   <data name="DurationCustom" xml:space="preserve"><value>Custom, min</value></data>
   <data name="ScheduleEmpty" xml:space="preserve"><value>Nothing planned for this day</value></data>
   <data name="ScheduleLeft" xml:space="preserve"><value>{0} min left</value></data>
+  <data name="ScheduleUntil" xml:space="preserve"><value>until {0}</value></data>
+  <data name="ScheduleNowRunning" xml:space="preserve"><value>in progress</value></data>
   <data name="ChannelSchedule" xml:space="preserve"><value>Schedule</value></data>
   <data name="MarkDone" xml:space="preserve"><value>Mark as done</value></data>
   <data name="Icon_bell" xml:space="preserve"><value>Alarm</value></data>

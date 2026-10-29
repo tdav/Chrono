@@ -531,6 +531,21 @@
   <data name="DialSectorDescription" xml:space="preserve">
     <value>{0}, {1}–{2}</value>
   </data>
+  <data name="DialEdit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="DialMarkDone" xml:space="preserve">
+    <value>Сделано</value>
+  </data>
+  <data name="DialUnmarkDone" xml:space="preserve">
+    <value>Снять отметку</value>
+  </data>
+  <data name="DialClearSelection" xml:space="preserve">
+    <value>Снять выбор</value>
+  </data>
+  <data name="SegmentSelected" xml:space="preserve">
+    <value>Выбрано</value>
+  </data>
   <data name="Repeat_OnceThenDelete" xml:space="preserve">
     <value>Один раз и удалить</value>
   </data>
@@ -566,6 +581,12 @@
   </data>
   <data name="ScheduleLeft" xml:space="preserve">
     <value>осталось {0} мин</value>
+  </data>
+  <data name="ScheduleUntil" xml:space="preserve">
+    <value>до {0}</value>
+  </data>
+  <data name="ScheduleNowRunning" xml:space="preserve">
+    <value>идёт сейчас</value>
   </data>
   <data name="ChannelSchedule" xml:space="preserve">
     <value>Распорядок</value>

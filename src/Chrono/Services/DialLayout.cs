@@ -19,21 +19,20 @@ public static class DialLayout
     /// <summary>Длительность новой записи по умолчанию, минут.</summary>
     public const int DefaultNewMinutes = 30;
 
-    /// <summary>Кольцо секторов в долях радиуса обода: меньше — центр, больше — за ободом.</summary>
-    private const double InnerRadius = 0.52;
+    /// <summary>Внутренний край кольца секторов в долях радиуса обода (DESIGN.md §4.10): меньше — цифры и центр, касание ничего не выбирает.</summary>
+    public const double InnerRadius = 0.70;
+
+    /// <summary>Число категорий дел: цвета Cat1…Cat6 (DESIGN.md §2.2).</summary>
+    public const int Categories = 6;
 
     /// <summary>Допуск касания засечки, градусов в каждую сторону.</summary>
     private const double TickTolerance = 4;
 
-    /// <summary>12 цветов записей; цвет стрелки «сейчас» (#B5482F) в палитру не входит.</summary>
-    public static IReadOnlyList<string> Palette { get; } =
-    [
-        "#3F444C", "#2F8F89", "#D9A23B", "#4B5FA6", "#C2643A", "#4E8A55",
-        "#8A4F86", "#6FA8D6", "#E08A7A", "#9A9A3E", "#9C8FD0", "#D8C29A",
-    ];
+    /// <summary>Категория дела 0–5 из Id: сумма байтов по модулю 6 (GetHashCode между запусками нестабилен, а цвет дела не должен менять).</summary>
+    public static int ColorIndex(Guid id) => id.ToByteArray().Sum(b => b) % Categories;
 
-    /// <summary>Детерминированный индекс цвета из Id: сумма байтов по модулю 12 (GetHashCode между запусками нестабилен).</summary>
-    public static int ColorIndex(Guid id) => id.ToByteArray().Sum(b => b) % Palette.Count;
+    /// <summary>Ключ цвета категории в ресурсах приложения: 0 → «Cat1», 5 → «Cat6»; значение раскладывает ThemeService по теме.</summary>
+    public static string CategoryKey(int index) => $"Cat{index + 1}";
 
     public static DialHalf HalfOf(DateTime moment) => moment.Hour < 12 ? DialHalf.Morning : DialHalf.Evening;
 
@@ -75,7 +74,7 @@ public static class DialLayout
     }
 
     /// <summary>
-    /// Запись под касанием. radiusFraction — расстояние от центра к радиусу обода; вне кольца [0.52, 1.0] выбора нет.
+    /// Запись под касанием. radiusFraction — расстояние от центра к радиусу обода; вне кольца [InnerRadius, 1.0] выбора нет.
     /// Из нескольких попаданий берётся самое короткое (засечка короче любого сектора), при равных — последнее в порядке отрисовки.
     /// Если выбранная запись selectedId сама под касанием и попаданий не меньше двух, повторное касание
     /// переходит к следующему попаданию в порядке отрисовки (после последнего — к первому), чтобы дотянуться до перекрытых засечек.
