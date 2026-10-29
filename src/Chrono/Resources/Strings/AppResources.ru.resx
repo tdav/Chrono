@@ -867,4 +867,7 @@
   <data name="CalendarRowCollapsed" xml:space="preserve">
     <value>{0}, {1}, свёрнуто</value>
   </data>
+  <data name="RingDate" xml:space="preserve">
+    <value>Будильник · {0}</value>
+  </data>
 </root>

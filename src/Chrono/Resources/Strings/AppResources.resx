@@ -254,4 +254,5 @@
   <data name="DeleteAlarmAt" xml:space="preserve"><value>Delete alarm {0}</value></data>
   <data name="CalendarRowExpanded" xml:space="preserve"><value>{0}, {1}, expanded</value></data>
   <data name="CalendarRowCollapsed" xml:space="preserve"><value>{0}, {1}, collapsed</value></data>
+  <data name="RingDate" xml:space="preserve"><value>Alarm · {0}</value></data>
 </root>
