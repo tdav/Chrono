@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
              x:Class="Chrono.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel">
 
     <ContentPage.Resources>
+        <!-- Разделитель строки со значком: начинается там же, где название (16 поле + 30 значок + 12 просвет = 58). -->
+        <Style x:Key="IconRowSeparator" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}">
+            <Setter Property="Margin" Value="58,0,0,0" />
+        </Style>
+
         <!-- Сегменты «Оформление» (DESIGN.md §3 › Сегменты): выбранный — капсула SegmentThumb с подписью Semibold. -->
         <Style x:Key="ThemeThumb" TargetType="Border">
             <Setter Property="HeightRequest" Value="28" />
@@ -26,137 +33,212 @@
         </Style>
     </ContentPage.Resources>
 
-    <!-- Без заголовка вкладки: название уже есть в нижней панели. -->
-    <Grid Padding="20,12,20,16" SafeAreaEdges="Container">
+    <!-- Шапка лежит поверх прокрутки (DESIGN.md §3 › Шапка): первым элементом содержимого стоит отступ высотой с шапку,
+         под строкой кнопок содержимое гаснет к фону (scroll edge). Кнопок на вкладке нет. -->
+    <Grid SafeAreaEdges="Container">
 
-        <ScrollView VerticalScrollBarVisibility="Never">
+        <ScrollView x:Name="Scroll" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="0">
-                <!-- Оформление: «Система» — как в телефоне, или своя светлая / тёмная тема. Трек 32 на TertiarySystemFill;
-                     подпись невыбранного прячется, у выбранного она в капсуле; нажатие — по всему столбцу высотой 44. -->
-                <Label Text="{x:Static res:AppResources.ThemeGroup}" Style="{StaticResource SectionHeader}" />
-                <Grid ColumnDefinitions="*,*,*" HeightRequest="{StaticResource SizeHit}" Margin="0,0,0,14">
-                    <Border Grid.ColumnSpan="3" HeightRequest="{StaticResource SizeSegment}" VerticalOptions="Center"
-                            BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 16" />
+                <ContentView HeightRequest="{Binding HeaderHeight, Source={x:Reference Header}, x:DataType=controls:LargeTitleHeader}" />
 
-                    <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeText}">
-                        <Label.Triggers>
-                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeSystem}" Value="True">
-                                <Setter Property="IsVisible" Value="False" />
-                            </DataTrigger>
-                        </Label.Triggers>
-                    </Label>
-                    <Border Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeSystem}">
-                        <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeTextSelected}" />
-                    </Border>
-                    <ContentView BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeSystem}">
-                        <ContentView.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Unspecified" />
-                        </ContentView.GestureRecognizers>
-                    </ContentView>
+                <!-- Секции — inset grouped (DESIGN.md §3 › Список): 16 от краёв экрана, 24 между секциями. -->
+                <VerticalStackLayout Padding="16,8,16,24" Spacing="{StaticResource Space6}">
 
-                    <Label Grid.Column="1" Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeText}">
-                        <Label.Triggers>
-                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeLight}" Value="True">
-                                <Setter Property="IsVisible" Value="False" />
-                            </DataTrigger>
-                        </Label.Triggers>
-                    </Label>
-                    <Border Grid.Column="1" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeLight}">
-                        <Label Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeTextSelected}" />
-                    </Border>
-                    <ContentView Grid.Column="1" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeLight}">
-                        <ContentView.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Light" />
-                        </ContentView.GestureRecognizers>
-                    </ContentView>
+                    <!-- Оформление: «Система» — как в телефоне, или своя светлая / тёмная тема. Трек 32 на TertiarySystemFill;
+                         подпись невыбранного прячется, у выбранного она в капсуле; нажатие — по всему столбцу высотой 44. -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.ThemeGroup}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <Grid Style="{StaticResource Row}" Padding="16,4">
+                                <Grid ColumnDefinitions="*,*,*" HeightRequest="{StaticResource SizeHit}">
+                                    <Border Grid.ColumnSpan="3" HeightRequest="{StaticResource SizeSegment}" VerticalOptions="Center"
+                                            BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 16" />
 
-                    <Label Grid.Column="2" Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeText}">
-                        <Label.Triggers>
-                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeDark}" Value="True">
-                                <Setter Property="IsVisible" Value="False" />
-                            </DataTrigger>
-                        </Label.Triggers>
-                    </Label>
-                    <Border Grid.Column="2" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeDark}">
-                        <Label Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeTextSelected}" />
-                    </Border>
-                    <ContentView Grid.Column="2" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeDark}">
-                        <ContentView.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
-                        </ContentView.GestureRecognizers>
-                    </ContentView>
-                </Grid>
+                                    <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeText}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeSystem}" Value="True">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Border Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeSystem}">
+                                        <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeTextSelected}" />
+                                    </Border>
+                                    <ContentView BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeSystem}">
+                                        <ContentView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Unspecified" />
+                                        </ContentView.GestureRecognizers>
+                                    </ContentView>
 
-                <!-- Умное пробуждение: переключатель, описание, состояние доступа к данным часов. -->
-                <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}">
-                    <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{x:Static res:AppResources.SmartWake}" FontFamily="ManropeBold" FontSize="15" VerticalOptions="Center" />
-                            <Switch Grid.Column="1" IsToggled="{Binding SmartWakeEnabled}" IsEnabled="{Binding IsSmartWakeSupported}"
-                                    SemanticProperties.Description="{x:Static res:AppResources.SmartWake}" />
-                        </Grid>
-                        <Label Text="{x:Static res:AppResources.SmartWakeDescription}" Style="{StaticResource Muted}" FontSize="13" />
-                        <Label Text="{Binding AccessText}" TextColor="{StaticResource GoldInk}" FontSize="13" />
-                        <Button Text="{x:Static res:AppResources.GrantAccess}" Style="{StaticResource CompactAccentButton}"
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding CanGrantAccess}" Command="{Binding GrantAccessCommand}" />
-                        <Label Text="{x:Static res:AppResources.SmartWakePrivacy}" Style="{StaticResource Footnote}" />
+                                    <Label Grid.Column="1" Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeText}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeLight}" Value="True">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Border Grid.Column="1" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeLight}">
+                                        <Label Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeTextSelected}" />
+                                    </Border>
+                                    <ContentView Grid.Column="1" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeLight}">
+                                        <ContentView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                                        </ContentView.GestureRecognizers>
+                                    </ContentView>
+
+                                    <Label Grid.Column="2" Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeText}">
+                                        <Label.Triggers>
+                                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeDark}" Value="True">
+                                                <Setter Property="IsVisible" Value="False" />
+                                            </DataTrigger>
+                                        </Label.Triggers>
+                                    </Label>
+                                    <Border Grid.Column="2" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeDark}">
+                                        <Label Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeTextSelected}" />
+                                    </Border>
+                                    <ContentView Grid.Column="2" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeDark}">
+                                        <ContentView.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                                        </ContentView.GestureRecognizers>
+                                    </ContentView>
+                                </Grid>
+                            </Grid>
+                        </Border>
                     </VerticalStackLayout>
-                </Border>
 
-                <!-- Отключение сигнала: пример с двузначными числами вместо простой кнопки «Стоп». -->
-                <Label Text="{x:Static res:AppResources.DismissGroup}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}">
-                    <VerticalStackLayout Spacing="8">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
-                            <CheckBox IsChecked="{Binding MathChallengeEnabled}" Color="{StaticResource Metal700}" VerticalOptions="Center"
-                                      SemanticProperties.Description="{x:Static res:AppResources.MathChallenge}" />
-                            <Label Grid.Column="1" Text="{x:Static res:AppResources.MathChallenge}" FontFamily="ManropeBold" FontSize="15"
-                                   VerticalOptions="Center" />
-                        </Grid>
-                        <Label Text="{x:Static res:AppResources.MathChallengeDescription}" Style="{StaticResource Muted}" FontSize="13" />
+                    <!-- Умное пробуждение: тумблер и статус данных часов — символом и словами (✓ Success / ! Warning). -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <VerticalStackLayout Spacing="0">
+                                <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*,Auto">
+                                    <controls:StatusIcon Fill="{DynamicResource Indigo}" Source="icon_item_sleep.png" />
+                                    <Label Grid.Column="1" Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource RowTitle}" />
+                                    <Switch Grid.Column="2" IsToggled="{Binding SmartWakeEnabled}" IsEnabled="{Binding IsSmartWakeSupported}"
+                                            VerticalOptions="Center"
+                                            SemanticProperties.Description="{x:Static res:AppResources.SmartWake}" />
+                                </Grid>
+                                <VerticalStackLayout Spacing="0" IsVisible="{Binding HasAccessText}">
+                                    <BoxView Style="{StaticResource IconRowSeparator}" />
+                                    <!-- Кнопка «Дать доступ» — второй строкой под текстом; RowSpacing 0: без кнопки строка не должна расти. -->
+                                    <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="0">
+                                        <Grid>
+                                            <controls:StatusIcon Fill="{DynamicResource Success}" Source="icon_check.png" IsVisible="{Binding AccessGranted}" />
+                                            <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding AccessNeedsAttention}" />
+                                        </Grid>
+                                        <Label Grid.Column="1" Text="{Binding AccessText}" Style="{StaticResource RowTitle}" />
+                                        <Button Grid.Row="1" Grid.Column="1" Text="{x:Static res:AppResources.GrantAccess}"
+                                                Style="{StaticResource TintedButtonM}" HorizontalOptions="Start" Margin="0,4,0,0"
+                                                IsVisible="{Binding CanGrantAccess}" Command="{Binding GrantAccessCommand}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                        <Label Text="{x:Static res:AppResources.SmartWakeDescription}" Style="{StaticResource SectionFooter}" />
+                        <Label Text="{x:Static res:AppResources.SmartWakePrivacy}" Style="{StaticResource SectionFooter}" />
                     </VerticalStackLayout>
-                </Border>
 
-                <!-- Синхронизация с Google Календарём: вход, состояние, выход. -->
-                <Label Text="{x:Static res:AppResources.GoogleGroup}" Style="{StaticResource SectionHeader}" />
-                <Border Style="{StaticResource Card}">
-                    <VerticalStackLayout Spacing="8">
-                        <Button Text="{x:Static res:AppResources.SignInGoogle}" Style="{StaticResource CompactAccentButton}"
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding IsSignedOut}" Command="{Binding SignInGoogleCommand}" />
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" IsVisible="{Binding IsSignedIn}">
-                            <Label Text="{x:Static res:AppResources.GoogleAccount}" Style="{StaticResource RowKey}" />
-                            <Label Grid.Column="1" Text="{Binding GoogleEmail}" Style="{StaticResource RowValue}"
-                                   HorizontalOptions="End" LineBreakMode="TailTruncation" />
-                        </Grid>
-                        <Label Text="{Binding SyncStatusText}" TextColor="{StaticResource GoldInk}" FontSize="13"
-                               IsVisible="{Binding HasSyncStatus}" />
-                        <Button Text="{x:Static res:AppResources.SignInAgainButton}" Style="{StaticResource CompactAccentButton}"
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding NeedsSignInAgain}" Command="{Binding SignInGoogleCommand}" />
-                        <HorizontalStackLayout Spacing="10" IsVisible="{Binding IsSignedIn}">
-                            <Button Text="{x:Static res:AppResources.SyncNow}" Style="{StaticResource CompactAccentButton}"
-                                    Command="{Binding SyncNowCommand}" />
-                            <Button Text="{x:Static res:AppResources.SignOut}" Style="{StaticResource CompactAccentButton}"
-                                    BorderColor="{StaticResource Hairline}" TextColor="{StaticResource Text}"
-                                    Command="{Binding SignOutGoogleCommand}" />
-                        </HorizontalStackLayout>
+                    <!-- Отключение сигнала: пример с двузначными числами вместо простой кнопки «Стоп». -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.DismissGroup}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                <Label Text="{x:Static res:AppResources.MathChallenge}" Style="{StaticResource RowTitle}" />
+                                <Switch Grid.Column="1" IsToggled="{Binding MathChallengeEnabled}" VerticalOptions="Center"
+                                        SemanticProperties.Description="{x:Static res:AppResources.MathChallenge}" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{x:Static res:AppResources.MathChallengeFooter}" Style="{StaticResource SectionFooter}" />
                     </VerticalStackLayout>
-                </Border>
 
-                <!-- Переход к «Надёжности». -->
-                <Border Style="{StaticResource RowGroup}" Margin="0,14,0,0">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
-                    </Border.GestureRecognizers>
-                    <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
-                        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowTitle}" />
-                        <Image Grid.Column="1" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                    </Grid>
-                </Border>
+                    <!-- Синхронизация с Google Календарём: вход, состояние, выход. Статус синхронизации — сноской под группой. -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.GoogleGroup}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <VerticalStackLayout Spacing="0">
+                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" IsVisible="{Binding IsSignedOut}">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SignInGoogleCommand}" />
+                                    </Grid.GestureRecognizers>
+                                    <Label Text="{x:Static res:AppResources.SignInGoogle}" Style="{StaticResource RowAction}" />
+                                </Grid>
+
+                                <VerticalStackLayout Spacing="0" IsVisible="{Binding IsSignedIn}">
+                                    <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,Auto,*">
+                                        <controls:StatusIcon Fill="{DynamicResource Blue}" Source="icon_item_calendar.png" />
+                                        <Label Grid.Column="1" Text="{x:Static res:AppResources.GoogleAccount}" Style="{StaticResource RowTitle}" />
+                                        <Label Grid.Column="2" Text="{Binding GoogleEmail}" Style="{StaticResource RowValue}"
+                                               LineBreakMode="TailTruncation" />
+                                    </Grid>
+                                    <BoxView Style="{StaticResource IconRowSeparator}" />
+
+                                    <!-- Доступ отозван: вход заново сохраняет очередь (выход её очистил бы). -->
+                                    <VerticalStackLayout Spacing="0" IsVisible="{Binding NeedsSignInAgain}">
+                                        <Grid Style="{StaticResource Row}" BackgroundColor="Transparent">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding SignInGoogleCommand}" />
+                                            </Grid.GestureRecognizers>
+                                            <Label Text="{x:Static res:AppResources.SignInAgainButton}" Style="{StaticResource RowAction}" />
+                                        </Grid>
+                                        <BoxView Style="{StaticResource RowSeparator}" />
+                                    </VerticalStackLayout>
+
+                                    <Grid Style="{StaticResource Row}" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SyncNowCommand}" />
+                                        </Grid.GestureRecognizers>
+                                        <Label Text="{x:Static res:AppResources.SyncNow}" Style="{StaticResource RowAction}" />
+                                    </Grid>
+                                    <BoxView Style="{StaticResource RowSeparator}" />
+                                    <Grid Style="{StaticResource Row}" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding SignOutGoogleCommand}" />
+                                        </Grid.GestureRecognizers>
+                                        <Label Text="{x:Static res:AppResources.SignOut}" Style="{StaticResource DestructiveRowAction}" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                        <Label Text="{Binding SyncStatusText}" Style="{StaticResource SectionFooter}" IsVisible="{Binding HasSyncStatus}" />
+                    </VerticalStackLayout>
+
+                    <!-- Система: переход к «Надёжности» — значок по состоянию, красный бейдж с числом замечаний и шеврон. -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.SystemGroup}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*,Auto,Auto" BackgroundColor="Transparent"
+                                  SemanticProperties.Description="{Binding ReliabilityDescription}">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Grid>
+                                    <controls:StatusIcon Fill="{DynamicResource Success}" Source="icon_check.png" IsVisible="{Binding NoReliabilityIssues}" />
+                                    <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding HasReliabilityIssues}" />
+                                </Grid>
+                                <Label Grid.Column="1" Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowTitle}" />
+                                <!-- Бейдж: капсула высотой не меньше 24, одна цифра — круг. -->
+                                <Border Grid.Column="2" IsVisible="{Binding HasReliabilityIssues}" VerticalOptions="Center"
+                                        BackgroundColor="{DynamicResource Destructive}" StrokeThickness="0" StrokeShape="RoundRectangle 12"
+                                        MinimumWidthRequest="24" MinimumHeightRequest="24" Padding="7,2">
+                                    <Label Text="{Binding ReliabilityIssues}" Style="{StaticResource TextFootnoteEmphasized}"
+                                           TextColor="{DynamicResource OnTint}" HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <Image Grid.Column="3" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{Binding VersionText}" Style="{StaticResource SectionFooter}" />
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
+
+        <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" ScrollView="{x:Reference Scroll}"
+                                   Title="{x:Static res:AppResources.SettingsTitle}" />
     </Grid>
 </ContentPage>

@@ -228,6 +228,69 @@
   <data name="SilentHint" xml:space="preserve">
     <value>В беззвучном режиме будет только вибрация.</value>
   </data>
+  <data name="SystemGroup" xml:space="preserve">
+    <value>Система</value>
+  </data>
+  <data name="ReliabilityIssues" xml:space="preserve">
+    <value>Замечаний: {0}</value>
+  </data>
+  <data name="VersionFooter" xml:space="preserve">
+    <value>Chrono {0}</value>
+  </data>
+  <data name="MathChallengeFooter" xml:space="preserve">
+    <value>Чтобы выключить сигнал, нужно решить пример</value>
+  </data>
+  <data name="ReliabilityIntro" xml:space="preserve">
+    <value>Чтобы будильник сработал вовремя, система не должна ограничивать Chrono.</value>
+  </data>
+  <data name="ReliabilityFooter" xml:space="preserve">
+    <value>Проверка выполняется при каждом открытии экрана.</value>
+  </data>
+  <data name="RelTitle_Notifications" xml:space="preserve">
+    <value>Уведомления</value>
+  </data>
+  <data name="RelOk_Notifications" xml:space="preserve">
+    <value>Разрешены</value>
+  </data>
+  <data name="RelProblem_Notifications" xml:space="preserve">
+    <value>Выключены — сигнал может не появиться</value>
+  </data>
+  <data name="RelTitle_ExactAlarms" xml:space="preserve">
+    <value>Точные будильники</value>
+  </data>
+  <data name="RelOk_ExactAlarms" xml:space="preserve">
+    <value>Разрешение дано</value>
+  </data>
+  <data name="RelProblem_ExactAlarms" xml:space="preserve">
+    <value>Нужно разрешение — сигнал может опоздать</value>
+  </data>
+  <data name="RelTitle_FullScreen" xml:space="preserve">
+    <value>Поверх блокировки</value>
+  </data>
+  <data name="RelOk_FullScreen" xml:space="preserve">
+    <value>Разрешено</value>
+  </data>
+  <data name="RelProblem_FullScreen" xml:space="preserve">
+    <value>Не разрешено — сигнал не появится на заблокированном экране</value>
+  </data>
+  <data name="RelTitle_Battery" xml:space="preserve">
+    <value>Экономия батареи</value>
+  </data>
+  <data name="RelOk_Battery" xml:space="preserve">
+    <value>Chrono не ограничен</value>
+  </data>
+  <data name="RelProblem_Battery" xml:space="preserve">
+    <value>Chrono ограничен в фоне — сигнал может опоздать</value>
+  </data>
+  <data name="RelTitle_TimeSensitive" xml:space="preserve">
+    <value>Срочные уведомления</value>
+  </data>
+  <data name="RelOk_TimeSensitive" xml:space="preserve">
+    <value>Разрешены</value>
+  </data>
+  <data name="RelProblem_TimeSensitive" xml:space="preserve">
+    <value>Не разрешены — режим «Фокус» может заглушить сигнал</value>
+  </data>
   <data name="SettingsTitle" xml:space="preserve">
     <value>Настройки</value>
   </data>

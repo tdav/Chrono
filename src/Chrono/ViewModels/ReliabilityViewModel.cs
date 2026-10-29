@@ -6,9 +6,12 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-public sealed record ReliabilityRow(ReliabilityItem Item, string Title, bool Ok, bool IsLast)
+/// <summary>Пункт «Надёжности»: название, статус словами (<paramref name="Subtitle"/>) и признак последней строки (без разделителя).</summary>
+public sealed record ReliabilityRow(ReliabilityItem Item, string Title, string Subtitle, bool Ok, bool IsLast)
 {
     public bool NeedsFix => !this.Ok;
+
+    public bool HasSeparator => !this.IsLast;
 }
 
 public sealed partial class ReliabilityViewModel : ObservableObject
@@ -32,8 +35,9 @@ public sealed partial class ReliabilityViewModel : ObservableObject
         this.Rows.Clear();
         foreach (var (status, index) in statuses.Select((status, index) => (status, index)))
         {
-            var title = AppResources.ResourceManager.GetString($"Rel_{status.Item}", AppResources.Culture) ?? status.Item.ToString();
-            this.Rows.Add(new ReliabilityRow(status.Item, title, status.Ok, index == statuses.Count - 1));
+            var title = AppResources.ResourceManager.GetString($"RelTitle_{status.Item}", AppResources.Culture) ?? status.Item.ToString();
+            var subtitle = AppResources.ResourceManager.GetString($"{(status.Ok ? "RelOk" : "RelProblem")}_{status.Item}", AppResources.Culture) ?? "";
+            this.Rows.Add(new ReliabilityRow(status.Item, title, subtitle, status.Ok, index == statuses.Count - 1));
         }
     }
 
