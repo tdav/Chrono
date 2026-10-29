@@ -13,6 +13,19 @@ public partial class AlarmListPage : ContentPage
         this.BindingContext = viewModel;
     }
 
+    // Красный «−» режима «Изменить» открывает кнопку «Удалить» своей строки — как свайп влево.
+    private void OnMinusTapped(object? sender, TappedEventArgs e)
+    {
+        for (var parent = (sender as Element)?.Parent; parent is not null; parent = parent.Parent)
+        {
+            if (parent is SwipeView swipe)
+            {
+                swipe.Open(OpenSwipeItem.RightItems);
+                return;
+            }
+        }
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();

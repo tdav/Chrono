@@ -13,10 +13,11 @@ public sealed partial class AlarmItem : ObservableObject
 {
     private readonly AlarmListViewModel owner;
 
-    public AlarmItem(Alarm alarm, AlarmListViewModel owner)
+    public AlarmItem(Alarm alarm, AlarmListViewModel owner, bool showSeparator)
     {
         this.owner = owner;
         this.Alarm = alarm;
+        this.ShowSeparator = showSeparator;
         this.TimeText = alarm.At.ToString("HH:mm");
         var label = string.IsNullOrWhiteSpace(alarm.Label) ? AppResources.DefaultLabel : alarm.Label;
         var culture = CultureInfo.CurrentUICulture;
@@ -46,6 +47,9 @@ public sealed partial class AlarmItem : ObservableObject
 
     public string Details { get; }
 
+    /// <summary>Разделитель под строкой: у последней строки секции его нет.</summary>
+    public bool ShowSeparator { get; }
+
     // Поле, а не partial-свойство: начальное значение задаётся без вызова OnIsEnabledChanged.
     [ObservableProperty]
     private bool isEnabled;
@@ -57,8 +61,12 @@ public sealed partial class AlarmListViewModel : ObservableObject
 {
     private const string FirstRunKey = "first_run_done";
 
+    // Проблема, на которой человек нажал ✕: подсказка молчит, пока первая проблема не станет другой.
+    private const string DismissedTipKey = "reliability_tip_dismissed";
+
     private readonly AlarmService alarmService;
     private readonly IReliabilityChecks reliability;
+    private string? tipProblem;
 
     public AlarmListViewModel(AlarmService alarmService, IReliabilityChecks reliability)
     {
@@ -71,11 +79,26 @@ public sealed partial class AlarmListViewModel : ObservableObject
     [ObservableProperty]
     public partial string NextAlarmText { get; set; } = "";
 
+    /// <summary>Подсказка о надёжности видна, пока есть проблема, которую не скрыли.</summary>
     [ObservableProperty]
     public partial bool IsWarningVisible { get; set; }
 
+    /// <summary>Текст подсказки: первая проблема из «Надёжности».</summary>
     [ObservableProperty]
+    public partial string WarningText { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAlarms))]
     public partial bool IsEmpty { get; set; }
+
+    public bool HasAlarms => !this.IsEmpty;
+
+    /// <summary>Режим «Изменить»: у строк красный «−», а кнопка в шапке называется «Готово».</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EditText))]
+    public partial bool IsEditing { get; set; }
+
+    public string EditText => this.IsEditing ? AppResources.SheetDone : AppResources.ListEdit;
 
     /// <summary>Вызывается из AlarmListPage.OnAppearing.</summary>
     public async Task AppearingAsync()
@@ -100,7 +123,19 @@ public sealed partial class AlarmListViewModel : ObservableObject
         }
 
         var checks = await this.reliability.GetStatusAsync();
-        this.IsWarningVisible = this.alarmService.SchedulingError is not null || checks.Any(c => !c.Ok);
+
+        // Первая проблема: сбой планирования важнее проверок, а они идут в порядке экрана «Надёжность».
+        this.tipProblem = this.alarmService.SchedulingError is not null ? "Scheduling" : checks.FirstOrDefault(c => !c.Ok)?.Item.ToString();
+        if (this.tipProblem is null)
+        {
+            // Проблем нет: забываем «скрыто», чтобы вернувшаяся проблема снова показала подсказку.
+            Preferences.Default.Remove(DismissedTipKey);
+            this.IsWarningVisible = false;
+            return;
+        }
+
+        this.WarningText = AppResources.ResourceManager.GetString($"Tip_{this.tipProblem}", AppResources.Culture) ?? this.tipProblem;
+        this.IsWarningVisible = Preferences.Default.Get(DismissedTipKey, "") != this.tipProblem;
     }
 
     public void Load()
@@ -108,12 +143,18 @@ public sealed partial class AlarmListViewModel : ObservableObject
         // Вкладка «Будильники» — только записи со звонком; «Уведомление» живёт в «Распорядке».
         var alarms = this.alarmService.GetAll().Where(a => a.Alert == AlertKind.Ring).ToList();
         this.Alarms.Clear();
-        foreach (var alarm in alarms)
+        for (var i = 0; i < alarms.Count; i++)
         {
-            this.Alarms.Add(new AlarmItem(alarm, this));
+            this.Alarms.Add(new AlarmItem(alarms[i], this, i < alarms.Count - 1));
         }
 
         this.IsEmpty = this.Alarms.Count == 0;
+
+        // Все будильники удалены в режиме «Изменить» — править больше нечего.
+        if (this.IsEmpty)
+        {
+            this.IsEditing = false;
+        }
 
         // Ближайший момент оповещения: напоминание звонит раньше At. Сработавшие, но не истёкшие записи
         // («Один раз и удалить» с At <= now до конца звонка) не считаются: берутся только моменты позже now.
@@ -163,4 +204,15 @@ public sealed partial class AlarmListViewModel : ObservableObject
 
     [RelayCommand]
     private Task OpenReliabilityAsync() => Shell.Current.GoToAsync("reliability");
+
+    [RelayCommand]
+    private void ToggleEdit() => this.IsEditing = !this.IsEditing;
+
+    [RelayCommand]
+    private void DismissWarning()
+    {
+        // Запись очищает AppearingAsync, когда проблем не осталось.
+        Preferences.Default.Set(DismissedTipKey, this.tipProblem ?? "");
+        this.IsWarningVisible = false;
+    }
 }
