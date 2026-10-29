@@ -111,6 +111,9 @@ public partial class InlineCalendar : ContentView
         }
 
         var start = this.Panel.IsVisible ? Math.Max(this.Panel.Height, 0) : 0;
+        // Растворение («Уменьшение движения») начинается с текущей прозрачности: повторное нажатие на середине не прыгает к 0 или 1.
+        // Скрытая панель стартует с нуля.
+        var startOpacity = this.Panel.IsVisible ? this.Panel.Opacity : 0;
         this.Panel.HeightRequest = -1;
         this.Panel.IsVisible = true;
         var full = ((IView)this.Panel).Measure(this.Width, double.PositiveInfinity).Height;
@@ -119,8 +122,8 @@ public partial class InlineCalendar : ContentView
         Animation animation;
         if (reduceMotion)
         {
-            this.Panel.Opacity = expanded ? 0 : 1;
-            animation = new Animation(v => this.Panel.Opacity = v, expanded ? 0 : 1, expanded ? 1 : 0);
+            this.Panel.Opacity = startOpacity;
+            animation = new Animation(v => this.Panel.Opacity = v, startOpacity, expanded ? 1 : 0);
         }
         else
         {
