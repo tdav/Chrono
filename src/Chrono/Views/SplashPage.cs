@@ -1,69 +1,69 @@
+using Chrono.Design;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace Chrono.Views;
 
 /// <summary>
-/// Вторая ступень splash: тот же фон и колокол, что у нативного MauiSplashScreen, «оживают» ≈0,7 с,
-/// затем окно переключается на AppShell.
+/// Вторая ступень splash (DESIGN.md §4.7): фон SystemBackground, колокол Chrono на круге Tint 96 и «Chrono» крупным заголовком;
+/// колокол качается ≈0,7 с, затем окно переключается на AppShell.
 /// </summary>
 public sealed class SplashPage : ContentPage
 {
     private readonly IServiceProvider services;
     private readonly Image bell;
-    private readonly Ellipse[] waves;
     private readonly Label title;
 
     public SplashPage(IServiceProvider services)
     {
         this.services = services;
-        // Сплошной цвет как у нативного splash — переход без вспышки.
-        this.Background = new SolidColorBrush(Color.FromArgb("#F5F2EC"));
+        // Цвета и шрифты — из стилей дизайна по DynamicResource: заставка верна и в светлой, и в тёмной теме.
+        this.SetDynamicResource(NavigableElement.StyleProperty, "PlainPage");
 
-        // Круг и колокол совпадают с нативным splash (круг r=30 из 108 при BaseSize 128 ≈ 71 dp, колокол ≈34×39 dp) — переход без скачка.
-        var disc = new Ellipse
+        var disc = new Border
         {
-            WidthRequest = 71,
-            HeightRequest = 71,
-            // TryGetValue ищет и в MergedDictionaries; при отсутствии ключа — сплошной цвет токена, а не исключение.
-            Fill = Application.Current!.Resources.TryGetValue("MetalBrush", out var metal) && metal is Brush metalBrush
-                ? metalBrush
-                : new SolidColorBrush(Color.FromArgb("#2E3136")),
-            Stroke = Application.Current.Resources.TryGetValue("GoldEdgeBrush", out var edge) && edge is Brush edgeBrush
-                ? edgeBrush
-                : new SolidColorBrush(Color.FromArgb("#D1B27C")),
-            StrokeThickness = 1.5,
+            WidthRequest = 96,
+            HeightRequest = 96,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            StrokeShape = new RoundRectangle { CornerRadius = 48 },
+            StrokeThickness = 0,
         };
-        this.bell = new Image { Source = "bell.png", WidthRequest = 34, HeightRequest = 39, AnchorY = 0.08 };
-        this.waves = Enumerable.Range(0, 3).Select(_ => new Ellipse
+        disc.SetDynamicResource(BackgroundColorProperty, "Tint");
+        // Колокол ≈ 0,43 ширины круга — как на сигнале (48 из 112); ось качания у верха (AnchorY).
+        this.bell = new Image
         {
-            Stroke = new SolidColorBrush(Color.FromArgb("#D1B27C")),
-            StrokeThickness = 2,
-            WidthRequest = 160,
-            HeightRequest = 160,
-            Opacity = 0,
-        }).ToArray();
+            Source = "bell.png",
+            WidthRequest = 41,
+            HeightRequest = 47,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            AnchorY = 0.08,
+        };
+        this.bell.SetDynamicResource(IconTint.ColorProperty, "OnTint");
         this.title = new Label
         {
             Text = "Chrono",
-            FontFamily = "ManropeExtraBold",
-            FontSize = 28,
-            TextColor = Color.FromArgb("#2E3136"),
             HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 16, 0, 0),
             Opacity = 0,
-            TranslationY = 80,
         };
+        this.title.SetDynamicResource(NavigableElement.StyleProperty, "LargeTitle");
 
-        var center = new Grid { HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
-        foreach (var wave in this.waves)
+        // Круг стоит в центре экрана, как колокол нативного splash: средняя строка 96 между двумя равными; заголовок — под кругом.
+        var layout = new Grid
         {
-            center.Add(wave);
-        }
-
-        center.Add(disc);
-        center.Add(this.bell);
-        center.Add(this.title);
-        this.Content = center;
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Star },
+                new RowDefinition { Height = new GridLength(96) },
+                new RowDefinition { Height = GridLength.Star },
+            },
+        };
+        layout.Add(disc, 0, 1);
+        layout.Add(this.bell, 0, 1);
+        layout.Add(this.title, 0, 2);
+        this.Content = layout;
     }
 
     protected override async void OnAppearing()
@@ -71,27 +71,22 @@ public sealed class SplashPage : ContentPage
         base.OnAppearing();
         Chrono.Services.StartTrace.Mark("SplashPage: показана");
 
+        // «Уменьшение движения» (DESIGN.md §2.9): колокол не качается, заголовок только проявляется.
+        var reduceMotion = this.services.GetRequiredService<ThemeService>().ReduceMotion;
         var swing = async () =>
         {
+            if (reduceMotion)
+            {
+                return;
+            }
+
             await this.bell.RotateToAsync(-16, 110, Easing.SinOut);
             await this.bell.RotateToAsync(14, 200, Easing.SinInOut);
             await this.bell.RotateToAsync(-8, 170, Easing.SinInOut);
             await this.bell.RotateToAsync(0, 140, Easing.SinIn);
         };
-        var ripple = async () =>
-        {
-            for (var i = 0; i < this.waves.Length; i++)
-            {
-                var wave = this.waves[i];
-                wave.Scale = 0.5;
-                wave.Opacity = 0.7;
-                _ = wave.ScaleToAsync(1.3, 900, Easing.CubicOut);
-                _ = wave.FadeToAsync(0, 900, Easing.CubicIn);
-                await Task.Delay(120);
-            }
-        };
 
-        await Task.WhenAll(swing(), ripple(), this.title.FadeToAsync(1, 500, Easing.CubicIn));
+        await Task.WhenAll(swing(), this.title.FadeToAsync(1, 500, Easing.CubicIn));
         // Пауза нужна и для D1 (см. ниже): продолжение должно прийти отдельным сообщением главного цикла.
         await Task.Delay(100);
 
