@@ -45,21 +45,21 @@ public static class TextStyles
         new(34, 41, TextWeight.Regular, 0.012, DynamicType.LargeTitle, null, false), // LargeTitle
         new(28, 34, TextWeight.Regular, 0.014, DynamicType.Title1, null, true), // Title1
         new(22, 28, TextWeight.Regular, -0.012, DynamicType.Title2, null, true), // Title2
-        new(20, 25, TextWeight.Regular, -0.023, DynamicType.Title3, null, false), // Title3
+        new(20, 25, TextWeight.Regular, -0.023, DynamicType.Title3, null, true), // Title3
         new(17, 22, TextWeight.Semibold, -0.026, DynamicType.Headline, null, false), // Headline
         new(17, 22, TextWeight.Regular, -0.026, DynamicType.Body, null, false), // Body
         new(16, 21, TextWeight.Regular, -0.02, DynamicType.Callout, null, false), // Callout
-        new(15, 20, TextWeight.Regular, -0.016, DynamicType.Subheadline, null, false), // Subheadline
+        new(15, 20, TextWeight.Regular, -0.016, DynamicType.Subheadline, null, true), // Subheadline
         new(13, 18, TextWeight.Regular, -0.006, DynamicType.Footnote, null, false), // Footnote
         new(12, 16, TextWeight.Regular, 0.0, DynamicType.Caption1, null, false), // Caption1
         new(11, 13, TextWeight.Regular, 0.006, DynamicType.Caption2, null, false), // Caption2
         new(34, 41, TextWeight.Bold, 0.012, DynamicType.LargeTitle, null, false), // LargeTitleEmphasized
         new(28, 34, TextWeight.Bold, 0.014, DynamicType.Title1, null, false), // Title1Emphasized
         new(22, 28, TextWeight.Bold, -0.012, DynamicType.Title2, null, false), // Title2Emphasized
-        new(20, 25, TextWeight.Semibold, -0.023, DynamicType.Title3, null, false), // Title3Emphasized
+        new(20, 25, TextWeight.Semibold, -0.023, DynamicType.Title3, null, true), // Title3Emphasized
         new(17, 22, TextWeight.Semibold, -0.026, DynamicType.Body, null, false), // BodyEmphasized
         new(16, 21, TextWeight.Semibold, -0.02, DynamicType.Callout, null, false), // CalloutEmphasized
-        new(15, 20, TextWeight.Semibold, -0.016, DynamicType.Subheadline, null, false), // SubheadlineEmphasized
+        new(15, 20, TextWeight.Semibold, -0.016, DynamicType.Subheadline, null, true), // SubheadlineEmphasized
         new(13, 18, TextWeight.Semibold, -0.006, DynamicType.Footnote, null, false), // FootnoteEmphasized
         new(12, 16, TextWeight.Semibold, 0.0, DynamicType.Caption1, null, false), // Caption1Emphasized
         new(11, 13, TextWeight.Semibold, 0.006, DynamicType.Caption2, null, false), // Caption2Emphasized

@@ -143,7 +143,11 @@
                                             <Setter Property="VerticalOptions" Value="Center" />
                                         </Style>
                                         <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowTitle}">
+                                            <!-- Выполненная запись серая, как на эталоне; выключенная — ещё бледнее: её триггер последний и перекрывает. -->
                                             <Style.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsDone}" Value="True">
+                                                    <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+                                                </DataTrigger>
                                                 <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">
                                                     <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
                                                 </DataTrigger>

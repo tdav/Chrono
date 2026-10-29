@@ -39,7 +39,7 @@
         <Setter Property="design:Typography.Style" Value="Title2" />
     </Style>
 
-    <!-- title3: 20/25, Regular, трекинг -0.023 em, Dynamic Type — Title3 -->
+    <!-- title3: 20/25, Regular, трекинг -0.023 em, Dynamic Type — Title3, табличные цифры -->
     <Style x:Key="TextTitle3" TargetType="Label">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />
@@ -79,7 +79,7 @@
         <Setter Property="design:Typography.Style" Value="Callout" />
     </Style>
 
-    <!-- subheadline: 15/20, Regular, трекинг -0.016 em, Dynamic Type — Subheadline -->
+    <!-- subheadline: 15/20, Regular, трекинг -0.016 em, Dynamic Type — Subheadline, табличные цифры -->
     <Style x:Key="TextSubheadline" TargetType="Label">
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />
@@ -149,7 +149,7 @@
         <Setter Property="design:Typography.Style" Value="Title2Emphasized" />
     </Style>
 
-    <!-- title3Emphasized: 20/25, Semibold, трекинг -0.023 em, Dynamic Type — Title3 -->
+    <!-- title3Emphasized: 20/25, Semibold, трекинг -0.023 em, Dynamic Type — Title3, табличные цифры -->
     <Style x:Key="TextTitle3Emphasized" TargetType="Label">
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterSemiBold}" />
@@ -179,7 +179,7 @@
         <Setter Property="design:Typography.Style" Value="CalloutEmphasized" />
     </Style>
 
-    <!-- subheadlineEmphasized: 15/20, Semibold, трекинг -0.016 em, Dynamic Type — Subheadline -->
+    <!-- subheadlineEmphasized: 15/20, Semibold, трекинг -0.016 em, Dynamic Type — Subheadline, табличные цифры -->
     <Style x:Key="TextSubheadlineEmphasized" TargetType="Label">
         <Setter Property="FontSize" Value="15" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterSemiBold}" />
