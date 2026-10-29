@@ -83,13 +83,18 @@ public partial class WheelPicker : ContentView
     // игнорируется — поэтому прыжок отложен; цель берётся в момент прыжка.
     private void RequestJump()
     {
-        this.jumpRequests++;
+        var request = ++this.jumpRequests;
         this.jumping = true;
         this.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(60), () =>
         {
             if (this.items.Count > 0)
             {
                 this.Jump(MiddleCopy * this.Count + Math.Clamp(this.Value, 0, this.Count - 1));
+            }
+            else
+            {
+                // Прыгать некуда: флаг не должен застрять, если новый запрос за это время не появился.
+                this.jumping = request != this.jumpRequests;
             }
         });
     }

@@ -58,6 +58,8 @@ public sealed class DialDrawable : IDrawable
         var cy = dirtyRect.Height / 2;
         var r = RadiusFor(dirtyRect.Width, dirtyRect.Height);
         var face = Face;
+        var secondary = Secondary;
+        var scale = Scale;
 
         canvas.FillColor = face;
         canvas.FillCircle(cx, cy, r);
@@ -67,7 +69,7 @@ public sealed class DialDrawable : IDrawable
         for (var i = 0; i < 60; i++)
         {
             var major = i % 5 == 0;
-            canvas.StrokeColor = major ? Secondary : Scale;
+            canvas.StrokeColor = major ? secondary : scale;
             canvas.StrokeSize = major ? 1.5f : 1;
             canvas.DrawLine(At(cx, cy, r * (major ? MajorTickInner : MinorTickInner), i * 6), At(cx, cy, r * TickOuter, i * 6));
         }
@@ -164,7 +166,7 @@ public sealed class DialDrawable : IDrawable
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontSize = 13;
-        canvas.FontColor = Secondary;
+        canvas.FontColor = secondary;
         for (var hour = 1; hour <= 12; hour++)
         {
             var p = At(cx, cy, r * NumeralsAt, hour * 30);

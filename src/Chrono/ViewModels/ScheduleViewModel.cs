@@ -157,7 +157,7 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
             })
             .ToList();
 
-        // Обновляем на месте: Clear + Add сбрасывает прокрутку CollectionView к началу, а «осталось N мин» меняется каждую минуту.
+        // Обновляем на месте: Clear + Add пересоздаёт все элементы BindableLayout и сбрасывает прокрутку, а «осталось N мин» меняется каждую минуту.
         // Совпадающие позиции не трогаем, различающиеся заменяем, лишние удаляем, недостающие добавляем.
         for (var i = 0; i < days.Count; i++)
         {

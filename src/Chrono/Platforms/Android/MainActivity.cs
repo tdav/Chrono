@@ -51,7 +51,7 @@ public class MainActivity : MauiAppCompatActivity
         insets.AppearanceLightNavigationBars = !dark;
 
         // Панель навигации прозрачная и при трёх кнопках: без этого Android рисует под ними полупрозрачную подложку.
-        // Статус-бар прозрачен всегда: targetSdk 37, edge-to-edge принудителен.
+        // Статус-бар прозрачен всегда: targetSdk 37, на Android 15+ edge-to-edge принудителен.
         if (OperatingSystem.IsAndroidVersionAtLeast(29))
         {
             this.Window!.NavigationBarContrastEnforced = false;
