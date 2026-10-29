@@ -135,6 +135,36 @@
   <data name="WarningBanner" xml:space="preserve">
     <value>Будильник может не сработать — исправить</value>
   </data>
+  <data name="ListEdit" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
+  <data name="TipLateTitle" xml:space="preserve">
+    <value>Будильник может опоздать</value>
+  </data>
+  <data name="TipLateAction" xml:space="preserve">
+    <value>Проверить надёжность</value>
+  </data>
+  <data name="TipDismiss" xml:space="preserve">
+    <value>Скрыть</value>
+  </data>
+  <data name="Tip_Scheduling" xml:space="preserve">
+    <value>Система не приняла расписание будильников.</value>
+  </data>
+  <data name="Tip_Notifications" xml:space="preserve">
+    <value>Уведомления отключены, и Chrono не сможет вас оповестить.</value>
+  </data>
+  <data name="Tip_ExactAlarms" xml:space="preserve">
+    <value>Точные будильники не разрешены — Chrono может опоздать.</value>
+  </data>
+  <data name="Tip_FullScreen" xml:space="preserve">
+    <value>Полноэкранные уведомления отключены — сигнал может не появиться поверх блокировки.</value>
+  </data>
+  <data name="Tip_Battery" xml:space="preserve">
+    <value>Экономия батареи ограничивает Chrono в фоне.</value>
+  </data>
+  <data name="Tip_TimeSensitive" xml:space="preserve">
+    <value>Срочные уведомления отключены — режим «Фокус» может заглушить сигнал.</value>
+  </data>
   <data name="NewAlarm" xml:space="preserve">
     <value>Новый будильник</value>
   </data>

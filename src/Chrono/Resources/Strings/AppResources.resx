@@ -10,6 +10,16 @@
   <data name="NoActiveAlarms" xml:space="preserve"><value>No active alarms</value></data>
   <data name="EmptyList" xml:space="preserve"><value>No alarms yet. Tap + to add one.</value></data>
   <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
+  <data name="ListEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="TipLateTitle" xml:space="preserve"><value>Alarm may be late</value></data>
+  <data name="TipLateAction" xml:space="preserve"><value>Check reliability</value></data>
+  <data name="TipDismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="Tip_Scheduling" xml:space="preserve"><value>The system did not accept the alarm schedule.</value></data>
+  <data name="Tip_Notifications" xml:space="preserve"><value>Notifications are off, so Chrono cannot alert you.</value></data>
+  <data name="Tip_ExactAlarms" xml:space="preserve"><value>Exact alarms are not allowed, so Chrono may ring late.</value></data>
+  <data name="Tip_FullScreen" xml:space="preserve"><value>Full-screen alerts are off, so the alarm may not appear over the lock screen.</value></data>
+  <data name="Tip_Battery" xml:space="preserve"><value>Battery saver limits Chrono in the background.</value></data>
+  <data name="Tip_TimeSensitive" xml:space="preserve"><value>Time Sensitive notifications are off, so Focus may silence the alarm.</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
   <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
   <data name="Sound" xml:space="preserve"><value>Sound</value></data>

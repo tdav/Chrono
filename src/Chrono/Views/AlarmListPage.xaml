@@ -1,78 +1,147 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
              x:Class="Chrono.Views.AlarmListPage"
              x:DataType="vm:AlarmListViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="20,12,20,0" SafeAreaEdges="Container">
+    <!-- DESIGN.md §4.3. Шапка LargeTitleHeader лежит поверх прокрутки; первым элементом прокручиваемого содержимого стоит отступ высотой шапки.
+         Список — одна секция (Section) строк в ScrollView: так он остаётся одной карточкой с общим скруглением. Будильников немного, виртуализация не нужна. -->
+    <Grid SafeAreaEdges="Container">
 
-        <Label Text="{x:Static res:AppResources.AppName}" FontFamily="ManropeExtraBold" FontSize="28" VerticalOptions="Center" />
+        <ScrollView x:Name="Scroller" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout>
+                <ContentView HeightRequest="{Binding HeaderHeight, Source={x:Reference Header}, x:DataType=controls:LargeTitleHeader}" />
 
-        <Label Grid.Row="1" Text="{Binding NextAlarmText}" TextColor="{StaticResource TextMuted}" FontSize="13" Margin="0,2,0,12" />
+                <VerticalStackLayout Padding="16,16,16,24" Spacing="{StaticResource Space6}">
 
-        <Border Grid.Row="2" IsVisible="{Binding IsWarningVisible}" Background="{StaticResource Surface}" Stroke="{StaticResource Gold}"
-                StrokeShape="RoundRectangle 16" Padding="14,10" Margin="0,0,0,12">
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
-            </Border.GestureRecognizers>
-            <Label Text="{x:Static res:AppResources.WarningBanner}" TextColor="{StaticResource GoldInk}" FontFamily="ManropeSemiBold" />
-        </Border>
+                    <!-- Подсказка о надёжности (DESIGN.md §3 › Подсказка): символ warning, заголовок, первая проблема, действие; ✕ скрывает до следующей проблемы. -->
+                    <Border Style="{StaticResource Tip}" IsVisible="{Binding IsWarningVisible}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Image Source="icon_warning.png" WidthRequest="28" HeightRequest="28" VerticalOptions="Start"
+                                   design:IconTint.Color="{DynamicResource Warning}" />
 
-        <CollectionView Grid.Row="3" ItemsSource="{Binding Alarms}" SelectionMode="None" VerticalScrollBarVisibility="Never">
-            <CollectionView.EmptyView>
-                <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource Muted}" FontSize="14"
-                       HorizontalTextAlignment="Center" Margin="24,48" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="vm:AlarmItem">
-                    <SwipeView Margin="0,0,0,10">
-                        <SwipeView.RightItems>
-                            <SwipeItems Mode="Execute">
-                                <SwipeItem Text="{x:Static res:AppResources.Delete}" BackgroundColor="{StaticResource Metal700}"
-                                           Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
-                                           CommandParameter="{Binding .}" />
-                            </SwipeItems>
-                        </SwipeView.RightItems>
-                        <Border Style="{StaticResource Card}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
-                                    CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="*,Auto">
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="38">
-                                        <Label.Triggers>
-                                            <DataTrigger TargetType="Label" Binding="{Binding IsEnabled}" Value="False">
-                                                <Setter Property="TextColor" Value="{StaticResource Hairline}" />
-                                            </DataTrigger>
-                                        </Label.Triggers>
-                                    </Label>
-                                    <Label Text="{Binding Details}" Style="{StaticResource Muted}" FontSize="12.5" />
-                                </VerticalStackLayout>
-                                <Switch Grid.Column="1" IsToggled="{Binding IsEnabled}" VerticalOptions="Center" />
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="{x:Static res:AppResources.TipLateTitle}" Style="{StaticResource TextHeadline}" TextColor="{DynamicResource Label}" />
+                                <Label Text="{Binding WarningText}" Style="{StaticResource RowSubtitle}" />
+                                <Label Text="{x:Static res:AppResources.TipLateAction}" Style="{StaticResource TextSubheadlineEmphasized}"
+                                       TextColor="{DynamicResource Tint}" HorizontalOptions="Start" VerticalTextAlignment="Center"
+                                       MinimumHeightRequest="{StaticResource SizeHit}">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </VerticalStackLayout>
+
+                            <!-- Область нажатия 44 × 44 уходит в поля карточки: символ стоит у её угла, а не в середине отступа. -->
+                            <Grid Grid.Column="2" WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}"
+                                  Margin="0,-12,-16,0" VerticalOptions="Start"
+                                  SemanticProperties.Description="{x:Static res:AppResources.TipDismiss}">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding DismissWarningCommand}" />
+                                </Grid.GestureRecognizers>
+                                <Image Source="icon_close.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
                             </Grid>
-                        </Border>
-                    </SwipeView>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-            <CollectionView.Footer>
-                <BoxView HeightRequest="96" Color="Transparent" />
-            </CollectionView.Footer>
-        </CollectionView>
+                        </Grid>
+                    </Border>
 
-        <!-- Плавающая кнопка «+». -->
-        <Border Grid.Row="3" WidthRequest="60" HeightRequest="60" StrokeShape="RoundRectangle 30"
-                Background="{StaticResource MetalBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
-                HorizontalOptions="End" VerticalOptions="End" Margin="0,0,4,24"
-                SemanticProperties.Description="{x:Static res:AppResources.NewAlarm}">
-            <Border.Shadow>
-                <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
-            </Border.Shadow>
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding AddCommand}" />
-            </Border.GestureRecognizers>
-            <Image Source="icon_plus.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center" VerticalOptions="Center" />
-        </Border>
+                    <!-- Одна секция строк. Свайп влево открывает «Удалить»; в режиме «Изменить» слева красный «−» делает то же. -->
+                    <Border Style="{StaticResource Section}" IsVisible="{Binding HasAlarms}">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Alarms}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:AlarmItem">
+                                    <VerticalStackLayout>
+                                        <SwipeView>
+                                            <SwipeView.RightItems>
+                                                <SwipeItems Mode="Reveal">
+                                                    <!-- SwipeItemView, а не SwipeItem: корзину перекрашивает IconTint, у SwipeItem.IconImageSource такой возможности нет. -->
+                                                    <SwipeItemView Command="{Binding DeleteCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
+                                                                   CommandParameter="{Binding .}">
+                                                        <Grid WidthRequest="88" BackgroundColor="{DynamicResource Destructive}">
+                                                            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
+                                                                <Image Source="icon_trash.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center"
+                                                                       design:IconTint.Color="{DynamicResource OnTint}" />
+                                                                <Label Text="{x:Static res:AppResources.Delete}" Style="{StaticResource TextFootnoteEmphasized}"
+                                                                       TextColor="{DynamicResource OnTint}" HorizontalTextAlignment="Center" />
+                                                            </VerticalStackLayout>
+                                                        </Grid>
+                                                    </SwipeItemView>
+                                                </SwipeItems>
+                                            </SwipeView.RightItems>
+
+                                            <!-- Фон строки непрозрачный: под ним при свайпе лежит красная кнопка. -->
+                                            <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="0"
+                                                  BackgroundColor="{DynamicResource SecondarySystemGroupedBackground}">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding EditCommand, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
+                                                        CommandParameter="{Binding .}" />
+                                                </Grid.GestureRecognizers>
+
+                                                <!-- Красный круг «−» режима «Изменить»; область нажатия 44 × 44 заходит в поле строки. -->
+                                                <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}" Margin="-10,0,2,0" VerticalOptions="Center"
+                                                      IsVisible="{Binding IsEditing, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
+                                                      SemanticProperties.Description="{x:Static res:AppResources.Delete}">
+                                                    <Grid.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnMinusTapped" />
+                                                    </Grid.GestureRecognizers>
+                                                    <Border WidthRequest="24" HeightRequest="24" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                                                            BackgroundColor="{DynamicResource Destructive}" HorizontalOptions="Center" VerticalOptions="Center">
+                                                        <Image Source="icon_minus.png" WidthRequest="14" HeightRequest="14" HorizontalOptions="Center" VerticalOptions="Center"
+                                                               design:IconTint.Color="{DynamicResource OnTint}" />
+                                                    </Border>
+                                                </Grid>
+
+                                                <!-- Выключенный будильник: время и подпись — SecondaryLabel; у включённого подпись — Label. -->
+                                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                    <Label Text="{Binding TimeText}" Style="{StaticResource TimeRow}">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsEnabled}" Value="False">
+                                                                <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                    <Label Text="{Binding Details}" Style="{StaticResource RowSubtitle}">
+                                                        <Label.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsEnabled}" Value="True">
+                                                                <Setter Property="TextColor" Value="{DynamicResource Label}" />
+                                                            </DataTrigger>
+                                                        </Label.Triggers>
+                                                    </Label>
+                                                </VerticalStackLayout>
+
+                                                <Switch Grid.Column="2" IsToggled="{Binding IsEnabled}" VerticalOptions="Center"
+                                                        SemanticProperties.Description="{Binding TimeText}" />
+                                            </Grid>
+                                        </SwipeView>
+
+                                        <BoxView Style="{StaticResource RowSeparator}" IsVisible="{Binding ShowSeparator}" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Пусто: по центру экрана. -->
+        <Label Text="{x:Static res:AppResources.EmptyList}" Style="{StaticResource TextCallout}" TextColor="{DynamicResource SecondaryLabel}"
+               HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" Margin="32,0" InputTransparent="True"
+               IsVisible="{Binding IsEmpty}" />
+
+        <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" Title="{x:Static res:AppResources.Tab_Alarms}"
+                                   Subtitle="{Binding NextAlarmText}" ScrollView="{x:Reference Scroller}">
+            <controls:LargeTitleHeader.LeadingContent>
+                <controls:GlassIconButton Text="{Binding EditText}" Description="{Binding EditText}" IsVisible="{Binding HasAlarms}"
+                                          Command="{Binding ToggleEditCommand}" />
+            </controls:LargeTitleHeader.LeadingContent>
+            <controls:LargeTitleHeader.TrailingContent>
+                <controls:GlassIconButton Source="icon_plus.png" Description="{x:Static res:AppResources.NewAlarm}"
+                                          Command="{Binding AddCommand}" />
+            </controls:LargeTitleHeader.TrailingContent>
+        </controls:LargeTitleHeader>
     </Grid>
 </ContentPage>
