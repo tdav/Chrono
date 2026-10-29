@@ -111,6 +111,15 @@ public sealed class ThemeService
             GradientStops = { new GradientStop(panel.WithAlpha(0f), 0f), new GradientStop(panel, 1f) },
         };
 
+        // Scroll edge шапки (LargeTitleHeader): содержимое под строкой кнопок гаснет к фону экрана, 24 pt.
+        var screen = colors["SystemGroupedBackground"];
+        resources["ScrollEdgeBrush"] = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 0),
+            EndPoint = new Point(0, 1),
+            GradientStops = { new GradientStop(screen, 0f), new GradientStop(screen.WithAlpha(0f), 1f) },
+        };
+
         this.Changed?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -50,6 +50,16 @@ public class MainActivity : MauiAppCompatActivity
         insets.AppearanceLightStatusBars = !dark;
         insets.AppearanceLightNavigationBars = !dark;
 
+        // Панель навигации прозрачная и при трёх кнопках: без этого Android рисует под ними полупрозрачную подложку.
+        // Статус-бар прозрачен всегда: targetSdk 37, edge-to-edge принудителен.
+        if (OperatingSystem.IsAndroidVersionAtLeast(29))
+        {
+            this.Window!.NavigationBarContrastEnforced = false;
+        }
+
+        // Модальные страницы (маршрут edit) — отдельные окна: значки их панелей ставятся по теме так же.
+        this.SupportFragmentManager!.RegisterFragmentLifecycleCallbacks(new ModalSystemBars(), false);
+
         // Показываемся поверх блокировки.
         if (startedByAlarm)
         {
@@ -73,6 +83,7 @@ public class MainActivity : MauiAppCompatActivity
         var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(this.Window!, this.Window!.DecorView)!;
         insets.AppearanceLightStatusBars = !dark;
         insets.AppearanceLightNavigationBars = !dark;
+        ModalSystemBars.Refresh(this.SupportFragmentManager!, newConfig);
     }
 
     protected override void OnResume()
