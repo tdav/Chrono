@@ -6,6 +6,7 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>Chrono</RootNamespace>
 		<UseMaui>true</UseMaui>
+		<Features>$(Features);runtime-async=on</Features>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -22,6 +23,10 @@
 		<AndroidStoreUncompressedFileExtensions>.wav</AndroidStoreUncompressedFileExtensions>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<UseRuntimeAsync>false</UseRuntimeAsync>
+	</PropertyGroup>
+	
 	<PropertyGroup Condition="'$(ChronoStartTrace)' == 'true'">
 		<!-- Метки времени холодного старта в logcat (см. StartTrace): включаются только по -p:ChronoStartTrace=true. -->
 		<DefineConstants>$(DefineConstants);CHRONO_STARTTRACE</DefineConstants>
