@@ -1,3 +1,4 @@
+using Chrono.Design;
 using Chrono.Services;
 
 namespace Chrono.Views;
@@ -8,11 +9,14 @@ namespace Chrono.Views;
 /// </summary>
 public sealed class DialDrawable : IDrawable
 {
-    private static readonly Color Rim = Color.FromArgb("#B8B0A6");
-    private static readonly Color Hole = Color.FromArgb("#F5F2EC");
-    private static readonly Color HoleEdge = Color.FromArgb("#E4DED3");
-    private static readonly Color Ink = Color.FromArgb("#2E3136");
-    private static readonly Color Arrow = Color.FromArgb("#B5482F");
+    // Цвета текущего вида (ThemeService): читаются при каждой отрисовке, поэтому тёмная тема видна после Invalidate.
+    // Полный перенос циферблата на DESIGN.md §4.10 — задача плана «Графика».
+    private static Color Face => NativeControls.Resource("SecondarySystemGroupedBackground");
+    private static Color Rim => NativeControls.Resource("Hairline");
+    private static Color Hole => NativeControls.Resource("SystemGroupedBackground");
+    private static Color HoleEdge => NativeControls.Resource("Divider");
+    private static Color Ink => NativeControls.Resource("Text");
+    private static Color Arrow => NativeControls.Resource("Red");
 
     public IReadOnlyList<DialSlice> Slices { get; set; } = [];
 
@@ -46,7 +50,7 @@ public sealed class DialDrawable : IDrawable
         var cy = dirtyRect.Height / 2;
         var r = RadiusFor(dirtyRect.Width, dirtyRect.Height);
 
-        canvas.FillColor = Colors.White;
+        canvas.FillColor = Face;
         canvas.FillCircle(cx, cy, r);
 
         // Выбранный срез рисуется последним, чтобы его обводку не перекрывали соседи.

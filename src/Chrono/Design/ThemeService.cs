@@ -4,13 +4,15 @@ namespace Chrono.Design;
 /// Внешний вид приложения = внешний вид системы (DESIGN.md §2.2): светлая или тёмная тема и повышенный контраст.
 /// Сервис раскладывает цвета текущего вида в ресурсы приложения — в XAML они берутся через DynamicResource —
 /// и перекладывает их при смене темы и контраста, а также при возврате в приложение (Refresh из Window.Resumed):
-/// не все платформы сообщают об изменениях сами. Своего переключателя темы в приложении нет.
+/// не все платформы сообщают об изменениях сами. Светлую или тёмную тему можно задать в настройках (ThemeSettings →
+/// UserAppTheme): RequestedTheme учитывает этот выбор.
 /// </summary>
 public sealed class ThemeService
 {
     private Application? app;
     private IDisposable? accessibility;
     private bool applied;
+    private Color? accent;
 
     /// <summary>Текущий вид.</summary>
     public Appearance Current { get; private set; }
@@ -47,7 +49,10 @@ public sealed class ThemeService
         var appearance = Appearances.From(this.app.RequestedTheme == AppTheme.Dark, SystemAccessibility.IsHighContrast());
         var reduceMotion = SystemAccessibility.IsReduceMotion();
         var reduceTransparency = SystemAccessibility.IsReduceTransparency();
-        if (this.applied && appearance == this.Current && reduceMotion == this.ReduceMotion && reduceTransparency == this.ReduceTransparency)
+        // Акцент сравнивается тоже: сменив обои, телефон меняет цвета Material You, и при возврате их надо перечитать.
+        var accent = SystemAccessibility.Accent(appearance);
+        if (this.applied && appearance == this.Current && reduceMotion == this.ReduceMotion && reduceTransparency == this.ReduceTransparency
+            && Equals(accent, this.accent))
         {
             return;
         }
@@ -56,11 +61,19 @@ public sealed class ThemeService
         this.Current = appearance;
         this.ReduceMotion = reduceMotion;
         this.ReduceTransparency = reduceTransparency;
+        this.accent = accent;
 
         var colors = new Dictionary<string, Color>(ChronoColors.All.Count);
         foreach (var token in ChronoColors.All)
         {
             colors[token.Key] = Color.FromArgb(token.For(appearance));
+        }
+
+        // Системный акцент (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %, как в DESIGN.json.
+        if (accent is not null)
+        {
+            colors["Tint"] = accent;
+            colors["TintFill"] = accent.WithAlpha(0.16f);
         }
 
         if (reduceTransparency)

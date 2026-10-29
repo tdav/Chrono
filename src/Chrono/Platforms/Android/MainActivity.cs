@@ -1,6 +1,7 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
+using Android.Content.Res;
 using Android.OS;
 using Android.Views;
 using Chrono.Platform;
@@ -42,10 +43,12 @@ public class MainActivity : MauiAppCompatActivity
         base.OnCreate(savedInstanceState);
         StartTrace.Mark("MainActivity.OnCreate: после base");
 
-        // Светлая тема «Кость»: тёмные значки статус-бара и панели навигации (иначе белые значки пропадают на светлом фоне).
+        // Значки статус-бара и панели навигации: тёмные в светлой теме, светлые в тёмной (DESIGN.md §2.10).
+        // Тема — из настроек или системы; AppCompat отражает её в Configuration.UiMode.
+        var dark = (this.Resources!.Configuration!.UiMode & UiMode.NightMask) == UiMode.NightYes;
         var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(this.Window!, this.Window!.DecorView)!;
-        insets.AppearanceLightStatusBars = true;
-        insets.AppearanceLightNavigationBars = true;
+        insets.AppearanceLightStatusBars = !dark;
+        insets.AppearanceLightNavigationBars = !dark;
 
         // Показываемся поверх блокировки.
         if (startedByAlarm)
@@ -60,6 +63,16 @@ public class MainActivity : MauiAppCompatActivity
                 this.Window!.AddFlags(WindowManagerFlags.ShowWhenLocked | WindowManagerFlags.TurnScreenOn);
             }
         }
+    }
+
+    // Смена темы в настройках или в системе: активити не пересоздаётся (ConfigChanges.UiMode), значки панелей перекрашиваются здесь.
+    public override void OnConfigurationChanged(Configuration newConfig)
+    {
+        base.OnConfigurationChanged(newConfig);
+        var dark = (newConfig.UiMode & UiMode.NightMask) == UiMode.NightYes;
+        var insets = AndroidX.Core.View.WindowCompat.GetInsetsController(this.Window!, this.Window!.DecorView)!;
+        insets.AppearanceLightStatusBars = !dark;
+        insets.AppearanceLightNavigationBars = !dark;
     }
 
     protected override void OnResume()

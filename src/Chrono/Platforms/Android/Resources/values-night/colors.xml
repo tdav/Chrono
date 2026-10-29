@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Тёмная тема: tint и фон экранов (DESIGN.md §2.10). -->
-    <color name="colorPrimary">#0091FF</color>
+    <color name="colorPrimary">#FF9230</color>
     <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#0091FF</color>
+    <color name="colorAccent">#FF9230</color>
 </resources>

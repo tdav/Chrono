@@ -41,6 +41,19 @@ public static partial class SystemAccessibility
         });
     }
 
+    // Тона Material You под пары с OnTint из DESIGN.json: светлая — тон 40 (system_accent1_600, белый текст), тёмная — тон 60 (_400),
+    // «контраст» светлая — тон 30 (_700), «контраст» тёмная — тон 80 (_200, текст на нём чёрный).
+    public static partial Color? Accent(Appearance appearance) =>
+        OperatingSystem.IsAndroidVersionAtLeast(31)
+            ? Color.FromInt(global::Android.App.Application.Context.GetColor(appearance switch
+            {
+                Appearance.Dark => global::Android.Resource.Color.SystemAccent1400,
+                Appearance.LightHighContrast => global::Android.Resource.Color.SystemAccent1700,
+                Appearance.DarkHighContrast => global::Android.Resource.Color.SystemAccent1200,
+                _ => global::Android.Resource.Color.SystemAccent1600,
+            }))
+            : null;
+
     private sealed class ContrastListener(Action changed) : Java.Lang.Object, UiModeManager.IContrastChangeListener
     {
         public void OnContrastChanged(float contrast) => changed();

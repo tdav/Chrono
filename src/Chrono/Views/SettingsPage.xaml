@@ -4,11 +4,89 @@
              x:Class="Chrono.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel">
 
+    <ContentPage.Resources>
+        <!-- Сегменты «Оформление» (DESIGN.md §3 › Сегменты): выбранный — капсула SegmentThumb с подписью Semibold. -->
+        <Style x:Key="ThemeThumb" TargetType="Border">
+            <Setter Property="HeightRequest" Value="28" />
+            <Setter Property="Margin" Value="2,0" />
+            <Setter Property="VerticalOptions" Value="Center" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource SegmentThumb}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        </Style>
+        <Style x:Key="ThemeText" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+        <Style x:Key="ThemeTextSelected" TargetType="Label" BasedOn="{StaticResource TextSubheadlineEmphasized}">
+            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentPage.Resources>
+
     <!-- Без заголовка вкладки: название уже есть в нижней панели. -->
     <Grid Padding="20,12,20,16" SafeAreaEdges="Container">
 
         <ScrollView VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Spacing="0">
+                <!-- Оформление: «Система» — как в телефоне, или своя светлая / тёмная тема. Трек 32 на TertiarySystemFill;
+                     подпись невыбранного прячется, у выбранного она в капсуле; нажатие — по всему столбцу высотой 44. -->
+                <Label Text="{x:Static res:AppResources.ThemeGroup}" Style="{StaticResource SectionHeader}" />
+                <Grid ColumnDefinitions="*,*,*" HeightRequest="{StaticResource SizeHit}" Margin="0,0,0,14">
+                    <Border Grid.ColumnSpan="3" HeightRequest="{StaticResource SizeSegment}" VerticalOptions="Center"
+                            BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 16" />
+
+                    <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeSystem}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <Border Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeSystem}">
+                        <Label Text="{x:Static res:AppResources.ThemeSystem}" Style="{StaticResource ThemeTextSelected}" />
+                    </Border>
+                    <ContentView BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeSystem}">
+                        <ContentView.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Unspecified" />
+                        </ContentView.GestureRecognizers>
+                    </ContentView>
+
+                    <Label Grid.Column="1" Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeLight}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <Border Grid.Column="1" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeLight}">
+                        <Label Text="{x:Static res:AppResources.ThemeLight}" Style="{StaticResource ThemeTextSelected}" />
+                    </Border>
+                    <ContentView Grid.Column="1" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeLight}">
+                        <ContentView.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                        </ContentView.GestureRecognizers>
+                    </ContentView>
+
+                    <Label Grid.Column="2" Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsThemeDark}" Value="True">
+                                <Setter Property="IsVisible" Value="False" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                    <Border Grid.Column="2" Style="{StaticResource ThemeThumb}" IsVisible="{Binding IsThemeDark}">
+                        <Label Text="{x:Static res:AppResources.ThemeDark}" Style="{StaticResource ThemeTextSelected}" />
+                    </Border>
+                    <ContentView Grid.Column="2" BackgroundColor="Transparent" SemanticProperties.Description="{x:Static res:AppResources.ThemeDark}">
+                        <ContentView.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                        </ContentView.GestureRecognizers>
+                    </ContentView>
+                </Grid>
+
                 <!-- Умное пробуждение: переключатель, описание, состояние доступа к данным часов. -->
                 <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}" />
                 <Border Style="{StaticResource Card}">
@@ -74,7 +152,7 @@
                         <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
                     </Border.GestureRecognizers>
                     <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
-                        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowValue}" />
+                        <Label Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowTitle}" />
                         <Image Grid.Column="1" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
                     </Grid>
                 </Border>

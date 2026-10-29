@@ -21,9 +21,9 @@ public partial class App : Application
         this.InitializeComponent();
         this.services = services;
         this.themes = themes;
-        // Вид — как в системе: тема и повышенный контраст (DESIGN.md §2.2). Пока экраны берут цвета через StaticResource
-        // и не перекрашиваются на лету, тема зафиксирована светлой; задача плана «Чистка и приёмка» снимает фиксацию.
-        this.UserAppTheme = AppTheme.Light;
+        // Тема — из настроек («Система» = как в телефоне), повышенный контраст — из системы (DESIGN.md §2.2, §5).
+        // Экраны, ещё берущие цвета через StaticResource, перекрашиваются только при следующем открытии.
+        this.UserAppTheme = ThemeSettings.Theme;
         themes.Attach(this);
         // Восстанавливаем расписание: после «Остановить принудительно» Android стирает будильники приложения.
         alarmService.RescheduleAll();

@@ -15,7 +15,7 @@ public static class ChronoColors
         new("QuaternaryLabel", "#2E3C3C43", "#29EBEBF5", "#943C3C43", "#66EBEBF5"),
         new("PlaceholderText", "#4D3C3C43", "#4DEBEBF5", "#BD3C3C43", "#94EBEBF5"),
         new("Link", "#FF0088FF", "#FF0091FF", "#FF1E6EF4", "#FF5CB8FF"),
-        new("Tint", "#FF0088FF", "#FF0091FF", "#FF1E6EF4", "#FF5CB8FF"),
+        new("Tint", "#FFFF8D28", "#FFFF9230", "#FFC55300", "#FFFFA056"),
         new("OnTint", "#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF", "#FF000000"),
         new("Destructive", "#FFFF383C", "#FFFF4245", "#FFE9152D", "#FFFF6165"),
         new("Success", "#FF34C759", "#FF30D158", "#FF008932", "#FF4AD968"),
@@ -67,7 +67,7 @@ public static class ChronoColors
         new("Cat4", "#FFCB30E0", "#FFDB34F2", "#FFB02FC2", "#FFEA8DFF"),
         new("Cat5", "#FF00C3D0", "#FF00D2E0", "#FF008198", "#FF3BDDEC"),
         new("Cat6", "#FFFF2D55", "#FFFF375F", "#FFE7124D", "#FFFF8AC4"),
-        new("TintFill", "#290088FF", "#290091FF", "#291E6EF4", "#295CB8FF"),
+        new("TintFill", "#29FF8D28", "#29FF9230", "#29C55300", "#29FFA056"),
         new("DestructiveFill", "#29FF383C", "#29FF4245", "#29E9152D", "#29FF6165"),
     ];
 

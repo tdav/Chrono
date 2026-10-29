@@ -113,7 +113,7 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                            <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowValue}">
+                            <Style x:Key="EntryTitle" TargetType="Label" BasedOn="{StaticResource RowTitle}">
                                 <Setter Property="TextColor" Value="{StaticResource Text}" />
                                 <Style.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding IsMuted}" Value="True">

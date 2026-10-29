@@ -15,7 +15,7 @@
                     <DataTemplate x:DataType="vm:ChoiceOption">
                         <VerticalStackLayout>
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding Name}" Style="{StaticResource RowValue}" />
+                                <Label Text="{Binding Name}" Style="{StaticResource RowTitle}" />
                                 <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20"
                                        VerticalOptions="Center" IsVisible="{Binding IsSelected}" />
                                 <Grid.GestureRecognizers>

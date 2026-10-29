@@ -12,7 +12,7 @@
     "quaternaryLabel": {"light": "rgba(60,60,67,0.18)", "dark": "rgba(235,235,245,0.16)", "lightHighContrast": "rgba(60,60,67,0.58)", "darkHighContrast": "rgba(235,235,245,0.4)"},
     "placeholderText": {"light": "rgba(60,60,67,0.3)", "dark": "rgba(235,235,245,0.3)", "lightHighContrast": "rgba(60,60,67,0.74)", "darkHighContrast": "rgba(235,235,245,0.58)"},
     "link": "{blue}",
-    "tint": "{blue}",
+    "tint": "{orange}",
     "onTint": {"light": "#FFFFFF", "dark": "#FFFFFF", "lightHighContrast": "#FFFFFF", "darkHighContrast": "#000000"},
     "destructive": "{red}",
     "success": "{green}",

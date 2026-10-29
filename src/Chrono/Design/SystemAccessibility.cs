@@ -18,6 +18,12 @@ public static partial class SystemAccessibility
     /// </summary>
     public static partial IDisposable? Observe(Action changed);
 
+    /// <summary>
+    /// Системный акцент: Android 12+ — цвет Material You из обоев телефона. iOS приложению такого цвета не даёт — null,
+    /// и Tint берётся из DESIGN.json.
+    /// </summary>
+    public static partial Color? Accent(Appearance appearance);
+
     private sealed class Subscription(Action dispose) : IDisposable
     {
         public void Dispose() => dispose();
@@ -32,5 +38,7 @@ public static partial class SystemAccessibility
     public static partial bool IsReduceTransparency() => false;
 
     public static partial IDisposable? Observe(Action changed) => null;
+
+    public static partial Color? Accent(Appearance appearance) => null;
 #endif
 }

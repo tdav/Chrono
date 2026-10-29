@@ -95,7 +95,7 @@
                     <VerticalStackLayout Spacing="0">
                         <!-- Жест — на контейнере с отступами: зона касания не меньше 44dp, а не высота строки текста. -->
                         <VerticalStackLayout Padding="0,13" BackgroundColor="Transparent" SemanticProperties.Hint="{x:Static res:AppResources.DialTapToEdit}">
-                            <Label Text="{Binding IdleHeadline.Text}" Style="{StaticResource RowValue}" />
+                            <Label Text="{Binding IdleHeadline.Text}" Style="{StaticResource RowTitle}" />
                             <VerticalStackLayout.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding OpenEntryCommand}" CommandParameter="{Binding IdleHeadline}" />
                             </VerticalStackLayout.GestureRecognizers>

@@ -11,6 +11,9 @@ public static partial class SystemAccessibility
 
     public static partial bool IsReduceTransparency() => UIAccessibility.IsReduceTransparencyEnabled;
 
+    // Системного акцента для приложений в iOS нет: Tint — из DESIGN.json.
+    public static partial Color? Accent(Appearance appearance) => null;
+
     public static partial IDisposable? Observe(Action changed)
     {
         NSObject[] tokens =

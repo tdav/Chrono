@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+: нативные диалоги и пикеры — системный акцент Material You, как Tint в ThemeService (тон 40). -->
+    <color name="colorPrimary">@android:color/system_accent1_600</color>
+    <color name="colorPrimaryDark">#F2F2F7</color>
+    <color name="colorAccent">@android:color/system_accent1_600</color>
+</resources>

@@ -34,6 +34,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         this.cache = cache;
         this.smartWakeEnabled = smartWake.IsSupported && SmartWakeSettings.Enabled;
         this.mathChallengeEnabled = DismissSettings.MathChallenge;
+        this.theme = ThemeSettings.Theme;
     }
 
     public bool IsSmartWakeSupported => this.smartWake.IsSupported;
@@ -45,6 +46,19 @@ public sealed partial class SettingsViewModel : ObservableObject
     // Поле по той же причине: начальное значение не должно вызывать OnMathChallengeEnabledChanged.
     [ObservableProperty]
     private bool mathChallengeEnabled;
+
+    // Поле по той же причине: начальное значение не должно вызывать OnThemeChanged. Unspecified — «Система».
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsThemeSystem))]
+    [NotifyPropertyChangedFor(nameof(IsThemeLight))]
+    [NotifyPropertyChangedFor(nameof(IsThemeDark))]
+    private AppTheme theme;
+
+    public bool IsThemeSystem => this.Theme == AppTheme.Unspecified;
+
+    public bool IsThemeLight => this.Theme == AppTheme.Light;
+
+    public bool IsThemeDark => this.Theme == AppTheme.Dark;
 
     [ObservableProperty]
     public partial string AccessText { get; set; } = "";
@@ -149,6 +163,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     }
 
     partial void OnMathChallengeEnabledChanged(bool value) => DismissSettings.MathChallenge = value;
+
+    // Выбор сохраняется и применяется сразу: ThemeService перекладывает цвета по RequestedThemeChanged.
+    partial void OnThemeChanged(AppTheme value)
+    {
+        ThemeSettings.Theme = value;
+        Application.Current!.UserAppTheme = value;
+    }
+
+    // Параметр — имя AppTheme из разметки: «Unspecified», «Light» или «Dark».
+    [RelayCommand]
+    private void SetTheme(string theme) => this.Theme = Enum.Parse<AppTheme>(theme);
 
     [RelayCommand]
     private async Task GrantAccessAsync()

@@ -38,7 +38,7 @@
         <!-- Своё значение: только цифры 1…720. Код поле не переписывает (маски нет, курсор не трогаем); «Окей» активен только при корректной строке. -->
         <Border Style="{StaticResource RowGroup}">
             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowValue}" />
+                <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowTitle}" />
                 <Entry x:Name="CustomEntry" Grid.Column="1" Text="{Binding CustomText}" Keyboard="Numeric" MaxLength="3"
                        HorizontalTextAlignment="End" WidthRequest="80" Placeholder="0"
                        FontFamily="ManropeBold" FontSize="14.5"

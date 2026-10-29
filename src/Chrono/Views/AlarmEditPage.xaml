@@ -31,7 +31,7 @@
                     <Border StrokeShape="RoundRectangle 20" Background="{StaticResource MetalBrush}"
                             Stroke="{StaticResource GoldEdgeBrush}" StrokeThickness="1" Padding="20,20,20,18">
                         <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding PlateTitle}" Style="{StaticResource Eyebrow}" TextColor="{StaticResource Gold}" />
+                            <Label Text="{Binding PlateTitle}" Style="{StaticResource Eyebrow}" TextColor="{StaticResource OnMetal}" />
                             <Grid ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="64" TextColor="{StaticResource OnMetal}" />
                                 <Label Grid.Column="1" Text="{Binding RelText}" FontFamily="ManropeSemiBold" FontSize="13"

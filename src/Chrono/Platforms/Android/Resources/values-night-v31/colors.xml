@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+, тёмная тема: системный акцент Material You (тон 60), как Tint в ThemeService. -->
+    <color name="colorPrimary">@android:color/system_accent1_400</color>
+    <color name="colorPrimaryDark">#000000</color>
+    <color name="colorAccent">@android:color/system_accent1_400</color>
+</resources>

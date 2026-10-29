@@ -185,4 +185,8 @@
   <data name="EndsBeforeStart" xml:space="preserve"><value>The end date is before the start</value></data>
   <data name="ChannelBeep" xml:space="preserve"><value>Short beeps</value></data>
   <data name="DialTapToEdit" xml:space="preserve"><value>Tap to edit</value></data>
+  <data name="ThemeGroup" xml:space="preserve"><value>Appearance</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
 </root>
