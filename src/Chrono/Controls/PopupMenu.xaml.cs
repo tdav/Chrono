@@ -99,7 +99,12 @@ public partial class PopupMenu : ContentView
     {
         if ((sender as BindableObject)?.BindingContext is ChoiceOption option)
         {
-            this.SelectCommand?.Execute(option);
+            // Команда, которая сейчас не выполняется, выбор не принимает; меню закрывается в любом случае (как в DayToggles).
+            if (this.SelectCommand?.CanExecute(option) != false)
+            {
+                this.SelectCommand?.Execute(option);
+            }
+
             this.IsOpen = false;
         }
     }
