@@ -129,9 +129,10 @@
                                             <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding AccessNeedsAttention}" />
                                         </Grid>
                                         <Label Grid.Column="1" Text="{Binding AccessText}" Style="{StaticResource RowTitle}" />
-                                        <Button Grid.Row="1" Grid.Column="1" Text="{x:Static res:AppResources.GrantAccess}"
-                                                Style="{StaticResource TintedButtonM}" HorizontalOptions="Start" Margin="0,4,0,0"
-                                                IsVisible="{Binding CanGrantAccess}" Command="{Binding GrantAccessCommand}" />
+                                        <controls:HitTarget Grid.Row="1" Grid.Column="1" HorizontalOptions="Start" IsVisible="{Binding CanGrantAccess}">
+                                            <Button Text="{x:Static res:AppResources.GrantAccess}" Style="{StaticResource TintedButtonM}" VerticalOptions="Center"
+                                                    Command="{Binding GrantAccessCommand}" />
+                                        </controls:HitTarget>
                                     </Grid>
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
