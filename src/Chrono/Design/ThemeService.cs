@@ -76,10 +76,12 @@ public sealed class ThemeService
             colors["TintFill"] = accent.WithAlpha(0.16f);
         }
 
+        // Крупное стекло (шторка, меню, алерт) непрозрачно всегда: размытия фона в MAUI нет, и сквозь 14 % заливки
+        // текст страницы позади читался поверх барабана и списков. Малое стекло кнопок просвечивает — оно маленькое.
+        colors["GlassFillLarge"] = colors["GlassOpaque"];
         if (reduceTransparency)
         {
             colors["GlassFill"] = colors["GlassOpaque"];
-            colors["GlassFillLarge"] = colors["GlassOpaque"];
         }
 
         var resources = this.app.Resources;
