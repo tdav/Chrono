@@ -312,6 +312,36 @@
   <data name="TimePassed" xml:space="preserve">
     <value>время уже прошло</value>
   </data>
+  <data name="RingsAt" xml:space="preserve">
+    <value>Сработает {0}, {1}, — {2}.</value>
+  </data>
+  <data name="RingsDay_Today" xml:space="preserve">
+    <value>сегодня</value>
+  </data>
+  <data name="RingsDay_Tomorrow" xml:space="preserve">
+    <value>завтра</value>
+  </data>
+  <data name="RingsDay_Monday" xml:space="preserve">
+    <value>в понедельник</value>
+  </data>
+  <data name="RingsDay_Tuesday" xml:space="preserve">
+    <value>во вторник</value>
+  </data>
+  <data name="RingsDay_Wednesday" xml:space="preserve">
+    <value>в среду</value>
+  </data>
+  <data name="RingsDay_Thursday" xml:space="preserve">
+    <value>в четверг</value>
+  </data>
+  <data name="RingsDay_Friday" xml:space="preserve">
+    <value>в пятницу</value>
+  </data>
+  <data name="RingsDay_Saturday" xml:space="preserve">
+    <value>в субботу</value>
+  </data>
+  <data name="RingsDay_Sunday" xml:space="preserve">
+    <value>в воскресенье</value>
+  </data>
   <data name="RowTime" xml:space="preserve">
     <value>Время</value>
   </data>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             x:Class="Chrono.Controls.WheelPicker"
+             HeightRequest="{StaticResource SizeWheel}">
+    <!-- Один столбец барабана (DESIGN.md §3.2): окно SizeWheel, строка SizeWheelRow, значения title2 (табличные цифры).
+         Полосу выбора рисует родитель — у времени она одна на оба столбца и двоеточие. Края гаснут прозрачностью самих строк,
+         а не накладкой цвета фона: шторка на среднем детенте — стекло, и накладка выглядела бы пятном.
+         Ряды дальше 3 от центра не различимы; вид ряда по расстоянию до центра задаёт WheelItem. -->
+    <CollectionView x:Name="List" SelectionMode="None" VerticalScrollBarVisibility="Never" Scrolled="OnScrolled">
+        <CollectionView.ItemsLayout>
+            <!-- Mandatory, а не MandatorySingle: барабан должен докатываться на несколько рядов, а не по одному за взмах. -->
+            <LinearItemsLayout Orientation="Vertical" SnapPointsType="Mandatory" SnapPointsAlignment="Center" />
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="controls:WheelItem">
+                <!-- Подпись занимает весь ряд: нажатие в любом месте ряда прокручивает к числу. -->
+                <Label Text="{Binding Label}" Style="{StaticResource TextTitle2}" HeightRequest="{StaticResource SizeWheelRow}"
+                       HorizontalTextAlignment="Center" VerticalTextAlignment="Center" Scale="{Binding Scale}" Opacity="{Binding Fade}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsCenter}" Value="True">
+                            <Setter Property="TextColor" Value="{DynamicResource Label}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsCenter}" Value="False">
+                            <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnItemTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+    </CollectionView>
+</ContentView>

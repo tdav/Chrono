@@ -44,7 +44,7 @@ public static class TextStyles
         new(17, 22, TextWeight.Regular, -0.026, DynamicType.Body, null, false), // None — как Body
         new(34, 41, TextWeight.Regular, 0.012, DynamicType.LargeTitle, null, false), // LargeTitle
         new(28, 34, TextWeight.Regular, 0.014, DynamicType.Title1, null, false), // Title1
-        new(22, 28, TextWeight.Regular, -0.012, DynamicType.Title2, null, false), // Title2
+        new(22, 28, TextWeight.Regular, -0.012, DynamicType.Title2, null, true), // Title2
         new(20, 25, TextWeight.Regular, -0.023, DynamicType.Title3, null, false), // Title3
         new(17, 22, TextWeight.Semibold, -0.026, DynamicType.Headline, null, false), // Headline
         new(17, 22, TextWeight.Regular, -0.026, DynamicType.Body, null, false), // Body

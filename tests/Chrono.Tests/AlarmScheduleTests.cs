@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Xml.Linq;
 using Chrono.Services;
 
 namespace Chrono.Tests;
@@ -70,6 +72,36 @@ public class AlarmScheduleTests
         var now = new DateTime(2026, 10, 16, 19, 46, 0);
 
         Assert.Null(AlarmSchedule.Until(now.AddSeconds(secondsFromNow), now));
+    }
+
+    // Строки сноски берутся из настоящего русского ресурса: тест ловит и опечатку в ключе, и расхождение шаблона с расчётом.
+    private static readonly Dictionary<string, string> Ru = LoadRu();
+
+    private static Dictionary<string, string> LoadRu()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!File.Exists(Path.Combine(dir.FullName, "Chrono.slnx")))
+        {
+            dir = dir.Parent ?? throw new InvalidOperationException("Корень репозитория (Chrono.slnx) не найден.");
+        }
+
+        return XDocument.Load(Path.Combine(dir.FullName, "src", "Chrono", "Resources", "Strings", "AppResources.ru.resx"))
+            .Root!.Elements("data")
+            .ToDictionary(d => (string)d.Attribute("name")!, d => (string)d.Element("value")!);
+    }
+
+    // «Сейчас» — четверг, 29 октября 2026, 19:46.
+    [Theory]
+    [InlineData("2026-10-29 21:00", "Сработает сегодня, 29 октября, — через 1 ч 14 мин.")]
+    [InlineData("2026-10-30 06:30", "Сработает завтра, 30 октября, — через 10 ч 44 мин.")]
+    [InlineData("2026-10-31 07:30", "Сработает в субботу, 31 октября, — через 1 д 11 ч.")]
+    [InlineData("2026-10-29 06:30", "Время этого будильника прошло. Выберите новую дату.")]
+    [InlineData("2026-10-29 19:46", "Время этого будильника прошло. Выберите новую дату.")] // ровно сейчас — уже прошло
+    public void Footnote_SaysWhenAlarmRings(string target, string expected)
+    {
+        var now = new DateTime(2026, 10, 29, 19, 46, 0);
+
+        Assert.Equal(expected, AlarmSchedule.Footnote(DateTime.Parse(target, CultureInfo.InvariantCulture), now, new CultureInfo("ru-RU"), key => Ru[key]));
     }
 
     [Fact]

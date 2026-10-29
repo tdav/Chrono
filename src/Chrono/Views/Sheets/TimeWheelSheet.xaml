@@ -1,117 +1,109 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
              xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
              x:Class="Chrono.Views.Sheets.TimeWheelSheet"
              x:DataType="vm:TimeSheetModel">
-    <VerticalStackLayout Spacing="16">
-        <!-- Два барабана: строка 56, окно 224, поэтому сверху и снизу по 84 пустого места (Header/Footer). -->
-        <Grid HeightRequest="224" ColumnDefinitions="*,110,Auto,110,*">
-            <Border Grid.ColumnSpan="5" HeightRequest="56" VerticalOptions="Center" InputTransparent="True"
-                    Background="{StaticResource Surface2}" Stroke="{StaticResource Hairline}" StrokeThickness="1"
-                    StrokeShape="RoundRectangle 16" />
+    <ContentView.Resources>
+        <!-- ToggleChip с полями 8: на телефоне шириной 360 колонка из четырёх — 72, а «Сейчас» с полями 14 в неё не помещается. -->
+        <Style x:Key="QuickChip" TargetType="Border" BasedOn="{StaticResource ToggleChip}">
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentView.Resources>
+    <!-- Время (DESIGN.md §3.2): два барабана и «:», под ними быстрые варианты и сноска «Сработает … — через …».
+         Кнопок «Отмена» и «Ок» нет — ✓ и ✕ в панели шторки. -->
+    <VerticalStackLayout Spacing="{StaticResource Space3}">
+        <!-- Полоса выбора одна на оба барабана и двоеточие: рисуется под ними, барабаны прозрачные. -->
+        <Grid HeightRequest="{StaticResource SizeWheel}" ColumnDefinitions="*,90,Auto,90,*">
+            <Border Grid.ColumnSpan="5" HeightRequest="{StaticResource SizeWheelRow}" VerticalOptions="Center" InputTransparent="True"
+                    BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 8" />
 
-            <CollectionView x:Name="HourWheel" Grid.Column="1" ItemsSource="{Binding Hours}" SelectionMode="None"
-                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.Header>
-                    <BoxView HeightRequest="84" Color="Transparent" />
-                </CollectionView.Header>
-                <CollectionView.Footer>
-                    <BoxView HeightRequest="84" Color="Transparent" />
-                </CollectionView.Footer>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:WheelItem">
-                        <Grid HeightRequest="56">
-                            <Label Text="{Binding Label}" StyleClass="Digits" HorizontalOptions="Center" VerticalOptions="Center"
-                                   FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="FontFamily" Value="ManropeExtraBold" />
-                                        <Setter Property="FontSize" Value="40" />
-                                        <Setter Property="TextColor" Value="{StaticResource Text}" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer CommandParameter="{Binding .}" Tapped="OnTick"
-                                                      Command="{Binding PickHourCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
-                            </Grid.GestureRecognizers>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <controls:WheelPicker Grid.Column="1" Count="24" Value="{Binding Hour}" />
 
-            <!-- Точки двоеточия у Manrope на середине строчных, а не цифр: TranslationY поднимает их к центру цифр (замер на экране). -->
-            <Label Grid.Column="2" Text=":" StyleClass="Digits" FontFamily="ManropeExtraBold" FontSize="32" TextColor="{StaticResource Text}"
-                   HorizontalOptions="Center" VerticalOptions="Center" TranslationY="-3" />
+            <!-- Двоеточие Inter стоит ниже середины цифр; на Android поднимается на 2 pt. -->
+            <Label Grid.Column="2" Text=":" Style="{StaticResource TextTitle2}" TextColor="{DynamicResource Label}"
+                   HorizontalOptions="Center" VerticalOptions="Center" TranslationY="{OnPlatform Android=-2, Default=0}" />
 
-            <CollectionView x:Name="MinuteWheel" Grid.Column="3" ItemsSource="{Binding Minutes}" SelectionMode="None"
-                            VerticalScrollBarVisibility="Never" Scrolled="OnWheelScrolled">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.Header>
-                    <BoxView HeightRequest="84" Color="Transparent" />
-                </CollectionView.Header>
-                <CollectionView.Footer>
-                    <BoxView HeightRequest="84" Color="Transparent" />
-                </CollectionView.Footer>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:WheelItem">
-                        <Grid HeightRequest="56">
-                            <Label Text="{Binding Label}" StyleClass="Digits" HorizontalOptions="Center" VerticalOptions="Center"
-                                   FontFamily="ManropeBold" FontSize="26" TextColor="{StaticResource Hairline}">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                        <Setter Property="FontFamily" Value="ManropeExtraBold" />
-                                        <Setter Property="FontSize" Value="40" />
-                                        <Setter Property="TextColor" Value="{StaticResource Text}" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer CommandParameter="{Binding .}" Tapped="OnTick"
-                                                      Command="{Binding PickMinuteCommand, Source={RelativeSource AncestorType={x:Type vm:TimeSheetModel}}, x:DataType=vm:TimeSheetModel}" />
-                            </Grid.GestureRecognizers>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
-            <!-- Затухание у краёв барабанов. -->
-            <BoxView Grid.ColumnSpan="5" HeightRequest="84" VerticalOptions="Start" Background="{StaticResource FadeDownBrush}" InputTransparent="True" />
-            <BoxView Grid.ColumnSpan="5" HeightRequest="84" VerticalOptions="End" Background="{StaticResource FadeUpBrush}" InputTransparent="True" />
+            <controls:WheelPicker Grid.Column="3" Count="60" Value="{Binding Minute}" />
         </Grid>
 
-        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-            <Border Style="{StaticResource Chip}">
-                <Label Text="06:30" Style="{StaticResource ChipText}" />
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="06:30" />
-                </Border.GestureRecognizers>
-            </Border>
-            <Border Grid.Column="1" Style="{StaticResource Chip}">
-                <Label Text="07:00" Style="{StaticResource ChipText}" />
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="07:00" />
-                </Border.GestureRecognizers>
-            </Border>
-            <Border Grid.Column="2" Style="{StaticResource Chip}">
-                <Label Text="08:00" Style="{StaticResource ChipText}" />
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="08:00" />
-                </Border.GestureRecognizers>
-            </Border>
-            <Border Grid.Column="3" Style="{StaticResource Chip}">
-                <Label Text="{x:Static res:AppResources.Now}" Style="{StaticResource ChipText}" />
-                <Border.GestureRecognizers>
+        <!-- Быстрые варианты — кнопки-переключатели: «вкл» тот, что совпал с барабанами. Капсула 34, область нажатия 44. -->
+        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="{StaticResource Space2}">
+            <Grid HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent">
+                <Border Style="{StaticResource QuickChip}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding QuickTimes[0].IsOn}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{Binding QuickTimes[0].Label}" Style="{StaticResource ToggleChipText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding QuickTimes[0].IsOn}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="{Binding QuickTimes[0]}" />
+                </Grid.GestureRecognizers>
+            </Grid>
+
+            <Grid Grid.Column="1" HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent">
+                <Border Style="{StaticResource QuickChip}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding QuickTimes[1].IsOn}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{Binding QuickTimes[1].Label}" Style="{StaticResource ToggleChipText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding QuickTimes[1].IsOn}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="{Binding QuickTimes[1]}" />
+                </Grid.GestureRecognizers>
+            </Grid>
+
+            <Grid Grid.Column="2" HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent">
+                <Border Style="{StaticResource QuickChip}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding QuickTimes[2].IsOn}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                    <Label Text="{Binding QuickTimes[2].Label}" Style="{StaticResource ToggleChipText}">
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding QuickTimes[2].IsOn}" Value="True">
+                                <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                            </DataTrigger>
+                        </Label.Triggers>
+                    </Label>
+                </Border>
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTick" Command="{Binding QuickCommand}" CommandParameter="{Binding QuickTimes[2]}" />
+                </Grid.GestureRecognizers>
+            </Grid>
+
+            <!-- «Сейчас» — действие, а не состояние: «вкл» не бывает. -->
+            <Grid Grid.Column="3" HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent">
+                <Border Style="{StaticResource QuickChip}">
+                    <Label Text="{x:Static res:AppResources.Now}" Style="{StaticResource ToggleChipText}" />
+                </Border>
+                <Grid.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTick" Command="{Binding NowCommand}" />
-                </Border.GestureRecognizers>
-            </Border>
+                </Grid.GestureRecognizers>
+            </Grid>
         </Grid>
+
+        <!-- Сноска: SectionFooter рассчитан на секцию с полями 16 от края экрана, а шторка уже даёт их своим отступом. -->
+        <Label Text="{Binding Footnote}" Style="{StaticResource SectionFooter}" Margin="0" HorizontalTextAlignment="Center" />
     </VerticalStackLayout>
 </ContentView>

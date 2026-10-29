@@ -165,7 +165,7 @@
 
         <!-- Шторки поверх страницы; каждая получает модель через BindingContext. -->
         <controls:BottomSheet IsOpen="{Binding IsTimeSheetOpen}" Title="{x:Static res:AppResources.RowTime}"
-                              Hint="{Binding TimeHint}" ConfirmCommand="{Binding TimeSheet.OkCommand}" CancelCommand="{Binding TimeSheet.CancelCommand}">
+                              ConfirmCommand="{Binding TimeSheet.OkCommand}" CancelCommand="{Binding TimeSheet.CancelCommand}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />

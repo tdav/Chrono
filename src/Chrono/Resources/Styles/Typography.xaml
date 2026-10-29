@@ -29,7 +29,7 @@
         <Setter Property="design:Typography.Style" Value="Title1" />
     </Style>
 
-    <!-- title2: 22/28, Regular, трекинг -0.012 em, Dynamic Type — Title2 -->
+    <!-- title2: 22/28, Regular, трекинг -0.012 em, Dynamic Type — Title2, табличные цифры -->
     <Style x:Key="TextTitle2" TargetType="Label">
         <Setter Property="FontSize" Value="22" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />

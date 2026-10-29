@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Chrono.Services;
 
 /// <summary>Ячейка календаря; Date == null — пустая ячейка перед первым числом (неделя с понедельника).</summary>
@@ -26,6 +28,33 @@ public static class AlarmSchedule
 
         var total = (int)Math.Ceiling((target - now).TotalMinutes);
         return (total / 1440, total % 1440 / 60, total % 60);
+    }
+
+    /// <summary>
+    /// Сноска под барабаном времени (DESIGN.md §3.2): «Сработает в субботу, 24 октября, — через 20 ч 10 мин.»;
+    /// если target уже наступил (дата выбрана явно) — «Время этого будильника прошло. Выберите новую дату.».
+    /// <paramref name="text"/> отдаёт строку ресурса по ключу: расчёт остаётся без зависимостей от MAUI и проверяется тестом.
+    /// </summary>
+    public static string Footnote(DateTime target, DateTime now, CultureInfo culture, Func<string, string> text)
+    {
+        if (Until(target, now) is not { } left)
+        {
+            return text("PickNewDate");
+        }
+
+        var day = target.Date == now.Date
+            ? text("RingsDay_Today")
+            : target.Date == now.Date.AddDays(1)
+                ? text("RingsDay_Tomorrow")
+                : text($"RingsDay_{target.DayOfWeek}");
+        var relative = left switch
+        {
+            (var days, var hours, _) when days > 0 => string.Format(culture, text("RelDays"), days, hours),
+            (_, var hours, var minutes) when hours > 0 => string.Format(culture, text("RelHours"), hours, minutes),
+            (_, _, var minutes) => string.Format(culture, text("RelMinutes"), minutes),
+        };
+
+        return string.Format(culture, text("RingsAt"), day, target.ToString("d MMMM", culture), relative);
     }
 
     /// <summary>Сетка месяца с понедельника: пустые ячейки до 1-го числа, затем все дни месяца.</summary>

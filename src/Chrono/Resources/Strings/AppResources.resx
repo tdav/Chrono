@@ -69,6 +69,16 @@
   <data name="RelHours" xml:space="preserve"><value>in {0} h {1} min</value></data>
   <data name="RelMinutes" xml:space="preserve"><value>in {0} min</value></data>
   <data name="TimePassed" xml:space="preserve"><value>time has passed</value></data>
+  <data name="RingsAt" xml:space="preserve"><value>Rings {0}, {1}, {2}.</value></data>
+  <data name="RingsDay_Today" xml:space="preserve"><value>today</value></data>
+  <data name="RingsDay_Tomorrow" xml:space="preserve"><value>tomorrow</value></data>
+  <data name="RingsDay_Monday" xml:space="preserve"><value>on Monday</value></data>
+  <data name="RingsDay_Tuesday" xml:space="preserve"><value>on Tuesday</value></data>
+  <data name="RingsDay_Wednesday" xml:space="preserve"><value>on Wednesday</value></data>
+  <data name="RingsDay_Thursday" xml:space="preserve"><value>on Thursday</value></data>
+  <data name="RingsDay_Friday" xml:space="preserve"><value>on Friday</value></data>
+  <data name="RingsDay_Saturday" xml:space="preserve"><value>on Saturday</value></data>
+  <data name="RingsDay_Sunday" xml:space="preserve"><value>on Sunday</value></data>
   <data name="RowTime" xml:space="preserve"><value>Time</value></data>
   <data name="RowDate" xml:space="preserve"><value>Date</value></data>
   <data name="RowName" xml:space="preserve"><value>Name</value></data>
