@@ -6,7 +6,7 @@ namespace Chrono;
 
 /// <summary>
 /// Значки статус-бара и панели навигации в модальных страницах (DESIGN.md §2.10). Модальная страница MAUI (маршрут edit,
-/// Shell.PresentationMode="ModalNotAnimated") — отдельное окно DialogFragment. MAUI выбирает в нём тёмные значки по яркости
+/// Shell.PresentationMode="ModalAnimated") — отдельное окно DialogFragment. MAUI выбирает в нём тёмные значки по яркости
 /// colorPrimary, а у Chrono это цвет акцента, а не фон экрана: значки получались белыми на светлой странице. Здесь значки
 /// ставятся по теме, как в MainActivity, а принудительная подложка панели навигации (3 кнопки) отключается.
 /// </summary>

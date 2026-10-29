@@ -116,7 +116,10 @@
   <data name="Nearest" xml:space="preserve"><value>Nearest</value></data>
   <data name="NearestHint" xml:space="preserve"><value>Nearest suitable</value></data>
   <data name="NoSound" xml:space="preserve"><value>No sound</value></data>
-  <data name="SaveFootnote" xml:space="preserve"><value>Changes apply when you tap Save.</value></data>
+  <data name="SaveFootnote" xml:space="preserve"><value>Changes are saved with the ✓ button.</value></data>
+  <data name="AlarmSheetNew" xml:space="preserve"><value>Alarm</value></data>
+  <data name="AlarmSheetEdit" xml:space="preserve"><value>Edit</value></data>
+  <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
   <data name="DiscardTitle" xml:space="preserve"><value>Discard changes?</value></data>
   <data name="DiscardYes" xml:space="preserve"><value>Discard</value></data>
   <data name="SheetOk" xml:space="preserve"><value>OK</value></data>

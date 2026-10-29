@@ -454,7 +454,16 @@
     <value>Без звука</value>
   </data>
   <data name="SaveFootnote" xml:space="preserve">
-    <value>Изменения применяются по кнопке «Сохранить».</value>
+    <value>Изменения сохраняются по кнопке ✓.</value>
+  </data>
+  <data name="AlarmSheetNew" xml:space="preserve">
+    <value>Будильник</value>
+  </data>
+  <data name="AlarmSheetEdit" xml:space="preserve">
+    <value>Изменение</value>
+  </data>
+  <data name="SignalHeader" xml:space="preserve">
+    <value>Сигнал</value>
   </data>
   <data name="DiscardTitle" xml:space="preserve">
     <value>Не сохранять изменения?</value>

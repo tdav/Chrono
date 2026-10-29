@@ -2,234 +2,169 @@
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
              xmlns:controls="clr-namespace:Chrono.Controls"
-             xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
+             xmlns:design="clr-namespace:Chrono.Design"
              Shell.TabBarIsVisible="False"
-             Shell.PresentationMode="ModalNotAnimated"
+             Shell.PresentationMode="ModalAnimated"
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 
-    <!-- Снизу All: кнопки поднимаются над клавиатурой (нужен WindowSoftInputModeAdjust=Resize в App.xaml). -->
+    <!-- DESIGN.md §4.1: страница — шторка на большом детенте поверх экрана, откуда её открыли. Панель ✕ / «Будильник» или «Изменение» / ✓
+         рисует сама шторка; ✓ неактивна, пока в форме ошибка (CanConfirm). Закрытие с правками (✕, свайп, «Назад») шторка подтверждает
+         сама: «Не сохранять» / «Сохранить» / «Отменить». Повтор, оповещение, длительность и иконка открываются шагами внутри шторки
+         (код страницы), звук — меню у строки, дата и окончание — календари в форме.
+         Снизу All: шторка поднимается над клавиатурой (нужен WindowSoftInputModeAdjust=Resize в App.xaml). -->
     <Grid SafeAreaEdges="Container, Container, Container, All">
 
-        <Grid RowDefinitions="Auto,*,Auto" Padding="20,12,20,16">
-
-            <!-- Шапка: «назад» и название экрана. -->
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14" Margin="0,0,0,16">
-                <Border Style="{StaticResource IconWell}" SemanticProperties.Description="{x:Static res:AppResources.Back}">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Command="{Binding BackCommand}" />
-                    </Border.GestureRecognizers>
-                    <Image Source="icon_back.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
-                </Border>
-                <Label Grid.Column="1" Text="{Binding Title}" Style="{StaticResource ScreenTitle}" />
-            </Grid>
-
-            <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
-                <VerticalStackLayout Spacing="22">
-
-                    <!-- Плашка: когда сработает и через сколько. -->
-                    <Border StrokeShape="RoundRectangle 20" Background="{StaticResource MetalBrush}"
-                            Stroke="{StaticResource GoldEdgeBrush}" StrokeThickness="1" Padding="20,20,20,18">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="{Binding PlateTitle}" Style="{StaticResource Eyebrow}" TextColor="{StaticResource OnMetal}" />
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="64" TextColor="{StaticResource OnMetal}" />
-                                <Label Grid.Column="1" Text="{Binding RelText}" FontFamily="ManropeSemiBold" FontSize="13"
-                                       TextColor="{StaticResource OnMetal}" Opacity="0.7" VerticalOptions="End" Margin="0,0,0,12" />
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Повтор, время, дата, окончание: каждая строка открывает свою шторку. -->
-                    <Border Style="{StaticResource RowGroup}">
-                        <VerticalStackLayout>
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenRepeatCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding RepeatText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenTimeCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowTime}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding TimeText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsDateRowVisible}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsDateRowVisible}">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenDateCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowDate}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding DateText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <!-- Окончание: только у повторяющейся записи и обязательно, пока не выбрано — значение золотом, «Сохранить» неактивна. -->
-                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsEndsRowVisible}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsEndsRowVisible}">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenEndsCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowEnds}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding EndsText}" Style="{StaticResource RowValue}">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsEndsMissing}" Value="True">
-                                            <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
-                                        </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!-- Название, иконка, длительность, оповещение; звук и вибрация — только у звонящей записи. -->
-                    <Border Style="{StaticResource RowGroup}">
-                        <VerticalStackLayout>
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*">
-                                <Label Text="{x:Static res:AppResources.RowName}" Style="{StaticResource RowKey}" />
-                                <Entry Grid.Column="1" Text="{Binding Label}" Placeholder="{x:Static res:AppResources.DefaultLabel}"
-                                       MaxLength="60" HorizontalTextAlignment="End"
-                                       FontFamily="ManropeBold" FontSize="14.5" ReturnType="Done" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenIconCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowIcon}" Style="{StaticResource RowKey}" />
-                                <Image Grid.Column="1" Source="{Binding IconImage}" WidthRequest="24" HeightRequest="24" VerticalOptions="Center" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenDurationCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowDuration}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding DurationText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenAlertCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.RowAlert}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding AlertText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsSoundRowsVisible}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsSoundRowsVisible}">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding OpenSoundCommand}" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="{x:Static res:AppResources.Sound}" Style="{StaticResource RowKey}" />
-                                <Label Grid.Column="1" Text="{Binding SoundText}" Style="{StaticResource RowValue}" />
-                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
-                            </Grid>
-                            <BoxView Style="{StaticResource RowDivider}" IsVisible="{Binding IsSoundRowsVisible}" />
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" IsVisible="{Binding IsSoundRowsVisible}">
-                                <Label Text="{x:Static res:AppResources.Vibration}" Style="{StaticResource RowKey}" />
-                                <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" VerticalOptions="Center" />
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <Label Text="{x:Static res:AppResources.SaveFootnote}" Style="{StaticResource Footnote}" />
-                </VerticalStackLayout>
-            </ScrollView>
-
-            <!-- Действия: «Удалить» (только у существующего) и «Сохранить». -->
-            <VerticalStackLayout Grid.Row="2" Spacing="8" Padding="0,14,0,0">
-                <Label Text="{Binding ErrorText}" TextColor="{StaticResource GoldInk}" IsVisible="{Binding HasError}" />
-                <!-- Отступ у «Удалить» вместо ColumnSpacing: скрытая кнопка не оставляет зазора слева от «Сохранить». -->
-                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="0">
-                    <Border WidthRequest="54" HeightRequest="54" Margin="0,0,10,0" StrokeShape="RoundRectangle 18"
-                            Background="{StaticResource CanvasBrush}" Stroke="{StaticResource Gold}" StrokeThickness="1"
-                            IsVisible="{Binding IsExisting}" SemanticProperties.Description="{x:Static res:AppResources.DeleteAlarm}">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding DeleteCommand}" />
-                        </Border.GestureRecognizers>
-                        <Image Source="icon_trash.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center" />
-                    </Border>
-                    <Button Grid.Column="1" Text="{x:Static res:AppResources.Save}" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" />
-                </Grid>
-            </VerticalStackLayout>
-        </Grid>
-
-        <!-- Шторки поверх страницы; каждая получает модель через BindingContext. -->
-        <controls:BottomSheet IsOpen="{Binding IsTimeSheetOpen}" Title="{x:Static res:AppResources.RowTime}"
-                              ConfirmCommand="{Binding TimeSheet.OkCommand}" CancelCommand="{Binding TimeSheet.CancelCommand}">
+        <controls:BottomSheet x:Name="Sheet" Detent="Large" ShowGrabber="False" Title="{Binding Title}"
+                              ConfirmCommand="{Binding SaveCommand}" CancelCommand="{Binding CancelCommand}"
+                              CanConfirm="{Binding CanConfirm}" IsDirty="{Binding IsDirty}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:TimeWheelSheet BindingContext="{Binding TimeSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsDateSheetOpen}" Title="{x:Static res:AppResources.RowDate}"
-                              Hint="{Binding CalendarSheet.Hint}" ConfirmCommand="{Binding CalendarSheet.OkCommand}" CancelCommand="{Binding CalendarSheet.CancelCommand}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:CalendarSheet BindingContext="{Binding CalendarSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsEndsSheetOpen}" Title="{x:Static res:AppResources.RowEnds}"
-                              Hint="{Binding EndsSheet.Hint}" ConfirmCommand="{Binding EndsSheet.OkCommand}" CancelCommand="{Binding EndsSheet.CancelCommand}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:CalendarSheet BindingContext="{Binding EndsSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"
-                              ConfirmCommand="{Binding RepeatSheet.OkCommand}" CancelCommand="{Binding RepeatSheet.CancelCommand}"
-                              IsDirty="{Binding RepeatSheet.IsDirty}" CanConfirm="{Binding RepeatSheet.CanConfirm}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsSoundSheetOpen}" Title="{x:Static res:AppResources.Sound}"
-                              ConfirmCommand="{Binding SoundSheet.OkCommand}" CancelCommand="{Binding SoundSheet.CancelCommand}"
-                              IsDirty="{Binding SoundSheet.IsDirty}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsDurationSheetOpen}" Title="{x:Static res:AppResources.RowDuration}"
-                              ConfirmCommand="{Binding DurationSheet.OkCommand}" CancelCommand="{Binding DurationSheet.CancelCommand}"
-                              IsDirty="{Binding DurationSheet.IsDirty}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:DurationSheet BindingContext="{Binding DurationSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsIconSheetOpen}" Title="{x:Static res:AppResources.RowIcon}"
-                              ConfirmCommand="{Binding IconSheet.OkCommand}" CancelCommand="{Binding IconSheet.CancelCommand}"
-                              IsDirty="{Binding IconSheet.IsDirty}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:IconSheet BindingContext="{Binding IconSheet}" />
-                </DataTemplate>
-            </controls:BottomSheet.SheetTemplate>
-        </controls:BottomSheet>
-        <controls:BottomSheet IsOpen="{Binding IsAlertSheetOpen}" Title="{x:Static res:AppResources.RowAlert}"
-                              ConfirmCommand="{Binding AlertSheet.OkCommand}" CancelCommand="{Binding AlertSheet.CancelCommand}"
-                              IsDirty="{Binding AlertSheet.IsDirty}">
-            <controls:BottomSheet.SheetTemplate>
-                <DataTemplate x:DataType="vm:AlarmEditViewModel">
-                    <sheets:AlertSheet BindingContext="{Binding AlertSheet}" />
+                    <Grid>
+                        <ScrollView VerticalScrollBarVisibility="Never">
+                            <VerticalStackLayout Padding="0,8,0,24" Spacing="{StaticResource Space6}">
+
+                                <!-- Время (§3.2): барабан и сноска «Сработает … — через …». Полоса выбора одна на оба барабана и двоеточие:
+                                     рисуется под ними, барабаны прозрачные. Высота сноски — не меньше двух строк footnote (2 × 18): фраза то
+                                     переносится, то нет, и без запаса форма под барабаном прыгала бы вместе с ним. -->
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource Section}" Padding="8,0">
+                                        <Grid HeightRequest="{StaticResource SizeWheel}" ColumnDefinitions="*,90,Auto,90,*">
+                                            <Border Grid.ColumnSpan="5" HeightRequest="{StaticResource SizeWheelRow}" VerticalOptions="Center" InputTransparent="True"
+                                                    BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 8" />
+
+                                            <controls:WheelPicker Grid.Column="1" Count="24" Value="{Binding TimeSheet.Hour}" />
+
+                                            <!-- Двоеточие Inter стоит ниже середины цифр; на Android поднимается на 2 pt. -->
+                                            <Label Grid.Column="2" Text=":" Style="{StaticResource TextTitle2}" TextColor="{DynamicResource Label}"
+                                                   HorizontalOptions="Center" VerticalOptions="Center" TranslationY="{OnPlatform Android=-2, Default=0}" />
+
+                                            <controls:WheelPicker Grid.Column="3" Count="60" Value="{Binding TimeSheet.Minute}" />
+                                        </Grid>
+                                    </Border>
+                                    <Label Text="{Binding TimeSheet.Footnote}" Style="{StaticResource SectionFooter}" MinimumHeightRequest="36" />
+                                </VerticalStackLayout>
+
+                                <!-- Повтор, дата, окончание, название, иконка. Ошибки и подсказка — сноской под секцией. -->
+                                <VerticalStackLayout Spacing="0">
+                                    <Border Style="{StaticResource Section}">
+                                        <VerticalStackLayout Spacing="0">
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnRepeatTapped" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{x:Static res:AppResources.RepeatHeader}" Style="{StaticResource RowTitle}" />
+                                                <Label Grid.Column="1" Text="{Binding RepeatText}" Style="{StaticResource RowValue}" />
+                                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                                            </Grid>
+
+                                            <!-- Дата и окончание — чип в строке и календарь, раскрывающийся под ней (§3.3). У окончания пустое значение — «Не выбрано». -->
+                                            <VerticalStackLayout Spacing="0" IsVisible="{Binding IsDateRowVisible}">
+                                                <BoxView Style="{StaticResource RowSeparator}" />
+                                                <controls:InlineCalendar Title="{x:Static res:AppResources.RowDate}" Model="{Binding CalendarSheet}"
+                                                                         IsExpanded="{Binding IsDateExpanded}" />
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout Spacing="0" IsVisible="{Binding IsEndsRowVisible}">
+                                                <BoxView Style="{StaticResource RowSeparator}" />
+                                                <controls:InlineCalendar Title="{x:Static res:AppResources.RowEnds}" Model="{Binding EndsSheet}"
+                                                                         IsExpanded="{Binding IsEndsExpanded}" />
+                                            </VerticalStackLayout>
+
+                                            <BoxView Style="{StaticResource RowSeparator}" />
+                                            <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*">
+                                                <Label Text="{x:Static res:AppResources.RowName}" Style="{StaticResource RowTitle}" />
+                                                <Entry Grid.Column="1" Text="{Binding Label}" Placeholder="{x:Static res:AppResources.DefaultLabel}"
+                                                       MaxLength="60" HorizontalTextAlignment="End" ReturnType="Done" Loaded="OnNameLoaded" />
+                                            </Grid>
+
+                                            <BoxView Style="{StaticResource RowSeparator}" />
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnIconTapped" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{x:Static res:AppResources.RowIcon}" Style="{StaticResource RowTitle}" />
+                                                <Border Grid.Column="1" WidthRequest="{StaticResource SizeRowIcon}" HeightRequest="{StaticResource SizeRowIcon}"
+                                                        VerticalOptions="Center" StrokeShape="RoundRectangle 15" StrokeThickness="0"
+                                                        BackgroundColor="{DynamicResource Tint}" AutomationProperties.IsInAccessibleTree="False">
+                                                    <Image Source="{Binding IconImage}" WidthRequest="18" HeightRequest="18"
+                                                           HorizontalOptions="Center" VerticalOptions="Center" design:IconTint.Color="{DynamicResource OnTint}" />
+                                                </Border>
+                                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                    <Label Text="{x:Static res:AppResources.EndsPickHint}" Style="{StaticResource SectionFooter}" IsVisible="{Binding IsEndsMissing}" />
+                                    <Label Text="{x:Static res:AppResources.RepeatPickDay}" Style="{StaticResource ErrorText}" IsVisible="{Binding IsDaysMissing}" />
+                                    <Label Text="{Binding ErrorText}" Style="{StaticResource ErrorText}" IsVisible="{Binding HasError}" />
+                                </VerticalStackLayout>
+
+                                <!-- Сигнал: оповещение, звук (меню) и вибрация — только у звонящей записи, длительность. -->
+                                <VerticalStackLayout Spacing="0">
+                                    <Label Text="{x:Static res:AppResources.SignalHeader}" Style="{StaticResource SectionHeader}" SemanticProperties.HeadingLevel="Level2" />
+                                    <Border Style="{StaticResource Section}">
+                                        <VerticalStackLayout Spacing="0">
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnAlertTapped" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{x:Static res:AppResources.RowAlert}" Style="{StaticResource RowTitle}" />
+                                                <Label Grid.Column="1" Text="{Binding AlertText}" Style="{StaticResource RowValue}" />
+                                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                                            </Grid>
+
+                                            <VerticalStackLayout Spacing="0" IsVisible="{Binding IsSoundRowsVisible}">
+                                                <BoxView Style="{StaticResource RowSeparator}" />
+                                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                    <Grid.GestureRecognizers>
+                                                        <TapGestureRecognizer Tapped="OnSoundTapped" />
+                                                    </Grid.GestureRecognizers>
+                                                    <Label Text="{x:Static res:AppResources.Sound}" Style="{StaticResource RowTitle}" />
+                                                    <Label Grid.Column="1" Text="{Binding SoundText}" Style="{StaticResource RowValue}" />
+                                                    <Image Grid.Column="2" Source="icon_chevron_updown.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                           design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                                                </Grid>
+                                                <BoxView Style="{StaticResource RowSeparator}" />
+                                                <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                                    <Label Text="{x:Static res:AppResources.Vibration}" Style="{StaticResource RowTitle}" />
+                                                    <Switch Grid.Column="1" IsToggled="{Binding VibrationEnabled}" VerticalOptions="Center" />
+                                                </Grid>
+                                            </VerticalStackLayout>
+
+                                            <BoxView Style="{StaticResource RowSeparator}" />
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnDurationTapped" />
+                                                </Grid.GestureRecognizers>
+                                                <Label Text="{x:Static res:AppResources.RowDuration}" Style="{StaticResource RowTitle}" />
+                                                <Label Grid.Column="1" Text="{Binding DurationText}" Style="{StaticResource RowValue}" />
+                                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                       design:IconTint.Color="{DynamicResource TertiaryLabel}" />
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                    <Label Text="{x:Static res:AppResources.SaveFootnote}" Style="{StaticResource SectionFooter}" />
+                                </VerticalStackLayout>
+
+                                <!-- Удаление — отдельной секцией внизу и только у существующей записи; подтверждение — диалог из этой строки. -->
+                                <Border Style="{StaticResource Section}" IsVisible="{Binding IsExisting}">
+                                    <Grid Style="{StaticResource Row}" BackgroundColor="Transparent">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding DeleteCommand}" />
+                                        </Grid.GestureRecognizers>
+                                        <Label Text="{x:Static res:AppResources.DeleteAlarm}" Style="{StaticResource DestructiveRowAction}" />
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+                        </ScrollView>
+
+                        <!-- Меню звука лежит поверх формы, а не страницы: большая шторка уменьшает всё, что рядом с ней в корне страницы,
+                             и якорь (строка «Звук») оказался бы не там, где рисуется меню. -->
+                        <controls:PopupMenu Items="{Binding SoundSheet.Options}" SelectCommand="{Binding SoundSheet.SelectCommand}"
+                                            Description="{x:Static res:AppResources.Sound}" Loaded="OnSoundMenuLoaded" />
+                    </Grid>
                 </DataTemplate>
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>

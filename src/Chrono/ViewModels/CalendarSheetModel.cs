@@ -24,8 +24,6 @@ public sealed partial class CalendarDayItem : ObservableObject
 
     public bool IsToday => this.Cell.IsToday;
 
-    public bool IsWeekend => this.Cell.IsWeekend;
-
     public bool IsDisabled => this.Cell.Date is not null && !this.Cell.IsEnabled;
 
     public int Row { get; }
@@ -73,32 +71,30 @@ public sealed partial class CalendarSheetModel : ObservableObject
     public IReadOnlyList<string> WeekDayNames { get; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(Hint), nameof(ChipText))]
+    [NotifyPropertyChangedFor(nameof(ChipText))]
     public partial DateOnly? Selected { get; set; }
 
     [ObservableProperty]
     public partial string MonthTitle { get; set; } = "";
 
-    /// <summary>Подсказка, пока дата не выбрана: «Ближайшее» для даты записи, «Выберите последний день» для окончания.</summary>
-    public string EmptyHint { get; init; } = AppResources.NearestHint;
-
     /// <summary>Значение чипа строки, пока дата не выбрана; им же подписана кнопка сброса под календарём: «Ближайшее» для даты записи, «Не выбрано» для окончания.</summary>
     public string EmptyChipText { get; init; } = AppResources.Nearest;
 
+    /// <summary>У ежегодного будильника год и день недели не нужны: чип показывает «17 октября» (DESIGN.md §4.1).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ChipText))]
+    public partial bool IsYearly { get; set; }
+
     /// <summary>Значение чипа строки (§3.3): «сб, 24 окт.» — с годом, если он не текущий, — или <see cref="EmptyChipText"/>.</summary>
     public string ChipText => this.Selected is { } date
-        ? date.ToString(date.Year == this.today.Year ? "ddd, d MMM" : "ddd, d MMM yyyy", CultureInfo.CurrentUICulture)
+        ? this.IsYearly
+            ? date.ToString("d MMMM", CultureInfo.CurrentUICulture)
+            : date.ToString(date.Year == this.today.Year ? "ddd, d MMM" : "ddd, d MMM yyyy", CultureInfo.CurrentUICulture)
         : this.EmptyChipText;
-
-    public string Hint => this.Selected is { } date
-        ? date.ToString("ddd, d MMMM", CultureInfo.CurrentUICulture)
-        : this.EmptyHint;
 
     /// <summary>«Очистить» (= «Ближайшее») не имеет смысла для ежегодного будильника: дата в нём обязательна.</summary>
     [ObservableProperty]
     public partial bool IsClearVisible { get; set; } = true;
-
-    public event EventHandler<bool>? Done;
 
     public void Load(DateOnly? selected, DateOnly today, bool allowPast)
     {
@@ -174,12 +170,6 @@ public sealed partial class CalendarSheetModel : ObservableObject
             cell.IsSelected = false;
         }
     }
-
-    [RelayCommand]
-    private void Ok() => this.Done?.Invoke(this, true);
-
-    [RelayCommand]
-    private void Cancel() => this.Done?.Invoke(this, false);
 
     // Шесть вызывающих (Load, листание по месяцам и годам, «Сегодня») — общий пересчёт сетки и заголовка.
     private void Rebuild()
