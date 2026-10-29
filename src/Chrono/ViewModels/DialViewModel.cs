@@ -10,7 +10,7 @@ namespace Chrono.ViewModels;
 /// <summary>Строка сводки без выбора: текст и дело, в редактор которого она ведёт (null — «Свободно весь день»).</summary>
 public sealed record DialIdleLine(Guid? Id, string Text);
 
-/// <summary>Вкладка «Циферблат»: сегодняшний день секторами, выбор записи, карточка (нажатие — редактор), «+».</summary>
+/// <summary>Вкладка «Циферблат»: сегодняшний день секторами, выбор записи, карточка с действиями («Изменить», «Сделано», «Снять выбор»), «+».</summary>
 public sealed partial class DialViewModel : ObservableObject
 {
     private readonly AlarmService alarmService;
@@ -36,11 +36,27 @@ public sealed partial class DialViewModel : ObservableObject
     public double? ArrowAngle { get; private set; }
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsNowTab))]
+    [NotifyPropertyChangedFor(nameof(HalfIndex))]
     public partial bool IsEvening { get; set; }
 
-    public bool IsNowTab => !this.IsEvening;
+    /// <summary>Сегмент «Сейчас / Вечер» (SegmentedControl): 0 — сейчас, 1 — вечер. Переключение снимает выбор: записи может не быть на другой половине.</summary>
+    public int HalfIndex
+    {
+        get => this.IsEvening ? 1 : 0;
+        set
+        {
+            if (value == this.HalfIndex)
+            {
+                return;
+            }
 
+            this.IsEvening = value == 1;
+            this.selected = null;
+            this.Refresh();
+        }
+    }
+
+    /// <summary>Подстрока шапки — сегодняшняя дата: «Среда, 21 октября».</summary>
     [ObservableProperty]
     public partial string TitleDate { get; set; } = "";
 
@@ -70,8 +86,13 @@ public sealed partial class DialViewModel : ObservableObject
     /// <summary>Подпись карточки для TalkBack.</summary>
     public string CardDescription => $"{this.SelectedTitle}, {this.SelectedDetails}";
 
+    /// <summary>Категория выбранной записи 0–5: точка в карточке красится ролью Cat1…Cat6 и следует теме.</summary>
     [ObservableProperty]
-    public partial Color SelectedColor { get; set; } = Colors.Transparent;
+    public partial int SelectedCategory { get; set; }
+
+    /// <summary>Кнопка карточки: «Сделано» или, если запись уже отмечена, «Снять отметку».</summary>
+    [ObservableProperty]
+    public partial string SelectedDoneText { get; set; } = "";
 
     /// <summary>Верхняя строка сводки: идущее дело, иначе ближайшее, иначе «Свободно весь день» (Id = null).</summary>
     [ObservableProperty]
@@ -105,7 +126,9 @@ public sealed partial class DialViewModel : ObservableObject
         }
 
         var culture = CultureInfo.CurrentUICulture;
-        this.TitleDate = this.now.ToString("ddd, d MMM", culture);
+        // В ru платформа отдаёт день недели строчными: первая буква заглавная.
+        var date = this.now.ToString("dddd, d MMMM", culture);
+        this.TitleDate = culture.TextInfo.ToUpper(date[0]) + date[1..];
 
         var current = DialLayout.Current(this.entries, this.now);
         var next = DialLayout.Next(this.entries, this.now);
@@ -139,7 +162,8 @@ public sealed partial class DialViewModel : ObservableObject
 
             this.SelectedTitle = Title(sel);
             this.SelectedDetails = string.Join(" · ", details);
-            this.SelectedColor = Color.FromArgb(DialLayout.Palette[DialLayout.ColorIndex(sel.Alarm.Id)]);
+            this.SelectedCategory = DialLayout.ColorIndex(sel.Alarm.Id);
+            this.SelectedDoneText = sel.IsDone ? AppResources.DialUnmarkDone : AppResources.DialMarkDone;
             this.CenterTitle = this.SelectedTitle;
             this.CenterSub = range;
         }
@@ -178,17 +202,14 @@ public sealed partial class DialViewModel : ObservableObject
 
     private static string Title(DayEntry entry) => string.IsNullOrWhiteSpace(entry.Alarm.Label) ? AppResources.DefaultLabel : entry.Alarm.Label;
 
-    /// <summary>Касание циферблата: угол от «12 часов» по часовой и доля радиуса обода. Сектор выделяется; пустое место снимает выделение.</summary>
+    /// <summary>
+    /// Касание циферблата: угол от «12 часов» по часовой и доля радиуса обода. Сектор выделяется; касание пустого места, центра и места
+    /// за ободом ничего не делает (DESIGN.md §4.10) — выбор снимает кнопка «Снять выбор» или переключение сегмента.
+    /// </summary>
     public void SelectAt(double angle, double radiusFraction)
     {
         if (DialLayout.HitTest(this.Slices, angle, radiusFraction, this.SelectedId) is not { } hit)
         {
-            if (this.selected is not null)
-            {
-                this.selected = null;
-                this.Refresh();
-            }
-
             return;
         }
 
@@ -197,19 +218,22 @@ public sealed partial class DialViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void ShowNow()
+    private void ClearSelection()
     {
-        // Выбранной записи может не быть на другой половине: переключение снимает выбор.
-        this.IsEvening = false;
         this.selected = null;
         this.Refresh();
     }
 
+    // Отметка «сделано» ставится на день выбранной записи; выбор сохраняется, кнопка меняет подпись.
     [RelayCommand]
-    private void ShowEvening()
+    private void ToggleDone()
     {
-        this.IsEvening = true;
-        this.selected = null;
+        if (this.selected is not { } entry)
+        {
+            return;
+        }
+
+        this.alarmService.SetDone(entry.Alarm.Id, DateOnly.FromDateTime(entry.Start), !entry.IsDone);
         this.Refresh();
     }
 

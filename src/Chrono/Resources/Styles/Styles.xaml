@@ -220,6 +220,14 @@
         <Setter Property="TextColor" Value="{DynamicResource Tint}" />
     </Style>
 
+    <!-- Текстовая кнопка размера M: «Снять выбор» рядом с другими кнопками карточки. -->
+    <Style x:Key="PlainButtonM" TargetType="Button" BasedOn="{StaticResource FilledButtonM}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+        <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />
+        <Setter Property="FontAttributes" Value="None" />
+    </Style>
+
     <!-- Размер S (28): «Исправить» в строке «Надёжности». -->
     <Style x:Key="TintedButtonS" TargetType="Button" BasedOn="{StaticResource TintedButtonM}">
         <Setter Property="HeightRequest" Value="{StaticResource SizeButtonS}" />

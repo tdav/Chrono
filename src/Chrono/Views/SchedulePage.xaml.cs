@@ -13,6 +13,8 @@ public partial class SchedulePage : ContentPage
         this.InitializeComponent();
         this.viewModel = viewModel;
         this.BindingContext = viewModel;
+        // Шапка сворачивается по прокрутке страницы. В XAML ссылка не подходит: шапка объявлена раньше прокрутки (на неё ссылается отступ).
+        this.Header.ScrollView = this.Scroll;
     }
 
     protected override void OnAppearing()
