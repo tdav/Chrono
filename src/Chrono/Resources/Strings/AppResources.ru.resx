@@ -684,4 +684,16 @@
   <data name="SheetResize" xml:space="preserve">
     <value>Изменить высоту шторки</value>
   </data>
+  <data name="RepeatDays" xml:space="preserve">
+    <value>Дни</value>
+  </data>
+  <data name="RepeatPickDay" xml:space="preserve">
+    <value>Выберите хотя бы один день.</value>
+  </data>
+  <data name="StepperDecrease" xml:space="preserve">
+    <value>Уменьшить</value>
+  </data>
+  <data name="StepperIncrease" xml:space="preserve">
+    <value>Увеличить</value>
+  </data>
 </root>

@@ -7,10 +7,16 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-/// <summary>Черновик шторки звука: Id "" — «Без звука». Нажатие на мелодию проигрывает её один раз.</summary>
+/// <summary>
+/// Черновик вида «Звук»: Id "" — «Без звука». Выбор мелодии проигрывает её один раз, «Без звука» останавливает прослушивание
+/// (DESIGN.md §3.5); <see cref="Options"/> и <see cref="SelectCommand"/> годятся и списку в шторке, и <c>Controls/PopupMenu</c>.
+/// </summary>
 public sealed partial class SoundSheetModel : ObservableObject
 {
     private readonly ISoundPlayer player;
+
+    // Значение, с которым вид открыли: по нему считается IsDirty.
+    private string loadedId = Sounds.Default;
 
     public SoundSheetModel(ISoundPlayer player)
     {
@@ -26,11 +32,22 @@ public sealed partial class SoundSheetModel : ObservableObject
     public ObservableCollection<ChoiceOption> Options { get; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDirty))]
     public partial string SelectedId { get; set; } = Sounds.Default;
+
+    /// <summary>Выбор отличается от загруженного: закрытие без ✓ спросит «Не сохранять / Сохранить / Отменить».</summary>
+    public bool IsDirty => this.SelectedId != this.loadedId;
 
     public event EventHandler<bool>? Done;
 
-    public void Load(bool soundEnabled, string soundId) => this.SelectedId = soundEnabled ? soundId : "";
+    public void Load(bool soundEnabled, string soundId)
+    {
+        this.loadedId = soundEnabled ? soundId : "";
+        this.SelectedId = this.loadedId;
+
+        // SelectedId мог не измениться (то же значение, что и в прошлый раз), а loadedId — да.
+        this.OnPropertyChanged(nameof(this.IsDirty));
+    }
 
     [RelayCommand]
     private void Select(ChoiceOption option)

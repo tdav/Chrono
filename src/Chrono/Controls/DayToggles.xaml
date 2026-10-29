@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:vm="clr-namespace:Chrono.ViewModels"
+             x:Class="Chrono.Controls.DayToggles"
+             x:Name="Root" x:DataType="controls:DayToggles">
+    <!-- Дни недели кругами (DESIGN.md §3.4): круг 40 в области нажатия 44, подпись FootnoteEmphasized.
+         «Выкл» — TertiarySystemFill и Label, «вкл» — Tint и OnTint. Неделя с понедельника — порядок задаёт Days. -->
+    <FlexLayout JustifyContent="SpaceBetween" BindableLayout.ItemsSource="{Binding Days, Source={x:Reference Root}}">
+        <BindableLayout.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChoiceOption">
+                <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}"
+                      SemanticProperties.Description="{Binding Name}">
+                    <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                            BackgroundColor="{DynamicResource TertiarySystemFill}" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Label Text="{Binding Name}" Style="{StaticResource TextFootnoteEmphasized}" TextColor="{DynamicResource Label}"
+                               HorizontalOptions="Center" VerticalOptions="Center">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                    <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Border>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnDayTapped" />
+                    </Grid.GestureRecognizers>
+                </Grid>
+            </DataTemplate>
+        </BindableLayout.ItemTemplate>
+    </FlexLayout>
+</ContentView>

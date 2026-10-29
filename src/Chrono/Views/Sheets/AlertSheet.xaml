@@ -2,29 +2,29 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Chrono.ViewModels"
-             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:design="clr-namespace:Chrono.Design"
              x:Class="Chrono.Views.Sheets.AlertSheet"
              x:DataType="vm:OptionsSheetModel">
 
-    <VerticalStackLayout Spacing="16">
-
-        <!-- Три уровня оповещения: галочка у выбранного. -->
-        <Border Style="{StaticResource RowGroup}">
+    <!-- Вид оповещения (DESIGN.md §3.6): список выбора, галочка Tint справа у выбранного, фон строки не меняется.
+         Самостоятельный View: кнопок «Ок» и «Отмена» нет — ✓ и ✕ в панели шторки. -->
+    <VerticalStackLayout>
+        <Border Style="{StaticResource Section}">
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChoiceOption">
                         <VerticalStackLayout>
                             <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
                                 <Label Text="{Binding Name}" Style="{StaticResource RowTitle}" />
-                                <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20"
-                                       VerticalOptions="Center" IsVisible="{Binding IsSelected}" />
+                                <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Tint}" IsVisible="{Binding IsSelected}" />
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
                                         CommandParameter="{Binding .}" />
                                 </Grid.GestureRecognizers>
                             </Grid>
-                            <BoxView Style="{StaticResource RowDivider}">
+                            <BoxView Style="{StaticResource RowSeparator}">
                                 <BoxView.Triggers>
                                     <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
                                         <Setter Property="IsVisible" Value="False" />

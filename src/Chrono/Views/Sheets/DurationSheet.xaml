@@ -3,46 +3,86 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:design="clr-namespace:Chrono.Design"
              x:Class="Chrono.Views.Sheets.DurationSheet"
              x:DataType="vm:DurationSheetModel">
 
-    <VerticalStackLayout Spacing="16">
+    <!-- Вид длительности (DESIGN.md §3.8): список выбора и строка «Своё, мин» со степпером. Самостоятельный View: кнопок «Ок» и «Отмена» нет —
+         ✓ и ✕ в панели шторки. Выбор применяется сразу: список отмечает значение модели, степпер его двигает. -->
+    <VerticalStackLayout Spacing="{StaticResource Space6}">
 
-        <!-- Готовые значения: чипы переносятся на следующую строку; выбранный — металл. -->
-        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Chips}">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="vm:ChoiceOption">
-                    <Border Style="{StaticResource Chip}" Margin="0,0,8,8">
-                        <Border.Triggers>
-                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DurationSheetModel}}, Path=SelectPresetCommand}"
-                                CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
-                        <Label Text="{Binding Name}" Style="{StaticResource ChipText}">
-                            <Label.Triggers>
-                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                    <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
-                                </DataTrigger>
-                            </Label.Triggers>
-                        </Label>
-                    </Border>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </FlexLayout>
+        <!-- Готовые значения: галочка Tint справа у выбранного, фон строки не меняется. -->
+        <Border Style="{StaticResource Section}">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Options}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChoiceOption">
+                        <VerticalStackLayout>
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                                <Label Text="{Binding Name}" Style="{StaticResource RowTitle}" />
+                                <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Tint}" IsVisible="{Binding IsSelected}" />
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:DurationSheetModel}}, Path=SelectPresetCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                            <BoxView Style="{StaticResource RowSeparator}">
+                                <BoxView.Triggers>
+                                    <DataTrigger TargetType="BoxView" Binding="{Binding IsLast}" Value="True">
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </DataTrigger>
+                                </BoxView.Triggers>
+                            </BoxView>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </Border>
 
-        <!-- Своё значение: только цифры 1…720. Код поле не переписывает (маски нет, курсор не трогаем); ✓ шторки активна только при корректной строке. -->
-        <Border Style="{StaticResource RowGroup}">
-            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowTitle}" />
-                <Entry x:Name="CustomEntry" Grid.Column="1" Text="{Binding CustomText}" Keyboard="Numeric" MaxLength="3"
-                       HorizontalTextAlignment="End" WidthRequest="80" Placeholder="0"
-                       FontFamily="ManropeBold" FontSize="14.5"
-                       SemanticProperties.Description="{x:Static res:AppResources.DurationCustom}" />
+        <!-- «Своё, мин»: название и значение («35 мин») слева, степпер справа — капсула 94 × 32 на TertiarySystemFill с разделителем;
+             у каждой половины область нажатия 47 × 44. На границе диапазона (5 и 720) символ неактивной половины — TertiaryLabel. -->
+        <Border Style="{StaticResource Section}">
+            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                <VerticalStackLayout VerticalOptions="Center">
+                    <Label Text="{x:Static res:AppResources.DurationCustom}" Style="{StaticResource RowTitle}" />
+                    <Label Text="{Binding MinutesText}" Style="{StaticResource RowSubtitle}" />
+                </VerticalStackLayout>
+
+                <Grid Grid.Column="1" WidthRequest="{StaticResource SizeStepperW}" HeightRequest="{StaticResource SizeHit}" VerticalOptions="Center">
+                    <Border HeightRequest="{StaticResource SizeStepperH}" VerticalOptions="Center" InputTransparent="True"
+                            BackgroundColor="{DynamicResource TertiarySystemFill}" StrokeThickness="0" StrokeShape="RoundRectangle 16" />
+                    <BoxView WidthRequest="{DynamicResource HairlineWidth}" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"
+                             InputTransparent="True" Color="{DynamicResource Separator}" />
+                    <Grid ColumnDefinitions="*,*">
+                        <Grid SemanticProperties.Description="{x:Static res:AppResources.StepperDecrease}">
+                            <Label Text="−" Style="{StaticResource TextTitle3}" TextColor="{DynamicResource Label}"
+                                   HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding CanDecrease}" Value="False">
+                                        <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding DecreaseCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                        <Grid Grid.Column="1" SemanticProperties.Description="{x:Static res:AppResources.StepperIncrease}">
+                            <Label Text="+" Style="{StaticResource TextTitle3}" TextColor="{DynamicResource Label}"
+                                   HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding CanIncrease}" Value="False">
+                                        <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding IncreaseCommand}" />
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </Grid>
         </Border>
     </VerticalStackLayout>

@@ -2,7 +2,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Chrono.ViewModels"
-             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:design="clr-namespace:Chrono.Design"
              xmlns:sheets="clr-namespace:Chrono.Views.Sheets"
              x:Class="Chrono.Views.Sheets.IconSheet"
              x:DataType="vm:OptionsSheetModel">
@@ -11,37 +11,56 @@
         <sheets:IconImageConverter x:Key="IconImage" />
     </ContentView.Resources>
 
-    <VerticalStackLayout Spacing="16">
+    <!-- Вид иконки (DESIGN.md §3.7): превью 88 и сетка значков по 6 в ряд в одной секции. Выбор применяется сразу — превью следит за SelectedId.
+         Самостоятельный View: кнопок «Ок» и «Отмена» нет — ✓ и ✕ в панели шторки. -->
+    <Border Style="{StaticResource Section}" Padding="8,16,8,8">
+        <VerticalStackLayout Spacing="{StaticResource Space4}">
 
-        <!-- Сетка 5 колонок × 10 рядов: ячейка занимает 20% ширины (Basis), кружок 56 по центру ячейки, поэтому колонок ровно 5 при любой ширине экрана. Сетка в ScrollView высотой не больше 350 (ряд — около 78, пятый ряд виден наполовину — намёк на прокрутку): панель шторки прижата к низу страницы, и без ограничения 50 иконок вытолкнули бы «Отмену» и «OK» за экран; кнопки лежат вне ScrollView и всегда видны. Иконки тёмные, поэтому у выбранной металл идёт кольцом вокруг светлого круга, а не заливкой под иконкой. -->
-        <ScrollView MaximumHeightRequest="350">
-        <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="vm:ChoiceOption">
-                    <Grid FlexLayout.Basis="20%" Margin="0,0,0,12">
-                        <Border WidthRequest="56" HeightRequest="56" Padding="5" HorizontalOptions="Center"
-                                StrokeThickness="0" StrokeShape="RoundRectangle 28"
-                                Background="{StaticResource Surface2}"
-                                SemanticProperties.Description="{Binding Name}">
-                            <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-                                </DataTrigger>
-                            </Border.Triggers>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
-                                    CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-                            <Border StrokeThickness="0" StrokeShape="RoundRectangle 23" Background="{StaticResource Surface2}">
-                                <Image Source="{Binding Id, Converter={StaticResource IconImage}}"
-                                       WidthRequest="26" HeightRequest="26" HorizontalOptions="Center" VerticalOptions="Center" />
-                            </Border>
-                        </Border>
-                    </Grid>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </FlexLayout>
-        </ScrollView>
-    </VerticalStackLayout>
+            <!-- Превью: круг 88 TintFill, значок 40 Tint. Название выбранного уже читается в сетке, поэтому для TalkBack превью лишнее. -->
+            <Border WidthRequest="88" HeightRequest="88" StrokeShape="RoundRectangle 44" StrokeThickness="0" HorizontalOptions="Center"
+                    BackgroundColor="{DynamicResource TintFill}" AutomationProperties.IsInAccessibleTree="False">
+                <Image Source="{Binding SelectedId, Converter={StaticResource IconImage}}" WidthRequest="40" HeightRequest="40"
+                       HorizontalOptions="Center" VerticalOptions="Center" design:IconTint.Color="{DynamicResource Tint}" />
+            </Border>
+
+            <!-- Сетка: ячейка занимает 16.5 % ширины (Basis) — ровно 6 колонок при любой ширине (шесть по 16.67 % не поместились бы из-за округления),
+                 круг по центру ячейки. Сетка в ScrollView высотой не больше 262 (ряд 58, пятый ряд виден наполовину — намёк на прокрутку):
+                 панель шторки прижата к низу, и без ограничения 50 значков выдавили бы её за экран. -->
+            <ScrollView MaximumHeightRequest="262" VerticalScrollBarVisibility="Never">
+                <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ChoiceOption">
+                            <Grid FlexLayout.Basis="16.5%" HeightRequest="58" SemanticProperties.Description="{Binding Name}">
+                                <!-- Кольцо выбранного: Tint, 2, через просвет 2 от круга (46 + 2 × 2 + 2 × 2 = 54). -->
+                                <Border WidthRequest="54" HeightRequest="54" StrokeShape="RoundRectangle 27" StrokeThickness="2"
+                                        Stroke="{DynamicResource Tint}" HorizontalOptions="Center" VerticalOptions="Center"
+                                        InputTransparent="True" IsVisible="{Binding IsSelected}" />
+                                <Border WidthRequest="46" HeightRequest="46" StrokeShape="RoundRectangle 23" StrokeThickness="0"
+                                        BackgroundColor="{DynamicResource TertiarySystemFill}" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Image Source="{Binding Id, Converter={StaticResource IconImage}}" WidthRequest="24" HeightRequest="24"
+                                           HorizontalOptions="Center" VerticalOptions="Center" design:IconTint.Color="{DynamicResource Label}">
+                                        <Image.Triggers>
+                                            <DataTrigger TargetType="Image" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="design:IconTint.Color" Value="{DynamicResource OnTint}" />
+                                            </DataTrigger>
+                                        </Image.Triggers>
+                                    </Image>
+                                </Border>
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OptionsSheetModel}}, Path=SelectCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Grid.GestureRecognizers>
+                            </Grid>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </FlexLayout>
+            </ScrollView>
+        </VerticalStackLayout>
+    </Border>
 </ContentView>
