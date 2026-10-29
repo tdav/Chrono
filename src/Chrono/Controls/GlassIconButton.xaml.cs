@@ -33,6 +33,7 @@ public partial class GlassIconButton : ContentView
     public GlassIconButton()
     {
         this.InitializeComponent();
+        this.UpdateLook();
         this.Pointer.PointerPressed += (_, _) => this.Press(true);
         this.Pointer.PointerReleased += (_, _) => this.Press(false);
         // Отмена касания (палец ушёл с кнопки, жест перехвачен прокруткой) приходит как PointerExited.

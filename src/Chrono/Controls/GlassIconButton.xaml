@@ -2,13 +2,13 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Chrono.Controls"
-             xmlns:design="clr-namespace:Chrono.Design"
              x:Class="Chrono.Controls.GlassIconButton"
              x:Name="Root" x:DataType="controls:GlassIconButton">
     <!-- Стеклянная кнопка панели (DESIGN.md §3): круг 44 с символом или капсула 44 с короткой подписью.
-         Вид по умолчанию — обычная (Label); главная (IsProminent) перекрашивается кодом: стиль GlassButtonProminent, символ и подпись OnTint. -->
+         Стиль, цвет символа и подпись задаёт UpdateLook (в конструкторе и при смене Text / IsProminent): обычная — GlassButton и Label, главная — GlassButtonProminent и OnTint.
+         Стиль не задаётся здесь обычным значением: оно приоритетнее SetDynamicResource, и смена стиля кодом не применялась бы. -->
     <ContentView.Content>
-        <Border x:Name="Surface" Style="{StaticResource GlassButton}" MinimumWidthRequest="{StaticResource SizeGlassButton}"
+        <Border x:Name="Surface" MinimumWidthRequest="{StaticResource SizeGlassButton}"
                 SemanticProperties.Description="{Binding Description, Source={x:Reference Root}}">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding Command, Source={x:Reference Root}}"
@@ -18,9 +18,8 @@
             </Border.GestureRecognizers>
             <Grid>
                 <Image x:Name="Glyph" Source="{Binding Source, Source={x:Reference Root}}" WidthRequest="22" HeightRequest="22"
-                       HorizontalOptions="Center" VerticalOptions="Center"
-                       design:IconTint.Color="{DynamicResource Label}" />
-                <!-- Подпись капсулы: body, поля 16; цвет — стиль Label по умолчанию. -->
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+                <!-- Подпись капсулы: body, поля 16; цвет задаёт UpdateLook. -->
                 <Label x:Name="Caption" IsVisible="False" Text="{Binding Text, Source={x:Reference Root}}" Margin="16,0"
                        HorizontalOptions="Center" VerticalOptions="Center" LineBreakMode="NoWrap" />
             </Grid>
