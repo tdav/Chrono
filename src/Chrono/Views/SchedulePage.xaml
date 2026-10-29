@@ -213,7 +213,12 @@
                 <Label Text="{x:Static res:AppResources.ScheduleEmpty}" Style="{StaticResource TextSubheadline}"
                        TextColor="{DynamicResource SecondaryLabel}" HorizontalOptions="Center" HorizontalTextAlignment="Center"
                        IsVisible="{Binding IsEmpty}" Margin="24,48" />
+
+                <!-- Низ прокрутки: содержимое можно поднять выше плавающего нижнего меню Android (на iOS элемента нет). -->
+                <ContentView Style="{StaticResource TabBarClearance}" />
             </VerticalStackLayout>
         </ScrollView>
+
+        <controls:FloatingTabBar Current="schedule" />
     </Grid>
 </ContentPage>

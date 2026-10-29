@@ -8,8 +8,11 @@
        Shell.TabBarForegroundColor="{DynamicResource Tint}"
        Shell.TabBarUnselectedColor="{DynamicResource Label}">
 
-    <!-- Нижнее меню. Порядок важен: первой открывается вкладка «Будильники» (см. AlarmListViewModel.AppearingAsync). -->
-    <TabBar>
+    <!-- Нижнее меню. Порядок важен: первой открывается вкладка «Будильники» (см. AlarmListViewModel.AppearingAsync).
+         На iOS — системный таб-бар по этим вкладкам (значки и подписи нужны ему). На Android нативная панель скрыта: вместо неё каждая
+         корневая страница несёт свою плавающую капсулу Controls/FloatingTabBar (DESIGN.md §3.9). Свойство задано на TabBar, а не на Shell:
+         значение Shell.TabBarIsVisible читается от страницы вверх по иерархии до TabBar, сам Shell в поиске не участвует. -->
+    <TabBar Shell.TabBarIsVisible="{OnPlatform Android=False, Default=True}">
         <ShellContent Title="{x:Static res:AppResources.Tab_Alarms}" Icon="icon_tab_alarms.png" Route="alarms"
                       ContentTemplate="{DataTemplate views:AlarmListPage}" />
         <ShellContent Title="{x:Static res:AppResources.Tab_Schedule}" Icon="icon_tab_schedule.png" Route="schedule"

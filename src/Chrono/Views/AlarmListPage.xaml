@@ -131,6 +131,9 @@
                            HorizontalOptions="Center" HorizontalTextAlignment="Center" Margin="16,96,16,0"
                            IsVisible="{Binding IsEmpty}" />
                 </VerticalStackLayout>
+
+                <!-- Низ прокрутки: содержимое можно поднять выше плавающего нижнего меню Android (на iOS элемента нет). -->
+                <ContentView Style="{StaticResource TabBarClearance}" />
             </VerticalStackLayout>
         </ScrollView>
 
@@ -145,5 +148,7 @@
                                           Command="{Binding AddCommand}" />
             </controls:LargeTitleHeader.TrailingContent>
         </controls:LargeTitleHeader>
+
+        <controls:FloatingTabBar Current="alarms" />
     </Grid>
 </ContentPage>

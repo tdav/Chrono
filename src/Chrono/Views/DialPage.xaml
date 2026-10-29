@@ -108,7 +108,12 @@
                         </FlexLayout>
                     </VerticalStackLayout>
                 </Border>
+
+                <!-- Низ прокрутки: содержимое можно поднять выше плавающего нижнего меню Android (на iOS элемента нет). -->
+                <ContentView Style="{StaticResource TabBarClearance}" />
             </VerticalStackLayout>
         </ScrollView>
+
+        <controls:FloatingTabBar Current="dial" />
     </Grid>
 </ContentPage>

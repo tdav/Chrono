@@ -231,10 +231,15 @@
                         <Label Text="{Binding VersionText}" Style="{StaticResource SectionFooter}" />
                     </VerticalStackLayout>
                 </VerticalStackLayout>
+
+                <!-- Низ прокрутки: содержимое можно поднять выше плавающего нижнего меню Android (на iOS элемента нет). -->
+                <ContentView Style="{StaticResource TabBarClearance}" />
             </VerticalStackLayout>
         </ScrollView>
 
         <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" ScrollView="{x:Reference Scroll}"
                                    Title="{x:Static res:AppResources.SettingsTitle}" />
+
+        <controls:FloatingTabBar Current="settings" />
     </Grid>
 </ContentPage>

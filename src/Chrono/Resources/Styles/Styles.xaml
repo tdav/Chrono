@@ -11,6 +11,14 @@
     <!-- Толщина разделителя — один физический пиксель; точное значение ThemeService.Attach пишет по плотности экрана. -->
     <x:Double x:Key="HairlineWidth">0.5</x:Double>
 
+    <!-- Нижний отступ прокручиваемого содержимого корневых страниц: последним элементом ScrollView ставится ContentView с этим стилем.
+         На Android поверх низа экрана лежит плавающая капсула FloatingTabBar — высота SizeTabbar (62) и зазор под ней SizeTabbarInset / 2 (10,5):
+         содержимое можно прокрутить выше капсулы. На iOS таб-бар системный и сам сдвигает содержимое: элемент скрыт и места (и промежутка в стеке) не занимает. -->
+    <Style x:Key="TabBarClearance" TargetType="ContentView">
+        <Setter Property="HeightRequest" Value="72.5" />
+        <Setter Property="IsVisible" Value="{OnPlatform Android=True, Default=False}" />
+    </Style>
+
     <!-- ===== Страницы ===== -->
 
     <!-- Экраны со списками — SystemGroupedBackground; экраны без групп (сигнал) — стиль PlainPage. -->

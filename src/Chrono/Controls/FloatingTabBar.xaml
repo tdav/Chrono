@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Chrono.Controls.FloatingTabBar"
+             VerticalOptions="End" Margin="21,0,21,10.5"
+             IsVisible="{OnPlatform Android=True, Default=False}">
+    <!-- Нижнее меню Android (DESIGN.md §3.9): плавающая капсула высотой SizeTabbar (62) на GlassOpaque с кромкой GlassEdge и тенью shadowGlass.
+         Поля — SizeTabbarInset (21) по бокам и половина его (10,5) снизу, над системной панелью навигации: сама капсула стоит в корневом Grid страницы
+         с SafeAreaEdges="Container". На iOS элемент скрыт — там системный таб-бар Shell.
+         Четыре вкладки равной ширины собирает код (подписи, значки, жесты); выбранную показывает «пилюля» SecondarySystemFill на всю высоту вкладки
+         (отступ капсулы 4 → пилюля 88 × 54, радиус 31 − 4 = 27, как у вложенных форм §2.5). -->
+    <ContentView.Resources>
+        <!-- Подпись вкладки: tabLabel 10/12 Semibold. Цвет — роль по выбору (Tint / Label), задаёт код. Не переносится, а усекается. -->
+        <Style x:Key="TabTitle" TargetType="Label" BasedOn="{StaticResource TextTabLabel}">
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Setter Property="MaxLines" Value="1" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+        </Style>
+        <!-- Бейдж «Настроек»: круг не меньше 20 (две цифры — капсула), красный, число белым. Стоит в правом верхнем углу значка 26 × 26 и
+             сдвигается смещением (не отступом) так, что его центр на 15,5 правее и на 8 выше центра значка, как на эталоне. -->
+        <Style x:Key="TabBadge" TargetType="Border">
+            <Setter Property="IsVisible" Value="False" />
+            <Setter Property="HorizontalOptions" Value="End" />
+            <Setter Property="VerticalOptions" Value="Start" />
+            <Setter Property="TranslationX" Value="12.5" />
+            <Setter Property="TranslationY" Value="-5" />
+            <Setter Property="MinimumWidthRequest" Value="20" />
+            <Setter Property="MinimumHeightRequest" Value="20" />
+            <Setter Property="Padding" Value="5,0" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource Red}" />
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+        </Style>
+        <Style x:Key="TabBadgeText" TargetType="Label" BasedOn="{StaticResource TextCaption2Emphasized}">
+            <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+            <Setter Property="HorizontalOptions" Value="Center" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentView.Resources>
+
+    <Border HeightRequest="{StaticResource SizeTabbar}" Padding="4" StrokeShape="RoundRectangle 31"
+            Stroke="{DynamicResource GlassEdge}" StrokeThickness="{DynamicResource HairlineWidth}"
+            BackgroundColor="{DynamicResource GlassOpaque}">
+        <Border.Shadow>
+            <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="{AppThemeBinding Light=0.10, Dark=0.45}" />
+        </Border.Shadow>
+        <Grid>
+            <!-- Пилюля: ширину и сдвиг задаёт код (PlacePill). -->
+            <Border x:Name="Pill" HorizontalOptions="Start" StrokeThickness="0" StrokeShape="RoundRectangle 27"
+                    BackgroundColor="{DynamicResource SecondarySystemFill}" />
+            <Grid x:Name="Cells" />
+        </Grid>
+    </Border>
+</ContentView>
