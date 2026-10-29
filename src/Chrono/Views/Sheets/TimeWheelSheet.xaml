@@ -103,7 +103,11 @@
             </Grid>
         </Grid>
 
-        <!-- Сноска: SectionFooter рассчитан на секцию с полями 16 от края экрана, а шторка уже даёт их своим отступом. -->
-        <Label Text="{Binding Footnote}" Style="{StaticResource SectionFooter}" Margin="0" HorizontalTextAlignment="Center" />
+        <!-- Сноска: SectionFooter рассчитан на секцию с полями 16 от края экрана, а шторка уже даёт их своим отступом.
+             Высота — не меньше двух строк footnote (2 × 18): фраза то переносится, то нет, а шторка прижата книзу —
+             без запаса её верх и барабан прыгали бы под пальцем.
+             ponytail: запас на базовый размер шрифта; при крупном системном шрифте прыжок возможен — тогда считать от LineHeight. -->
+        <Label Text="{Binding Footnote}" Style="{StaticResource SectionFooter}" Margin="0" HorizontalTextAlignment="Center"
+               MinimumHeightRequest="36" />
     </VerticalStackLayout>
 </ContentView>
