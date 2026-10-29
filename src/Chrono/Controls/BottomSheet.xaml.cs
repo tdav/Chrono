@@ -102,6 +102,8 @@ public partial class BottomSheet : ContentView
     // Вложенные шаги: что было в шторке до Push — содержимое и заголовок.
     private readonly Stack<(View? Content, string Title)> steps = new();
     private double panY;
+    // Ожидание перемера после смены детента: панель доплывает со старого места на новое.
+    private EventHandler? resized;
 
     public BottomSheet()
     {
@@ -256,6 +258,13 @@ public partial class BottomSheet : ContentView
             var choice = element is Page page
                 ? await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save)
                 : AppResources.DontSave;
+
+            // Пока висел диалог, шторку закрыли другим путём: второй раз не отменяем.
+            if (!this.IsOpen)
+            {
+                return;
+            }
+
             if (choice == AppResources.Save)
             {
                 this.Confirm();
@@ -354,6 +363,8 @@ public partial class BottomSheet : ContentView
 
         this.IsVisible = false;
         this.Opacity = 1;
+        // Растворение при смене детента могло оборваться закрытием: следующее открытие — с непрозрачной панелью.
+        this.Panel.Opacity = 1;
         this.Panel.TranslationY = 0;
         this.ScrimView.Opacity = 1;
         while (this.steps.Count > 0)
@@ -372,7 +383,17 @@ public partial class BottomSheet : ContentView
         var large = this.Detent == SheetDetent.Large && this.IsOpen;
         var reduceMotion = ReduceMotion;
         var motion = animate && this.IsOpen && this.IsVisible;
-        var oldY = this.Panel.Y;
+        // Видимое место панели — с учётом идущего сдвига (открытие или прошлая смена детента).
+        var oldY = this.Panel.Y + this.Panel.TranslationY;
+
+        // Прежнее ожидание снимается всегда: двойное переключение за кадр не меняет размер,
+        // и подписка сработала бы позже, при постороннем перемере, со старым местом.
+        if (this.resized is not null)
+        {
+            this.Panel.SizeChanged -= this.resized;
+            this.resized = null;
+        }
+
         if (large)
         {
             this.Panel.Margin = new Thickness(0, 12, 0, 0);
@@ -400,14 +421,14 @@ public partial class BottomSheet : ContentView
         }
         else if (motion)
         {
-            void OnResized(object? sender, EventArgs e)
+            this.resized = (_, _) =>
             {
-                this.Panel.SizeChanged -= OnResized;
+                this.Panel.SizeChanged -= this.resized;
+                this.resized = null;
                 this.Panel.TranslationY = oldY - this.Panel.Y;
                 _ = this.Panel.TranslateToAsync(0, 0, 500, Spring);
-            }
-
-            this.Panel.SizeChanged += OnResized;
+            };
+            this.Panel.SizeChanged += this.resized;
         }
 
         if (this.Parent is not Layout layout)
