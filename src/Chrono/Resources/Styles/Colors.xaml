@@ -1,44 +1,91 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Тема «Шлифованный металл · Кость» (DESIGN.md). Приложение всегда светлое. -->
-<ResourceDictionary>
+<!-- Сгенерировано tools/gen_design.py из DESIGN.json (chrono.mobile.apple.v1 1.0.0). Не править руками. -->
+<!-- Значения светлого вида. ThemeService при старте и при смене темы или контраста записывает эти ключи в ресурсы
+     приложения значениями текущего вида, поэтому в XAML цвета берутся через DynamicResource. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <Color x:Key="Surface">#FFFFFF</Color>
-    <Color x:Key="Surface2">#F5F2EC</Color>
-    <Color x:Key="Hairline">#B8B0A6</Color>
-    <Color x:Key="Divider">#E4DED3</Color>
-    <Color x:Key="Metal900">#26292D</Color>
-    <Color x:Key="Metal700">#2E3136</Color>
-    <Color x:Key="Metal500">#3A3E44</Color>
-    <Color x:Key="Text">#2E3136</Color>
-    <Color x:Key="TextMuted">#6B7078</Color>
-    <Color x:Key="OnMetal">#F5F2EC</Color>
-    <Color x:Key="Gold">#D1B27C</Color>
-    <Color x:Key="GoldInk">#8A6A32</Color>
-    <!-- rgba(46,49,54,.42): .42 × 255 = 0x6B. -->
-    <Color x:Key="Scrim">#6B2E3136</Color>
+    <Color x:Key="Label">#FF000000</Color>
+    <Color x:Key="SecondaryLabel">#993C3C43</Color>
+    <Color x:Key="TertiaryLabel">#4D3C3C43</Color>
+    <Color x:Key="QuaternaryLabel">#2E3C3C43</Color>
+    <Color x:Key="PlaceholderText">#4D3C3C43</Color>
+    <Color x:Key="Link">#FF0088FF</Color>
+    <Color x:Key="Tint">#FF0088FF</Color>
+    <Color x:Key="OnTint">#FFFFFFFF</Color>
+    <Color x:Key="Destructive">#FFFF383C</Color>
+    <Color x:Key="Success">#FF34C759</Color>
+    <Color x:Key="Warning">#FFFF8D28</Color>
+    <Color x:Key="Red">#FFFF383C</Color>
+    <Color x:Key="Orange">#FFFF8D28</Color>
+    <Color x:Key="Yellow">#FFFFCC00</Color>
+    <Color x:Key="Green">#FF34C759</Color>
+    <Color x:Key="Mint">#FF00C8B3</Color>
+    <Color x:Key="Teal">#FF00C3D0</Color>
+    <Color x:Key="Cyan">#FF00C0E8</Color>
+    <Color x:Key="Blue">#FF0088FF</Color>
+    <Color x:Key="Indigo">#FF6155F5</Color>
+    <Color x:Key="Purple">#FFCB30E0</Color>
+    <Color x:Key="Pink">#FFFF2D55</Color>
+    <Color x:Key="Brown">#FFAC7F5E</Color>
+    <Color x:Key="Gray">#FF8E8E93</Color>
+    <Color x:Key="Gray2">#FFAEAEB2</Color>
+    <Color x:Key="Gray3">#FFC7C7CC</Color>
+    <Color x:Key="Gray4">#FFD1D1D6</Color>
+    <Color x:Key="Gray5">#FFE5E5EA</Color>
+    <Color x:Key="Gray6">#FFF2F2F7</Color>
+    <Color x:Key="SystemBackground">#FFFFFFFF</Color>
+    <Color x:Key="SecondarySystemBackground">#FFF2F2F7</Color>
+    <Color x:Key="TertiarySystemBackground">#FFFFFFFF</Color>
+    <Color x:Key="SystemGroupedBackground">#FFF2F2F7</Color>
+    <Color x:Key="SecondarySystemGroupedBackground">#FFFFFFFF</Color>
+    <Color x:Key="TertiarySystemGroupedBackground">#FFF2F2F7</Color>
+    <Color x:Key="ElevatedGroupedBackground">#FFF2F2F7</Color>
+    <Color x:Key="ElevatedSecondaryGroupedBackground">#FFFFFFFF</Color>
+    <Color x:Key="Separator">#4A3C3C43</Color>
+    <Color x:Key="OpaqueSeparator">#FFC6C6C8</Color>
+    <Color x:Key="SystemFill">#33787880</Color>
+    <Color x:Key="SecondarySystemFill">#29787880</Color>
+    <Color x:Key="TertiarySystemFill">#1F767680</Color>
+    <Color x:Key="QuaternarySystemFill">#14747480</Color>
+    <Color x:Key="ControlStroke">#00000000</Color>
+    <Color x:Key="GlassFill">#B3FFFFFF</Color>
+    <Color x:Key="GlassFillLarge">#DBFAFAFC</Color>
+    <Color x:Key="GlassRim">#D9FFFFFF</Color>
+    <Color x:Key="GlassEdge">#0F000000</Color>
+    <Color x:Key="GlassOpaque">#FFF9F9F9</Color>
+    <Color x:Key="Scrim">#59000000</Color>
+    <Color x:Key="SegmentThumb">#FFFFFFFF</Color>
+    <Color x:Key="Knob">#FFFFFFFF</Color>
+    <Color x:Key="Cat1">#FF0088FF</Color>
+    <Color x:Key="Cat2">#FF34C759</Color>
+    <Color x:Key="Cat3">#FFFF8D28</Color>
+    <Color x:Key="Cat4">#FFCB30E0</Color>
+    <Color x:Key="Cat5">#FF00C3D0</Color>
+    <Color x:Key="Cat6">#FFFF2D55</Color>
+    <Color x:Key="TintFill">#290088FF</Color>
+    <Color x:Key="DestructiveFill">#29FF383C</Color>
 
-    <LinearGradientBrush x:Key="CanvasBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#FFFFFF" Offset="0" />
-        <GradientStop Color="#EDE9E1" Offset="1" />
-    </LinearGradientBrush>
-
-    <LinearGradientBrush x:Key="MetalBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="{StaticResource Metal500}" Offset="0" />
-        <GradientStop Color="{StaticResource Metal700}" Offset="0.55" />
-        <GradientStop Color="{StaticResource Metal900}" Offset="1" />
-    </LinearGradientBrush>
-
-    <LinearGradientBrush x:Key="GoldEdgeBrush" StartPoint="0,0" EndPoint="1,1">
-        <GradientStop Color="#E3C88F" Offset="0" />
-        <GradientStop Color="#B8975A" Offset="1" />
-    </LinearGradientBrush>
-
-    <!-- Затухание барабана: белый к прозрачному сверху и снизу. -->
+    <!-- Старые ключи темы «Шлифованный металл · Кость» (DESIGN.json › legacy). Удаляются после переноса экранов. -->
+    <Color x:Key="Surface">#FFFFFFFF</Color>
+    <Color x:Key="Surface2">#1F767680</Color>
+    <Color x:Key="Hairline">#4D3C3C43</Color>
+    <Color x:Key="Divider">#4A3C3C43</Color>
+    <Color x:Key="Metal900">#FF0088FF</Color>
+    <Color x:Key="Metal700">#FF0088FF</Color>
+    <Color x:Key="Metal500">#FF0088FF</Color>
+    <Color x:Key="Text">#FF000000</Color>
+    <Color x:Key="TextMuted">#993C3C43</Color>
+    <Color x:Key="OnMetal">#FFFFFFFF</Color>
+    <Color x:Key="Gold">#FF0088FF</Color>
+    <Color x:Key="GoldInk">#FFFF8D28</Color>
+    <SolidColorBrush x:Key="CanvasBrush" Color="#FFF2F2F7" />
+    <SolidColorBrush x:Key="MetalBrush" Color="#FF0088FF" />
+    <SolidColorBrush x:Key="GoldEdgeBrush" Color="#FF0088FF" />
     <LinearGradientBrush x:Key="FadeDownBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#FFFFFFFF" Offset="0" />
         <GradientStop Color="#00FFFFFF" Offset="1" />
     </LinearGradientBrush>
-
     <LinearGradientBrush x:Key="FadeUpBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#00FFFFFF" Offset="0" />
         <GradientStop Color="#FFFFFFFF" Offset="1" />

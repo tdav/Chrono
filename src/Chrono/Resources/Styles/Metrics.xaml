@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Сгенерировано tools/gen_design.py из DESIGN.json (chrono.mobile.apple.v1 1.0.0). Не править руками. -->
+<!-- Отступы, радиусы и размеры, pt (DESIGN.md §2.1, §2.5, §2.6). В XAML: HeightRequest="{StaticResource SizeRow}". -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <x:Double x:Key="Space1">4</x:Double>
+    <x:Double x:Key="Space1_5">6</x:Double>
+    <x:Double x:Key="Space2">8</x:Double>
+    <x:Double x:Key="Space3">12</x:Double>
+    <x:Double x:Key="Space4">16</x:Double>
+    <x:Double x:Key="Space5">20</x:Double>
+    <x:Double x:Key="Space6">24</x:Double>
+    <x:Double x:Key="Space8">32</x:Double>
+
+    <x:Double x:Key="RadiusXs">4</x:Double>
+    <x:Double x:Key="RadiusSm">8</x:Double>
+    <x:Double x:Key="RadiusIcon">7</x:Double>
+    <x:Double x:Key="RadiusMd">14</x:Double>
+    <x:Double x:Key="RadiusCard">26</x:Double>
+    <x:Double x:Key="RadiusAlert">38</x:Double>
+    <x:Double x:Key="RadiusSheet">38</x:Double>
+    <x:Double x:Key="RadiusDevice">55</x:Double>
+    <x:Double x:Key="RadiusCapsule">999</x:Double>
+
+    <x:Double x:Key="SizeHit">44</x:Double>
+    <x:Double x:Key="SizeRow">52</x:Double>
+    <x:Double x:Key="SizeRowIcon">30</x:Double>
+    <x:Double x:Key="SizeGlassButton">44</x:Double>
+    <x:Double x:Key="SizeSwitchW">64</x:Double>
+    <x:Double x:Key="SizeSwitchH">28</x:Double>
+    <x:Double x:Key="SizeKnobW">38</x:Double>
+    <x:Double x:Key="SizeKnobH">24</x:Double>
+    <x:Double x:Key="SizeSegment">32</x:Double>
+    <x:Double x:Key="SizeButtonS">28</x:Double>
+    <x:Double x:Key="SizeButtonM">34</x:Double>
+    <x:Double x:Key="SizeButtonL">50</x:Double>
+    <x:Double x:Key="SizeStepperW">94</x:Double>
+    <x:Double x:Key="SizeStepperH">32</x:Double>
+    <x:Double x:Key="SizeSliderTrack">6</x:Double>
+    <x:Double x:Key="SizeProgress">4</x:Double>
+    <x:Double x:Key="SizeTabbar">62</x:Double>
+    <x:Double x:Key="SizeTabbarInset">21</x:Double>
+    <x:Double x:Key="SizeGrabberW">36</x:Double>
+    <x:Double x:Key="SizeGrabberH">5</x:Double>
+    <x:Double x:Key="SizeWheelRow">34</x:Double>
+    <x:Double x:Key="SizeWheel">216</x:Double>
+    <x:Double x:Key="SizeCalendarCell">44</x:Double>
+    <x:Double x:Key="SizeStatusBar">54</x:Double>
+    <x:Double x:Key="SizeDeviceW">402</x:Double>
+    <x:Double x:Key="SizeDeviceH">874</x:Double>
+
+</ResourceDictionary>

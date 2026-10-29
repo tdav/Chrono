@@ -16,5 +16,10 @@ public partial class AppShell : Shell
     public AppShell()
     {
         this.InitializeComponent();
+        // Таб-бар (DESIGN.md §3.9): на iOS фон не задаётся — системное стекло; на Android — непрозрачная панель GlassOpaque.
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            this.SetDynamicResource(Shell.TabBarBackgroundColorProperty, "GlassOpaque");
+        }
     }
 }
