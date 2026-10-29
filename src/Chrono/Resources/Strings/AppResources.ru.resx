@@ -132,9 +132,6 @@
   <data name="EmptyList" xml:space="preserve">
     <value>Будильников пока нет. Нажмите +, чтобы добавить.</value>
   </data>
-  <data name="WarningBanner" xml:space="preserve">
-    <value>Будильник может не сработать — исправить</value>
-  </data>
   <data name="ListEdit" xml:space="preserve">
     <value>Изменить</value>
   </data>
@@ -168,9 +165,6 @@
   <data name="NewAlarm" xml:space="preserve">
     <value>Новый будильник</value>
   </data>
-  <data name="EditAlarm" xml:space="preserve">
-    <value>Изменить будильник</value>
-  </data>
   <data name="Sound" xml:space="preserve">
     <value>Звук</value>
   </data>
@@ -182,9 +176,6 @@
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
-  </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Отмена</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Сохранить</value>
@@ -360,9 +351,6 @@
   <data name="MathChallenge" xml:space="preserve">
     <value>Решить пример</value>
   </data>
-  <data name="MathChallengeDescription" xml:space="preserve">
-    <value>Чтобы выключить будильник, нужно решить пример на сложение или вычитание двузначных чисел. Выберите верный ответ из четырёх вариантов; при неверном сигнал продолжается и появляется новый пример.</value>
-  </data>
   <data name="SolveToStop" xml:space="preserve">
     <value>Решите пример, чтобы выключить сигнал</value>
   </data>
@@ -384,15 +372,6 @@
   <data name="Repeat_Yearly" xml:space="preserve">
     <value>Каждый год</value>
   </data>
-  <data name="PlateDate" xml:space="preserve">
-    <value>Сработает · {0}</value>
-  </data>
-  <data name="PlateToday" xml:space="preserve">
-    <value>Сработает сегодня · {0}</value>
-  </data>
-  <data name="PlateTomorrow" xml:space="preserve">
-    <value>Сработает завтра · {0}</value>
-  </data>
   <data name="RelDays" xml:space="preserve">
     <value>через {0} д {1} ч</value>
   </data>
@@ -401,9 +380,6 @@
   </data>
   <data name="RelMinutes" xml:space="preserve">
     <value>через {0} мин</value>
-  </data>
-  <data name="TimePassed" xml:space="preserve">
-    <value>время уже прошло</value>
   </data>
   <data name="RingsAt" xml:space="preserve">
     <value>Сработает {0}, {1}, — {2}.</value>
@@ -435,9 +411,6 @@
   <data name="RingsDay_Sunday" xml:space="preserve">
     <value>в воскресенье</value>
   </data>
-  <data name="RowTime" xml:space="preserve">
-    <value>Время</value>
-  </data>
   <data name="RowDate" xml:space="preserve">
     <value>Дата</value>
   </data>
@@ -446,9 +419,6 @@
   </data>
   <data name="Nearest" xml:space="preserve">
     <value>Ближайшее</value>
-  </data>
-  <data name="NearestHint" xml:space="preserve">
-    <value>Ближайшее подходящее</value>
   </data>
   <data name="NoSound" xml:space="preserve">
     <value>Без звука</value>
@@ -465,23 +435,8 @@
   <data name="SignalHeader" xml:space="preserve">
     <value>Сигнал</value>
   </data>
-  <data name="DiscardTitle" xml:space="preserve">
-    <value>Не сохранять изменения?</value>
-  </data>
-  <data name="DiscardYes" xml:space="preserve">
-    <value>Не сохранять</value>
-  </data>
-  <data name="SheetOk" xml:space="preserve">
-    <value>Ок</value>
-  </data>
-  <data name="Clear" xml:space="preserve">
-    <value>Очистить</value>
-  </data>
   <data name="Today" xml:space="preserve">
     <value>Сегодня</value>
-  </data>
-  <data name="Now" xml:space="preserve">
-    <value>Сейчас</value>
   </data>
   <data name="Back" xml:space="preserve">
     <value>Назад</value>
@@ -491,12 +446,6 @@
   </data>
   <data name="NextMonth" xml:space="preserve">
     <value>Следующий месяц</value>
-  </data>
-  <data name="PrevYear" xml:space="preserve">
-    <value>Предыдущий год</value>
-  </data>
-  <data name="NextYear" xml:space="preserve">
-    <value>Следующий год</value>
   </data>
   <data name="PrevWeek" xml:space="preserve">
     <value>Предыдущая неделя</value>

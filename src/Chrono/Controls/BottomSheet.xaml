@@ -26,7 +26,7 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer />
                 </Border.GestureRecognizers>
-                <Grid RowDefinitions="Auto,Auto,*">
+                <Grid RowDefinitions="Auto,*">
                     <!-- Граббер и панель — одна зона жестов: касание граббера переключает детенты, свайп вниз закрывает, вверх — большой детент. -->
                     <VerticalStackLayout Spacing="4">
                         <VerticalStackLayout.GestureRecognizers>
@@ -71,9 +71,7 @@
                             </Border>
                         </Grid>
                     </VerticalStackLayout>
-                    <Label x:Name="HintLabel" Grid.Row="1" Style="{StaticResource Footnote}" HorizontalOptions="Center"
-                           Margin="0,0,0,8" IsVisible="False" />
-                    <ContentView x:Name="Body" Grid.Row="2" />
+                    <ContentView x:Name="Body" Grid.Row="1" />
                 </Grid>
             </Border>
         </Grid>

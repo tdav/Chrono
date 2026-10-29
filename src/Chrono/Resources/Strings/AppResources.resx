@@ -9,7 +9,6 @@
   <data name="NextInMinutes" xml:space="preserve"><value>Next alarm in {0} min</value></data>
   <data name="NoActiveAlarms" xml:space="preserve"><value>No active alarms</value></data>
   <data name="EmptyList" xml:space="preserve"><value>No alarms yet. Tap + to add one.</value></data>
-  <data name="WarningBanner" xml:space="preserve"><value>Alarm may not ring — fix</value></data>
   <data name="ListEdit" xml:space="preserve"><value>Edit</value></data>
   <data name="TipLateTitle" xml:space="preserve"><value>Alarm may be late</value></data>
   <data name="TipLateAction" xml:space="preserve"><value>Check reliability</value></data>
@@ -21,12 +20,10 @@
   <data name="Tip_Battery" xml:space="preserve"><value>Battery saver limits Chrono in the background.</value></data>
   <data name="Tip_TimeSensitive" xml:space="preserve"><value>Time Sensitive notifications are off, so Focus may silence the alarm.</value></data>
   <data name="NewAlarm" xml:space="preserve"><value>New alarm</value></data>
-  <data name="EditAlarm" xml:space="preserve"><value>Edit alarm</value></data>
   <data name="Sound" xml:space="preserve"><value>Sound</value></data>
   <data name="Vibration" xml:space="preserve"><value>Vibration</value></data>
   <data name="DeleteAlarm" xml:space="preserve"><value>Delete alarm</value></data>
   <data name="Delete" xml:space="preserve"><value>Delete</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="Ok" xml:space="preserve"><value>OK</value></data>
   <data name="TimeInPast" xml:space="preserve"><value>This time has already passed</value></data>
@@ -85,7 +82,6 @@
   <data name="ChannelSmartWake" xml:space="preserve"><value>Smart wake</value></data>
   <data name="DismissGroup" xml:space="preserve"><value>Turning off the alarm</value></data>
   <data name="MathChallenge" xml:space="preserve"><value>Solve a problem</value></data>
-  <data name="MathChallengeDescription" xml:space="preserve"><value>To stop the alarm, solve an addition or subtraction problem with two-digit numbers. Pick the right answer out of four; a wrong one gives a new problem and the alarm keeps ringing.</value></data>
   <data name="SolveToStop" xml:space="preserve"><value>Solve to stop the alarm</value></data>
   <data name="WrongAnswer" xml:space="preserve"><value>Wrong. The alarm keeps ringing — try this one</value></data>
   <data name="RepeatHeader" xml:space="preserve"><value>Repeat</value></data>
@@ -93,13 +89,9 @@
   <data name="Repeat_Daily" xml:space="preserve"><value>Every day</value></data>
   <data name="Repeat_Weekly" xml:space="preserve"><value>Days of week</value></data>
   <data name="Repeat_Yearly" xml:space="preserve"><value>Every year</value></data>
-  <data name="PlateDate" xml:space="preserve"><value>Rings · {0}</value></data>
-  <data name="PlateToday" xml:space="preserve"><value>Rings today · {0}</value></data>
-  <data name="PlateTomorrow" xml:space="preserve"><value>Rings tomorrow · {0}</value></data>
   <data name="RelDays" xml:space="preserve"><value>in {0} d {1} h</value></data>
   <data name="RelHours" xml:space="preserve"><value>in {0} h {1} min</value></data>
   <data name="RelMinutes" xml:space="preserve"><value>in {0} min</value></data>
-  <data name="TimePassed" xml:space="preserve"><value>time has passed</value></data>
   <data name="RingsAt" xml:space="preserve"><value>Rings {0}, {1}, {2}.</value></data>
   <data name="RingsDay_Today" xml:space="preserve"><value>today</value></data>
   <data name="RingsDay_Tomorrow" xml:space="preserve"><value>tomorrow</value></data>
@@ -110,27 +102,18 @@
   <data name="RingsDay_Friday" xml:space="preserve"><value>on Friday</value></data>
   <data name="RingsDay_Saturday" xml:space="preserve"><value>on Saturday</value></data>
   <data name="RingsDay_Sunday" xml:space="preserve"><value>on Sunday</value></data>
-  <data name="RowTime" xml:space="preserve"><value>Time</value></data>
   <data name="RowDate" xml:space="preserve"><value>Date</value></data>
   <data name="RowName" xml:space="preserve"><value>Name</value></data>
   <data name="Nearest" xml:space="preserve"><value>Nearest</value></data>
-  <data name="NearestHint" xml:space="preserve"><value>Nearest suitable</value></data>
   <data name="NoSound" xml:space="preserve"><value>No sound</value></data>
   <data name="SaveFootnote" xml:space="preserve"><value>Changes are saved with the ✓ button.</value></data>
   <data name="AlarmSheetNew" xml:space="preserve"><value>Alarm</value></data>
   <data name="AlarmSheetEdit" xml:space="preserve"><value>Edit</value></data>
   <data name="SignalHeader" xml:space="preserve"><value>Signal</value></data>
-  <data name="DiscardTitle" xml:space="preserve"><value>Discard changes?</value></data>
-  <data name="DiscardYes" xml:space="preserve"><value>Discard</value></data>
-  <data name="SheetOk" xml:space="preserve"><value>OK</value></data>
-  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="Today" xml:space="preserve"><value>Today</value></data>
-  <data name="Now" xml:space="preserve"><value>Now</value></data>
   <data name="Back" xml:space="preserve"><value>Back</value></data>
   <data name="PrevMonth" xml:space="preserve"><value>Previous month</value></data>
   <data name="NextMonth" xml:space="preserve"><value>Next month</value></data>
-  <data name="PrevYear" xml:space="preserve"><value>Previous year</value></data>
-  <data name="NextYear" xml:space="preserve"><value>Next year</value></data>
   <data name="PrevWeek" xml:space="preserve"><value>Previous week</value></data>
   <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
   <data name="UnmarkDone" xml:space="preserve"><value>Mark as not done</value></data>

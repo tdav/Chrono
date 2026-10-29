@@ -42,15 +42,6 @@ public partial class BottomSheet : ContentView
         nameof(Title), typeof(string), typeof(BottomSheet), string.Empty,
         propertyChanged: (b, _, _) => ((BottomSheet)b).UpdateChrome());
 
-    public static readonly BindableProperty HintProperty = BindableProperty.Create(
-        nameof(Hint), typeof(string), typeof(BottomSheet), string.Empty,
-        propertyChanged: (b, _, n) =>
-        {
-            var sheet = (BottomSheet)b;
-            sheet.HintLabel.Text = (string)n;
-            sheet.HintLabel.IsVisible = !string.IsNullOrEmpty((string)n);
-        });
-
     public static readonly BindableProperty SheetTemplateProperty = BindableProperty.Create(
         nameof(SheetTemplate), typeof(DataTemplate), typeof(BottomSheet), null);
 
@@ -112,9 +103,6 @@ public partial class BottomSheet : ContentView
         this.InitializeComponent();
     }
 
-    /// <summary>✓ — шторка закрывается с переносом правок (до выполнения <see cref="ConfirmCommand"/>).</summary>
-    public event EventHandler? Confirmed;
-
     /// <summary>✕, затемнение, свайп вниз или «Назад» — правки отброшены (до выполнения <see cref="CancelCommand"/>).</summary>
     public event EventHandler? Cancelled;
 
@@ -129,13 +117,6 @@ public partial class BottomSheet : ContentView
     {
         get => (string)this.GetValue(TitleProperty);
         set => this.SetValue(TitleProperty, value);
-    }
-
-    /// <summary>Сноска под панелью («через 20 ч 10 мин»); пустая — не показывается.</summary>
-    public string Hint
-    {
-        get => (string)this.GetValue(HintProperty);
-        set => this.SetValue(HintProperty, value);
     }
 
     /// <summary>Шаблон содержимого; разворачивается при первом открытии шторки.</summary>
@@ -307,7 +288,6 @@ public partial class BottomSheet : ContentView
             return;
         }
 
-        this.Confirmed?.Invoke(this, EventArgs.Empty);
         this.ConfirmCommand?.Execute(null);
     }
 

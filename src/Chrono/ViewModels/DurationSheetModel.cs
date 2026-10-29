@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace Chrono.ViewModels;
 
 /// <summary>
-/// Черновик вида длительности (DESIGN.md §3.8): список «Нет», 15…90 мин и степпер «Своё, мин» (5…720, шаг 5).
+/// Вид длительности (DESIGN.md §3.8): список «Нет», 15…90 мин и степпер «Своё, мин» (5…720, шаг 5).
 /// Источник правды один — <see cref="Minutes"/>: список отмечает совпавшее значение, степпер двигает его, подзаголовок строки его показывает.
 /// </summary>
 public sealed partial class DurationSheetModel : ObservableObject
@@ -16,9 +16,6 @@ public sealed partial class DurationSheetModel : ObservableObject
     public const int MaxMinutes = DurationSteps.Max;
 
     public static readonly IReadOnlyList<int> Presets = [0, 15, 30, 45, 60, 90];
-
-    // Значение, с которым вид открыли: по нему считается IsDirty.
-    private int loadedMinutes;
 
     public DurationSheetModel()
     {
@@ -35,7 +32,7 @@ public sealed partial class DurationSheetModel : ObservableObject
 
     /// <summary>Итог вида: 0 («Нет») или 1…720; длительность не кратная 5 остаётся как есть, пока степпер её не тронул.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(MinutesText), nameof(IsDirty), nameof(CanDecrease), nameof(CanIncrease))]
+    [NotifyPropertyChangedFor(nameof(MinutesText), nameof(CanDecrease), nameof(CanIncrease))]
     [NotifyCanExecuteChangedFor(nameof(DecreaseCommand), nameof(IncreaseCommand))]
     public partial int Minutes { get; set; }
 
@@ -44,24 +41,12 @@ public sealed partial class DurationSheetModel : ObservableObject
         ? AppResources.DurationNone
         : string.Format(AppResources.Culture ?? CultureInfo.CurrentUICulture, AppResources.DurationMinutes, this.Minutes);
 
-    /// <summary>Значение отличается от загруженного: закрытие без ✓ спросит «Не сохранять / Сохранить / Отменить».</summary>
-    public bool IsDirty => this.Minutes != this.loadedMinutes;
-
     /// <summary>Степпер на границе диапазона: «−» (≤ 5) или «+» (720) неактивна.</summary>
     public bool CanDecrease => DurationSteps.CanDecrease(this.Minutes);
 
     public bool CanIncrease => DurationSteps.CanIncrease(this.Minutes);
 
-    public event EventHandler<bool>? Done;
-
-    public void Load(int minutes)
-    {
-        this.loadedMinutes = Math.Clamp(minutes, 0, MaxMinutes);
-        this.Minutes = this.loadedMinutes;
-
-        // Minutes мог не измениться (то же значение, что и в прошлый раз), а loadedMinutes — да.
-        this.OnPropertyChanged(nameof(this.IsDirty));
-    }
+    public void Load(int minutes) => this.Minutes = Math.Clamp(minutes, 0, MaxMinutes);
 
     [RelayCommand]
     private void SelectPreset(ChoiceOption option) => this.Minutes = int.Parse(option.Id, CultureInfo.InvariantCulture);
@@ -71,12 +56,6 @@ public sealed partial class DurationSheetModel : ObservableObject
 
     [RelayCommand(CanExecute = nameof(CanIncrease))]
     private void Increase() => this.Minutes = DurationSteps.Increase(this.Minutes);
-
-    [RelayCommand]
-    private void Ok() => this.Done?.Invoke(this, true);
-
-    [RelayCommand]
-    private void Cancel() => this.Done?.Invoke(this, false);
 
     partial void OnMinutesChanged(int value)
     {

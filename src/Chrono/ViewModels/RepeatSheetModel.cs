@@ -8,15 +8,11 @@ using CommunityToolkit.Mvvm.Input;
 namespace Chrono.ViewModels;
 
 /// <summary>
-/// Черновик вида повтора (DESIGN.md §3.4). «По дням недели» без выбранных дней — ошибка: <see cref="CanConfirm"/> = false,
-/// ✓ неактивна, под днями сноска «Выберите хотя бы один день.».
+/// Вид повтора (DESIGN.md §3.4). «По дням недели» без выбранных дней — ошибка: под днями сноска «Выберите хотя бы один день.»,
+/// ✓ формы неактивна (<c>AlarmEditViewModel.IsDaysMissing</c>).
 /// </summary>
 public sealed partial class RepeatSheetModel : ObservableObject
 {
-    // Значения, с которыми вид открыли: по ним считается IsDirty.
-    private RepeatKind loadedRepeat;
-    private WeekDays loadedDays;
-
     public RepeatSheetModel()
     {
         // Порядок задан явно: enum хранится числом, и новые значения (Monthly) добавляются в его конец, а в списке — между «По дням недели» и «Каждый год».
@@ -59,25 +55,15 @@ public sealed partial class RepeatSheetModel : ObservableObject
     /// <summary>«По дням недели» без дней: показывается сноска-ошибка.</summary>
     public bool IsDaysEmpty => this.IsDaysVisible && !this.HasDays;
 
-    /// <summary>false — ошибка в форме: ✓ неактивна.</summary>
-    public bool CanConfirm => !this.IsDaysEmpty;
-
-    /// <summary>Итог (вид повтора и, для «По дням недели», набор дней) отличается от загруженного: закрытие без ✓ спросит подтверждение.</summary>
-    public bool IsDirty => this.Repeat != this.loadedRepeat || (this.Repeat == RepeatKind.Weekly && this.SelectedDays != this.loadedDays);
-
-    public event EventHandler<bool>? Done;
-
     public void Load(RepeatKind repeat, WeekDays days)
     {
-        this.loadedRepeat = repeat;
-        this.loadedDays = days;
         this.Repeat = repeat;
         foreach (var day in this.Days)
         {
             day.IsSelected = days.HasFlag(Enum.Parse<WeekDays>(day.Id));
         }
 
-        // Повтор и дни могли не измениться (то же значение, что и в прошлый раз), а загруженные значения — да.
+        // Повтор мог не измениться (то же значение, что и в прошлый раз), а дни — да.
         this.OnSelectionChanged();
     }
 
@@ -86,12 +72,6 @@ public sealed partial class RepeatSheetModel : ObservableObject
 
     [RelayCommand]
     private void ToggleDay(ChoiceOption option) => option.IsSelected = !option.IsSelected;
-
-    [RelayCommand(CanExecute = nameof(CanConfirm))]
-    private void Ok() => this.Done?.Invoke(this, true);
-
-    [RelayCommand]
-    private void Cancel() => this.Done?.Invoke(this, false);
 
     partial void OnRepeatChanged(RepeatKind value)
     {
@@ -109,8 +89,5 @@ public sealed partial class RepeatSheetModel : ObservableObject
         this.OnPropertyChanged(nameof(this.DaysSummary));
         this.OnPropertyChanged(nameof(this.HasDays));
         this.OnPropertyChanged(nameof(this.IsDaysEmpty));
-        this.OnPropertyChanged(nameof(this.CanConfirm));
-        this.OnPropertyChanged(nameof(this.IsDirty));
-        this.OkCommand.NotifyCanExecuteChanged();
     }
 }
