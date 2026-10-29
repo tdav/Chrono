@@ -17,8 +17,10 @@
                 <VerticalStackLayout Padding="16,16,16,24" Spacing="{StaticResource Space6}">
 
                     <!-- Подсказка о надёжности (DESIGN.md §3 › Подсказка): символ warning, заголовок, первая проблема, действие; ✕ скрывает до следующей проблемы. -->
-                    <Border Style="{StaticResource Tip}" IsVisible="{Binding IsWarningVisible}">
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <!-- Поля карточки — у внутренней сетки, а не у Border: ✕ с отрицательным отступом остаётся в её границах,
+                         иначе касания за границей родителя до ✕ не доходят. -->
+                    <Border Style="{StaticResource Tip}" Padding="0" IsVisible="{Binding IsWarningVisible}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="16,12">
                             <Image Source="icon_warning.png" WidthRequest="28" HeightRequest="28" VerticalOptions="Start"
                                    design:IconTint.Color="{DynamicResource Warning}" />
 

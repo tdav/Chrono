@@ -37,7 +37,8 @@ public sealed partial class AlarmItem : ObservableObject
             RepeatKind.OnceThenDelete => $"{alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture)} · {AppResources.Repeat_OnceThenDelete}",
             _ => alarm.At.ToString("ddd, d MMM", CultureInfo.CurrentUICulture),
         };
-        this.Details = $"{when} · {label}";
+        // Подпись строки — «Метка · повтор» (DESIGN.md §4.3).
+        this.Details = $"{label} · {when}";
         this.isEnabled = alarm.IsEnabled;
     }
 
