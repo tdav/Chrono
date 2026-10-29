@@ -47,6 +47,7 @@
                                         <!-- Капсула 28; область нажатия 44 даёт HitTarget. -->
                                         <controls:HitTarget Grid.Column="2" VerticalOptions="Center" IsVisible="{Binding NeedsFix}">
                                             <Button Text="{x:Static res:AppResources.Fix}" Style="{StaticResource TintedButtonS}" VerticalOptions="Center"
+                                                    SemanticProperties.Description="{Binding Title, StringFormat={x:Static res:AppResources.FixDescription}}"
                                                     Command="{Binding FixCommand, Source={RelativeSource AncestorType={x:Type vm:ReliabilityViewModel}}, x:DataType=vm:ReliabilityViewModel}"
                                                     CommandParameter="{Binding .}" />
                                         </controls:HitTarget>

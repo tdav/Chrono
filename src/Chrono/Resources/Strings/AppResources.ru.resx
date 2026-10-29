@@ -855,4 +855,16 @@
   <data name="ChoiceSelected" xml:space="preserve">
     <value>{0}, выбрано</value>
   </data>
+  <data name="FixDescription" xml:space="preserve">
+    <value>Исправить: {0}</value>
+  </data>
+  <data name="DeleteAlarmAt" xml:space="preserve">
+    <value>Удалить будильник {0}</value>
+  </data>
+  <data name="CalendarRowExpanded" xml:space="preserve">
+    <value>{0}, {1}, раскрыто</value>
+  </data>
+  <data name="CalendarRowCollapsed" xml:space="preserve">
+    <value>{0}, {1}, свёрнуто</value>
+  </data>
 </root>

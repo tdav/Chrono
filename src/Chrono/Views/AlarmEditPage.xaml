@@ -8,6 +8,11 @@
              x:Class="Chrono.Views.AlarmEditPage"
              x:DataType="vm:AlarmEditViewModel">
 
+    <ContentPage.Resources>
+        <!-- «Название, значение» для строк, которые нажимаются жестом: TalkBack читает строку целиком. -->
+        <controls:RowDescriptionConverter x:Key="RowDescription" />
+    </ContentPage.Resources>
+
     <!-- DESIGN.md §4.1: страница — шторка на большом детенте поверх экрана, откуда её открыли. Панель ✕ / «Будильник» или «Изменение» / ✓
          рисует сама шторка; ✓ неактивна, пока в форме ошибка (CanConfirm). Закрытие с правками (✕, свайп, «Назад») шторка подтверждает
          сама: «Не сохранять» / «Сохранить» / «Отменить». Повтор, оповещение, длительность и иконка открываются шагами внутри шторки
@@ -49,7 +54,8 @@
                                 <VerticalStackLayout Spacing="0">
                                     <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                                  SemanticProperties.Description="{Binding RepeatText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RepeatHeader}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnRepeatTapped" />
                                                 </Grid.GestureRecognizers>
@@ -105,7 +111,8 @@
                                     <Label Text="{x:Static res:AppResources.SignalHeader}" Style="{StaticResource SectionHeader}" SemanticProperties.HeadingLevel="Level2" />
                                     <Border Style="{StaticResource SheetSection}">
                                         <VerticalStackLayout Spacing="0">
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                                  SemanticProperties.Description="{Binding AlertText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RowAlert}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnAlertTapped" />
                                                 </Grid.GestureRecognizers>
@@ -117,7 +124,8 @@
 
                                             <VerticalStackLayout Spacing="0" IsVisible="{Binding IsSoundRowsVisible}">
                                                 <BoxView Style="{StaticResource RowSeparator}" />
-                                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                                <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                                      SemanticProperties.Description="{Binding SoundText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.Sound}}">
                                                     <Grid.GestureRecognizers>
                                                         <TapGestureRecognizer Tapped="OnSoundTapped" />
                                                     </Grid.GestureRecognizers>
@@ -134,7 +142,8 @@
                                             </VerticalStackLayout>
 
                                             <BoxView Style="{StaticResource RowSeparator}" />
-                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto">
+                                            <Grid Style="{StaticResource Row}" BackgroundColor="Transparent" ColumnDefinitions="*,Auto,Auto"
+                                                  SemanticProperties.Description="{Binding DurationText, Converter={StaticResource RowDescription}, ConverterParameter={x:Static res:AppResources.RowDuration}}">
                                                 <Grid.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnDurationTapped" />
                                                 </Grid.GestureRecognizers>

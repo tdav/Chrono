@@ -250,4 +250,8 @@
   <data name="StepperIncrease" xml:space="preserve"><value>Increase</value></data>
   <data name="SheetSaveChanges" xml:space="preserve"><value>Save changes?</value></data>
   <data name="ChoiceSelected" xml:space="preserve"><value>{0}, selected</value></data>
+  <data name="FixDescription" xml:space="preserve"><value>Fix: {0}</value></data>
+  <data name="DeleteAlarmAt" xml:space="preserve"><value>Delete alarm {0}</value></data>
+  <data name="CalendarRowExpanded" xml:space="preserve"><value>{0}, {1}, expanded</value></data>
+  <data name="CalendarRowCollapsed" xml:space="preserve"><value>{0}, {1}, collapsed</value></data>
 </root>

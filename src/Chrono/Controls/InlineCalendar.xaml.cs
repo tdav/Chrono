@@ -1,4 +1,5 @@
 using Chrono.Design;
+using Chrono.Resources.Strings;
 using Chrono.Services;
 using Chrono.ViewModels;
 
@@ -21,7 +22,8 @@ public partial class InlineCalendar : ContentView
         nameof(Model), typeof(CalendarSheetModel), typeof(InlineCalendar), null);
 
     public static readonly BindableProperty TitleProperty = BindableProperty.Create(
-        nameof(Title), typeof(string), typeof(InlineCalendar), string.Empty);
+        nameof(Title), typeof(string), typeof(InlineCalendar), string.Empty,
+        propertyChanged: (b, _, _) => ((InlineCalendar)b).UpdateRowDescription());
 
     public static readonly BindableProperty IsExpandedProperty = BindableProperty.Create(
         nameof(IsExpanded), typeof(bool), typeof(InlineCalendar), false, BindingMode.TwoWay,
@@ -33,6 +35,15 @@ public partial class InlineCalendar : ContentView
     {
         this.InitializeComponent();
         this.UpdateExpanded(false);
+
+        // Значение чипа приходит из модели привязкой; описание строки читает его с самой подписи, поэтому следить за моделью не нужно.
+        this.ChipLabel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == Label.TextProperty.PropertyName)
+            {
+                this.UpdateRowDescription();
+            }
+        };
     }
 
     /// <summary>Модель календаря: выбранная дата, месяц, команды. Её же форма читает как результат.</summary>
@@ -75,12 +86,20 @@ public partial class InlineCalendar : ContentView
         }
     }
 
+    // Описание строки для TalkBack / VoiceOver: название, значение чипа и состояние — «Дата, сб, 24 окт., свёрнуто».
+    // Меняется с названием, значением чипа и раскрытием, поэтому собирается здесь, а не привязкой.
+    private void UpdateRowDescription() =>
+        SemanticProperties.SetDescription(
+            this.Line,
+            string.Format(this.IsExpanded ? AppResources.CalendarRowExpanded : AppResources.CalendarRowCollapsed, this.Title, this.ChipLabel.Text));
+
     // Вид чипа и показ календаря. Вызывается из конструктора и при смене IsExpanded; без animate — сразу конечное состояние
     // (и по окончании анимации). Анимация прерывается новой: сворачивание на середине раскрытия начинает с текущей высоты.
     private void UpdateExpanded(bool animate)
     {
         this.AbortAnimation(ExpandAnimation);
         var expanded = this.IsExpanded;
+        this.UpdateRowDescription();
         this.Chip.SetDynamicResource(VisualElement.BackgroundColorProperty, expanded ? "TintFill" : "TertiarySystemFill");
 
         if (!animate)
