@@ -33,6 +33,9 @@ public partial class WheelPicker : ContentView
     private int jumpRequests;
     private bool aligned = true;
     private bool jumping;
+    // Барабан двигал человек (палец или нажатие на число) после последнего прыжка. Пока нет — главное Value:
+    // ряд под центром после раскладки бывает соседним, и прокрутка его не записывает.
+    private bool moved;
 
     public WheelPicker()
     {
@@ -97,6 +100,7 @@ public partial class WheelPicker : ContentView
     {
         var request = ++this.jumpRequests;
         this.jumping = true;
+        this.moved = false;
         this.List.ScrollTo(index, position: ScrollToPosition.Center, animate: false);
         this.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(120), () => this.jumping = request != this.jumpRequests);
     }
@@ -120,9 +124,11 @@ public partial class WheelPicker : ContentView
         {
             userScroll = list.ScrollState != AndroidX.RecyclerView.Widget.RecyclerView.ScrollStateIdle;
 
-            // Палец на барабане: прыжок, который не успел завершиться, больше не ждём.
-            if (userScroll)
+            // Палец на барабане: прыжок, который не успел завершиться, больше не ждём. Докатывание без пальца
+            // (Settling) — ещё не человек: так идёт и доводка после прыжка.
+            if (list.ScrollState == AndroidX.RecyclerView.Widget.RecyclerView.ScrollStateDragging)
             {
+                this.moved = true;
                 this.jumping = false;
             }
 
@@ -136,6 +142,9 @@ public partial class WheelPicker : ContentView
             index = position;
             this.aligned = Math.Abs((center.Top + center.Bottom) / 2f - list.Height / 2f) <= 2f;
         }
+#else
+        // Здесь палец от раскладки не отличить: прокрутка пишет значение, как и раньше.
+        this.moved = true;
 #endif
         index = Math.Clamp(index, 0, this.items.Count - 1);
         this.SetCenter(index);
@@ -164,6 +173,19 @@ public partial class WheelPicker : ContentView
                 }
 
                 var middle = MiddleCopy * this.Count;
+
+                // Барабан не трогали, а под центром не Value или ряд не по центру: прыжок при открытии встал мимо
+                // (раскладка ещё шла) — докатываемся к значению, а не к ряду под центром.
+                if (!this.moved)
+                {
+                    if (!this.aligned || this.items[this.centerIndex].Value != this.Value)
+                    {
+                        this.List.ScrollTo(middle + this.Value, position: ScrollToPosition.Center, animate: true);
+                    }
+
+                    return;
+                }
+
                 if (this.centerIndex < middle || this.centerIndex >= middle + this.Count)
                 {
                     this.Jump(middle + this.items[this.centerIndex].Value);
@@ -180,7 +202,7 @@ public partial class WheelPicker : ContentView
         this.settleTimer.Start();
 
         var value = this.items[index].Value;
-        if (value != this.Value && !this.jumping)
+        if (value != this.Value && !this.jumping && this.moved)
         {
             this.Value = value;
             if (userScroll)
@@ -215,6 +237,8 @@ public partial class WheelPicker : ContentView
         if (sender is BindableObject { BindingContext: WheelItem item })
         {
             var reduceMotion = IPlatformApplication.Current?.Services.GetService<ThemeService>()?.ReduceMotion ?? false;
+            this.moved = true;
+            this.jumping = false;
             this.List.ScrollTo(item.Index, position: ScrollToPosition.Center, animate: !reduceMotion);
         }
     }
