@@ -22,7 +22,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.alarmService = alarmService;
         this.soundPlayer = soundPlayer;
         this.SoundSheet = new SoundSheetModel(soundPlayer);
-        this.AlertSheet = new OptionsSheetModel(Enum.GetValues<AlertKind>().Select(kind =>
+        // Порядок задан явно, как в DESIGN.md §3.6: «Короткий сигнал» перед «Звонить как будильник» (enum хранится числом, и Beep добавлен в его конец).
+        this.AlertSheet = new OptionsSheetModel(new[] { AlertKind.None, AlertKind.Notify, AlertKind.Beep, AlertKind.Ring }.Select(kind =>
             new ChoiceOption(kind.ToString(), AppResources.ResourceManager.GetString($"Alert_{kind}", AppResources.Culture) ?? kind.ToString())));
         this.IconSheet = new OptionsSheetModel(ItemIcons.Keys.Select(key =>
             new ChoiceOption(key, AppResources.ResourceManager.GetString($"Icon_{key}", AppResources.Culture) ?? key)));

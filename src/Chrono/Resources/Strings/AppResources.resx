@@ -241,4 +241,8 @@
   <data name="SheetDone" xml:space="preserve"><value>Done</value></data>
   <data name="DontSave" xml:space="preserve"><value>Don't save</value></data>
   <data name="SheetResize" xml:space="preserve"><value>Resize sheet</value></data>
+  <data name="RepeatDays" xml:space="preserve"><value>Days</value></data>
+  <data name="RepeatPickDay" xml:space="preserve"><value>Pick at least one day.</value></data>
+  <data name="StepperDecrease" xml:space="preserve"><value>Decrease</value></data>
+  <data name="StepperIncrease" xml:space="preserve"><value>Increase</value></data>
 </root>

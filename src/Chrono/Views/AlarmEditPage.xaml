@@ -189,7 +189,8 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsRepeatSheetOpen}" Title="{x:Static res:AppResources.RepeatHeader}"
-                              ConfirmCommand="{Binding RepeatSheet.OkCommand}" CancelCommand="{Binding RepeatSheet.CancelCommand}">
+                              ConfirmCommand="{Binding RepeatSheet.OkCommand}" CancelCommand="{Binding RepeatSheet.CancelCommand}"
+                              IsDirty="{Binding RepeatSheet.IsDirty}" CanConfirm="{Binding RepeatSheet.CanConfirm}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:RepeatSheet BindingContext="{Binding RepeatSheet}" />
@@ -197,7 +198,8 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsSoundSheetOpen}" Title="{x:Static res:AppResources.Sound}"
-                              ConfirmCommand="{Binding SoundSheet.OkCommand}" CancelCommand="{Binding SoundSheet.CancelCommand}">
+                              ConfirmCommand="{Binding SoundSheet.OkCommand}" CancelCommand="{Binding SoundSheet.CancelCommand}"
+                              IsDirty="{Binding SoundSheet.IsDirty}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:SoundSheet BindingContext="{Binding SoundSheet}" />
@@ -205,7 +207,8 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsDurationSheetOpen}" Title="{x:Static res:AppResources.RowDuration}"
-                              ConfirmCommand="{Binding DurationSheet.OkCommand}" CancelCommand="{Binding DurationSheet.CancelCommand}">
+                              ConfirmCommand="{Binding DurationSheet.OkCommand}" CancelCommand="{Binding DurationSheet.CancelCommand}"
+                              IsDirty="{Binding DurationSheet.IsDirty}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:DurationSheet BindingContext="{Binding DurationSheet}" />
@@ -213,7 +216,8 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsIconSheetOpen}" Title="{x:Static res:AppResources.RowIcon}"
-                              ConfirmCommand="{Binding IconSheet.OkCommand}" CancelCommand="{Binding IconSheet.CancelCommand}">
+                              ConfirmCommand="{Binding IconSheet.OkCommand}" CancelCommand="{Binding IconSheet.CancelCommand}"
+                              IsDirty="{Binding IconSheet.IsDirty}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:IconSheet BindingContext="{Binding IconSheet}" />
@@ -221,7 +225,8 @@
             </controls:BottomSheet.SheetTemplate>
         </controls:BottomSheet>
         <controls:BottomSheet IsOpen="{Binding IsAlertSheetOpen}" Title="{x:Static res:AppResources.RowAlert}"
-                              ConfirmCommand="{Binding AlertSheet.OkCommand}" CancelCommand="{Binding AlertSheet.CancelCommand}">
+                              ConfirmCommand="{Binding AlertSheet.OkCommand}" CancelCommand="{Binding AlertSheet.CancelCommand}"
+                              IsDirty="{Binding AlertSheet.IsDirty}">
             <controls:BottomSheet.SheetTemplate>
                 <DataTemplate x:DataType="vm:AlarmEditViewModel">
                     <sheets:AlertSheet BindingContext="{Binding AlertSheet}" />

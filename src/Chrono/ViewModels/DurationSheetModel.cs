@@ -1,106 +1,89 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Chrono.Resources.Strings;
+using Chrono.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
 /// <summary>
-/// Черновик шторки длительности: чип из <see cref="Presets"/> или своё значение 1…720 минут.
-/// Поле своего значения модель не переписывает, кроме очистки при выборе чипа и заполнения в <see cref="Load"/>.
+/// Черновик вида длительности (DESIGN.md §3.8): список «Нет», 15…90 мин и степпер «Своё, мин» (5…720, шаг 5).
+/// Источник правды один — <see cref="Minutes"/>: список отмечает совпавшее значение, степпер двигает его, подзаголовок строки его показывает.
 /// </summary>
 public sealed partial class DurationSheetModel : ObservableObject
 {
-    public const int MaxMinutes = 720;
+    public const int MaxMinutes = DurationSteps.Max;
 
     public static readonly IReadOnlyList<int> Presets = [0, 15, 30, 45, 60, 90];
 
+    // Значение, с которым вид открыли: по нему считается IsDirty.
+    private int loadedMinutes;
+
     public DurationSheetModel()
     {
-        this.Chips = new(Presets.Select(minutes => new ChoiceOption(
+        this.Options = new(Presets.Select(minutes => new ChoiceOption(
             minutes.ToString(CultureInfo.InvariantCulture),
             minutes == 0
                 ? AppResources.DurationNone
                 : string.Format(AppResources.Culture ?? CultureInfo.CurrentUICulture, AppResources.DurationMinutes, minutes))));
+        this.Options[^1].IsLast = true;
+        this.OnMinutesChanged(this.Minutes);
     }
 
-    public ObservableCollection<ChoiceOption> Chips { get; }
+    public ObservableCollection<ChoiceOption> Options { get; }
 
-    /// <summary>Своё значение. Пустая строка — поле не используется, действует выбранный чип.</summary>
+    /// <summary>Итог вида: 0 («Нет») или 1…720; длительность не кратная 5 остаётся как есть, пока степпер её не тронул.</summary>
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(OkCommand))]
-    public partial string CustomText { get; set; } = string.Empty;
+    [NotifyPropertyChangedFor(nameof(MinutesText), nameof(IsDirty), nameof(CanDecrease), nameof(CanIncrease))]
+    [NotifyCanExecuteChangedFor(nameof(DecreaseCommand), nameof(IncreaseCommand))]
+    public partial int Minutes { get; set; }
 
-    /// <summary>Итог шторки: своё значение, если оно введено, иначе выбранный чип; 0…720.</summary>
-    public int Minutes =>
-        this.CustomText.Length > 0
-            ? (TryParseCustom(this.CustomText, out var custom) ? custom : 0)
-            : int.Parse(this.Chips.FirstOrDefault(c => c.IsSelected)?.Id ?? "0", CultureInfo.InvariantCulture);
+    /// <summary>Подзаголовок строки «Своё, мин»: «35 мин» или «Нет».</summary>
+    public string MinutesText => this.Minutes == 0
+        ? AppResources.DurationNone
+        : string.Format(AppResources.Culture ?? CultureInfo.CurrentUICulture, AppResources.DurationMinutes, this.Minutes);
+
+    /// <summary>Значение отличается от загруженного: закрытие без ✓ спросит «Не сохранять / Сохранить / Отменить».</summary>
+    public bool IsDirty => this.Minutes != this.loadedMinutes;
+
+    /// <summary>Степпер на границе диапазона: «−» (≤ 5) или «+» (720) неактивна.</summary>
+    public bool CanDecrease => DurationSteps.CanDecrease(this.Minutes);
+
+    public bool CanIncrease => DurationSteps.CanIncrease(this.Minutes);
 
     public event EventHandler<bool>? Done;
 
     public void Load(int minutes)
     {
-        minutes = Math.Clamp(minutes, 0, MaxMinutes);
-        this.CustomText = string.Empty;
-        foreach (var chip in this.Chips)
-        {
-            chip.IsSelected = chip.Id == minutes.ToString(CultureInfo.InvariantCulture);
-        }
+        this.loadedMinutes = Math.Clamp(minutes, 0, MaxMinutes);
+        this.Minutes = this.loadedMinutes;
 
-        if (!Presets.Contains(minutes))
-        {
-            this.CustomText = minutes.ToString(CultureInfo.InvariantCulture);
-        }
-
-        this.OkCommand.NotifyCanExecuteChanged();
+        // Minutes мог не измениться (то же значение, что и в прошлый раз), а loadedMinutes — да.
+        this.OnPropertyChanged(nameof(this.IsDirty));
     }
-
-    /// <summary>
-    /// Только цифры и значение 1…720. <c>Keyboard.Numeric</c> на Android пропускает «.», «,», «-» и пробел;
-    /// <c>NumberStyles.None</c> не допускает знак, пробелы и разделители, проверка <c>IsAsciiDigit</c> — подстраховка.
-    /// </summary>
-    public static bool TryParseCustom(string text, out int minutes) =>
-        int.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out minutes)
-        && text.All(char.IsAsciiDigit)
-        && minutes is >= 1 and <= MaxMinutes;
 
     [RelayCommand]
-    private void SelectPreset(ChoiceOption option)
-    {
-        this.CustomText = string.Empty;
-        foreach (var chip in this.Chips)
-        {
-            chip.IsSelected = chip == option;
-        }
+    private void SelectPreset(ChoiceOption option) => this.Minutes = int.Parse(option.Id, CultureInfo.InvariantCulture);
 
-        this.OkCommand.NotifyCanExecuteChanged();
-    }
+    [RelayCommand(CanExecute = nameof(CanDecrease))]
+    private void Decrease() => this.Minutes = DurationSteps.Decrease(this.Minutes);
 
-    /// <summary>«Окей» активен при выбранном чипе (поле пусто) или при корректном своём значении.</summary>
-    private bool CanOk() =>
-        this.CustomText.Length > 0
-            ? TryParseCustom(this.CustomText, out _)
-            : this.Chips.Any(c => c.IsSelected);
+    [RelayCommand(CanExecute = nameof(CanIncrease))]
+    private void Increase() => this.Minutes = DurationSteps.Increase(this.Minutes);
 
-    [RelayCommand(CanExecute = nameof(CanOk))]
+    [RelayCommand]
     private void Ok() => this.Done?.Invoke(this, true);
 
     [RelayCommand]
     private void Cancel() => this.Done?.Invoke(this, false);
 
-    partial void OnCustomTextChanged(string value)
+    partial void OnMinutesChanged(int value)
     {
-        // Ввод в поле снимает выбор чипа; пустое поле выбор не трогает.
-        if (value.Length == 0)
+        var id = value.ToString(CultureInfo.InvariantCulture);
+        foreach (var option in this.Options)
         {
-            return;
-        }
-
-        foreach (var chip in this.Chips)
-        {
-            chip.IsSelected = false;
+            option.IsSelected = option.Id == id;
         }
     }
 }
