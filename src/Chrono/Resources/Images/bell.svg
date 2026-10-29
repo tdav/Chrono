@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="70" height="80" viewBox="0 0 70 80">
-  <!-- Колокол для SplashPage и RingPage; ось качания — верх (AnchorY ≈ 0.08). Цвета темы «Металл · Кость». -->
-  <path d="M35 6c-12 0-20 9-20 22v14l-7 10h54l-7-10V28C55 15 47 6 35 6z" fill="#F5F2EC"/>
-  <circle cx="35" cy="62" r="6" fill="#D1B27C"/>
+  <!-- Колокол Chrono одним цветом: цвет задаёт design:IconTint.Color (DESIGN.md §2.8), оттенок в файле значения не имеет. Ось качания — верх (AnchorY ≈ 0.08). -->
+  <g fill="#FFFFFF">
+    <path d="M35 6c-12 0-20 9-20 22v14l-7 10h54l-7-10V28C55 15 47 6 35 6z"/>
+    <circle cx="35" cy="62" r="6"/>
+  </g>
 </svg>
