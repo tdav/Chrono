@@ -554,6 +554,12 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     // Двенадцать вызывающих (по одному на каждое сохраняемое значение).
     private void MarkDirty()
     {
+        // Страница уже уезжает: касание барабана в эти 250 мс не должно вызвать вопрос о правках поверх неё.
+        if (this.IsLeaving)
+        {
+            return;
+        }
+
         this.IsDirty = true;
         this.ErrorText = "";
     }
