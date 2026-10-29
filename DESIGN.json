@@ -71,7 +71,7 @@
   "typeFormat": "size и lineHeight — pt; tracking — em (доля кегля); dynamicType — текстовый стиль Apple, по которому растёт размер; maxSize — потолок роста; tabular — табличные цифры.",
   "type": {
     "largeTitle": {"size": 34, "lineHeight": 41, "weight": 400, "tracking": 0.012, "dynamicType": "largeTitle"},
-    "title1": {"size": 28, "lineHeight": 34, "weight": 400, "tracking": 0.014, "dynamicType": "title1"},
+    "title1": {"size": 28, "lineHeight": 34, "weight": 400, "tracking": 0.014, "dynamicType": "title1", "tabular": true},
     "title2": {"size": 22, "lineHeight": 28, "weight": 400, "tracking": -0.012, "dynamicType": "title2"},
     "title3": {"size": 20, "lineHeight": 25, "weight": 400, "tracking": -0.023, "dynamicType": "title3"},
     "headline": {"size": 17, "lineHeight": 22, "weight": 600, "tracking": -0.026, "dynamicType": "headline"},

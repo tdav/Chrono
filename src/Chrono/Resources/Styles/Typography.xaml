@@ -19,7 +19,7 @@
         <Setter Property="design:Typography.Style" Value="LargeTitle" />
     </Style>
 
-    <!-- title1: 28/34, Regular, трекинг 0.014 em, Dynamic Type — Title1 -->
+    <!-- title1: 28/34, Regular, трекинг 0.014 em, Dynamic Type — Title1, табличные цифры -->
     <Style x:Key="TextTitle1" TargetType="Label">
         <Setter Property="FontSize" Value="28" />
         <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />

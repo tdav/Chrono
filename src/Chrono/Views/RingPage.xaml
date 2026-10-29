@@ -1,45 +1,59 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns:vm="clr-namespace:Chrono.ViewModels"
              xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             xmlns:design="clr-namespace:Chrono.Design"
+             Style="{StaticResource PlainPage}"
              Shell.TabBarIsVisible="False"
              x:Class="Chrono.Views.RingPage"
              x:DataType="vm:RingViewModel">
 
-    <Grid RowDefinitions="*,Auto,Auto,Auto,Auto,*,Auto" Padding="24,16,24,24" SafeAreaEdges="Container">
+    <!-- DESIGN.md §4.4. Сверху — дата, время и название, под ними колокол; «Стоп» или пример — внизу, в зоне большого пальца.
+         Верх в ScrollView: на крупном шрифте или низком экране прокручивается он, а кнопки остаются на месте. -->
+    <Grid RowDefinitions="*,Auto" Padding="16,0,16,16" SafeAreaEdges="Container">
 
-        <!-- Колокол со звуковыми волнами; анимация — в RingPage.xaml.cs. -->
-        <Grid Grid.Row="1" WidthRequest="180" HeightRequest="180" HorizontalOptions="Center">
-            <Ellipse x:Name="Wave1" Stroke="{StaticResource Gold}" StrokeThickness="2" Opacity="0" />
-            <Ellipse x:Name="Wave2" Stroke="{StaticResource Gold}" StrokeThickness="2" Opacity="0" />
-            <Ellipse x:Name="Wave3" Stroke="{StaticResource Gold}" StrokeThickness="2" Opacity="0" />
-            <Border WidthRequest="128" HeightRequest="128" StrokeShape="RoundRectangle 64" Background="{StaticResource MetalBrush}"
-                    Stroke="{StaticResource GoldEdgeBrush}" StrokeThickness="1" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Image x:Name="Bell" Source="bell.png" WidthRequest="62" HeightRequest="71" AnchorY="0.08"
-                   HorizontalOptions="Center" VerticalOptions="Center" />
-        </Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="0,48,0,0" Spacing="{StaticResource Space1}">
+                <Label Text="{Binding DateText}" Style="{StaticResource TextSubheadline}" TextColor="{DynamicResource SecondaryLabel}"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                <Label Text="{Binding TimeText}" Style="{StaticResource TimeHero}" />
+                <Label Text="{Binding Label}" Style="{StaticResource TextTitle3Emphasized}" TextColor="{DynamicResource Label}"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center" />
 
-        <Label Grid.Row="2" Text="{Binding TimeText}" FontFamily="ManropeExtraBold" FontSize="72"
-               HorizontalOptions="Center" Margin="0,24,0,0" />
-        <Label Grid.Row="3" Text="{Binding Label}" FontFamily="ManropeBold" FontSize="20" HorizontalOptions="Center" />
-        <Label Grid.Row="4" Text="{Binding DateText}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
+                <!-- Колокол на круге Tint 112 в поле 176; две волны — кольца 1.5 pt, расходятся за 2.4 с (RingPage.xaml.cs).
+                     Заданные здесь Opacity — кадр без движения: так выглядит сигнал при «Уменьшении движения». -->
+                <Grid WidthRequest="176" HeightRequest="176" HorizontalOptions="Center" Margin="0,32,0,0">
+                    <Ellipse x:Name="Wave1" WidthRequest="132" HeightRequest="132" HorizontalOptions="Center" VerticalOptions="Center"
+                             Stroke="{DynamicResource Tint}" StrokeThickness="1.5" Opacity="0.6" />
+                    <Ellipse x:Name="Wave2" WidthRequest="176" HeightRequest="176" HorizontalOptions="Center" VerticalOptions="Center"
+                             Stroke="{DynamicResource Tint}" StrokeThickness="1.5" Opacity="0.35" />
+                    <Border WidthRequest="112" HeightRequest="112" HorizontalOptions="Center" VerticalOptions="Center"
+                            StrokeShape="RoundRectangle 56" StrokeThickness="0" BackgroundColor="{DynamicResource Tint}" />
+                    <Image Source="bell.png" WidthRequest="48" HeightRequest="54" HorizontalOptions="Center" VerticalOptions="Center"
+                           design:IconTint.Color="{DynamicResource OnTint}" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
 
-        <Button Grid.Row="6" Text="{x:Static res:AppResources.Stop}" Style="{StaticResource PrimaryButton}"
-                HeightRequest="58" FontSize="18" Command="{Binding StopCommand}" IsVisible="{Binding IsStopVisible}" />
+        <Button Grid.Row="1" Text="{x:Static res:AppResources.Stop}" Style="{StaticResource FilledButton}"
+                Command="{Binding StopCommand}" IsVisible="{Binding IsStopVisible}" />
 
         <!-- Пример для отключения: верный вариант выключает сигнал, неверный — новый пример, сигнал продолжается. -->
-        <VerticalStackLayout Grid.Row="6" Spacing="12" IsVisible="{Binding IsChallengeVisible}">
-            <Label Text="{x:Static res:AppResources.SolveToStop}" Style="{StaticResource Muted}" FontSize="14" HorizontalOptions="Center" />
-            <Label Text="{Binding ChallengeText}" FontFamily="ManropeExtraBold" FontSize="40" HorizontalOptions="Center" />
-            <Label Text="{x:Static res:AppResources.WrongAnswer}" TextColor="{StaticResource GoldInk}" FontSize="14"
-                   HorizontalOptions="Center" IsVisible="{Binding IsWrongAnswer}" />
-            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
-                <Button Text="{Binding Options[0]}" Style="{StaticResource SecondaryButton}" FontSize="22"
+        <VerticalStackLayout Grid.Row="1" Spacing="{StaticResource Space3}" IsVisible="{Binding IsChallengeVisible}">
+            <Label Text="{x:Static res:AppResources.SolveToStop}" Style="{StaticResource TextSubheadline}" TextColor="{DynamicResource SecondaryLabel}"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding ChallengeText}" Style="{StaticResource TextTitle1}" TextColor="{DynamicResource Label}"
+                   HorizontalOptions="Center" />
+            <Label Text="{x:Static res:AppResources.WrongAnswer}" Style="{StaticResource ErrorText}" Margin="0"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" IsVisible="{Binding IsWrongAnswer}" />
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                  ColumnSpacing="{StaticResource Space3}" RowSpacing="{StaticResource Space3}">
+                <Button Text="{Binding Options[0]}" Style="{StaticResource GrayButton}"
                         Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[0]}" />
-                <Button Grid.Column="1" Text="{Binding Options[1]}" Style="{StaticResource SecondaryButton}" FontSize="22"
+                <Button Grid.Column="1" Text="{Binding Options[1]}" Style="{StaticResource GrayButton}"
                         Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[1]}" />
-                <Button Grid.Row="1" Text="{Binding Options[2]}" Style="{StaticResource SecondaryButton}" FontSize="22"
+                <Button Grid.Row="1" Text="{Binding Options[2]}" Style="{StaticResource GrayButton}"
                         Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[2]}" />
-                <Button Grid.Row="1" Grid.Column="1" Text="{Binding Options[3]}" Style="{StaticResource SecondaryButton}" FontSize="22"
+                <Button Grid.Row="1" Grid.Column="1" Text="{Binding Options[3]}" Style="{StaticResource GrayButton}"
                         Command="{Binding ChooseCommand}" CommandParameter="{Binding Options[3]}" />
             </Grid>
         </VerticalStackLayout>
