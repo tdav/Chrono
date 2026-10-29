@@ -1,3 +1,4 @@
+using Chrono.Design;
 using Chrono.Services;
 using Chrono.Views;
 
@@ -11,15 +12,19 @@ public partial class App : Application
     private static readonly TimeSpan StartupSyncDelay = TimeSpan.FromSeconds(2);
 
     private readonly IServiceProvider services;
+    private readonly ThemeService themes;
     private bool syncAllowed;
 
-    public App(IServiceProvider services, AlarmService alarmService)
+    public App(IServiceProvider services, AlarmService alarmService, ThemeService themes)
     {
         StartTrace.Mark("App: конструктор, начало");
         this.InitializeComponent();
         this.services = services;
-        // Приложение всегда тёмное: светлые иконки статус-бара и тёмные диалоги пикеров при любой системной теме.
-        this.UserAppTheme = AppTheme.Dark;
+        this.themes = themes;
+        // Вид — как в системе: тема и повышенный контраст (DESIGN.md §2.2). Пока экраны берут цвета через StaticResource
+        // и не перекрашиваются на лету, тема зафиксирована светлой; задача плана «Чистка и приёмка» снимает фиксацию.
+        this.UserAppTheme = AppTheme.Light;
+        themes.Attach(this);
         // Восстанавливаем расписание: после «Остановить принудительно» Android стирает будильники приложения.
         alarmService.RescheduleAll();
         StartTrace.Mark("App: RescheduleAll выполнен");
@@ -54,6 +59,8 @@ public partial class App : Application
         // (до StartupSyncDelay) пропускается: первая синхронизация и так стартует по таймеру выше.
         window.Resumed += (_, _) =>
         {
+            // Контраст до Android 14 и «Отключить анимацию» не сообщают об изменении — перечитываем при возврате.
+            this.themes.Refresh();
             if (this.syncAllowed)
             {
                 this.services.GetRequiredService<SyncLauncher>().RequestSoon();

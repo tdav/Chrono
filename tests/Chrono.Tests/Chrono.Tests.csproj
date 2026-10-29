@@ -34,6 +34,12 @@
     <Compile Include="..\..\src\Chrono\Services\CalendarSync.cs" Link="Linked\CalendarSync.cs" />
     <Compile Include="..\..\src\Chrono\Services\SyncLauncher.cs" Link="Linked\SyncLauncher.cs" />
     <Compile Include="..\..\src\Chrono\Services\GoogleScopes.cs" Link="Linked\GoogleScopes.cs" />
+    <!-- Дизайн Apple: таблицы цветов и стилей текста без MAUI (DesignTokensTests). -->
+    <Compile Include="..\..\src\Chrono\Design\Appearance.cs" Link="Linked\Appearance.cs" />
+    <Compile Include="..\..\src\Chrono\Design\ColorToken.cs" Link="Linked\ColorToken.cs" />
+    <Compile Include="..\..\src\Chrono\Design\ChronoColors.g.cs" Link="Linked\ChronoColors.g.cs" />
+    <Compile Include="..\..\src\Chrono\Design\TextMetrics.cs" Link="Linked\TextMetrics.cs" />
+    <Compile Include="..\..\src\Chrono\Design\TextStyles.g.cs" Link="Linked\TextStyles.g.cs" />
   </ItemGroup>
 
 </Project>

@@ -4,10 +4,9 @@
        x:Class="Chrono.AppShell"
        Shell.NavBarIsVisible="False"
        Shell.FlyoutBehavior="Disabled"
-       Shell.TabBarBackgroundColor="{StaticResource Surface}"
-       Shell.TabBarTitleColor="{StaticResource Text}"
-       Shell.TabBarForegroundColor="{StaticResource Text}"
-       Shell.TabBarUnselectedColor="{StaticResource TextMuted}">
+       Shell.TabBarTitleColor="{DynamicResource Tint}"
+       Shell.TabBarForegroundColor="{DynamicResource Tint}"
+       Shell.TabBarUnselectedColor="{DynamicResource Label}">
 
     <!-- Нижнее меню. Порядок важен: первой открывается вкладка «Будильники» (см. AlarmListViewModel.AppearingAsync). -->
     <TabBar>

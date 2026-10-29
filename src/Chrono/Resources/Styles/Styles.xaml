@@ -1,113 +1,174 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary>
+<!-- Стили дизайна Apple (DESIGN.md §3). Правила:
+     • цвета — только {DynamicResource …}: ThemeService меняет их при смене темы и контраста;
+     • текст — стили ролей ниже на основе Text* из Typography.xaml (кегль, начертание, Dynamic Type);
+     • размеры — из Metrics.xaml.
+     Раздел «Старые ключи» в конце нужен, пока экраны ссылаются на ключи темы «Шлифованный металл · Кость»:
+     они выглядят уже по-новому; удаляются в задаче плана «Чистка и приёмка». -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:design="clr-namespace:Chrono.Design">
 
+    <!-- Толщина разделителя — один физический пиксель; точное значение ThemeService.Attach пишет по плотности экрана. -->
+    <x:Double x:Key="HairlineWidth">0.5</x:Double>
+
+    <!-- ===== Страницы ===== -->
+
+    <!-- Экраны со списками — SystemGroupedBackground; экраны без групп (сигнал) — стиль PlainPage. -->
     <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
-        <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource SystemGroupedBackground}" />
         <Setter Property="Shell.NavBarIsVisible" Value="False" />
     </Style>
 
-    <Style TargetType="Label">
-        <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="FontFamily" Value="ManropeMedium" />
-        <Setter Property="FontSize" Value="14" />
+    <Style x:Key="PlainPage" TargetType="ContentPage">
+        <Setter Property="BackgroundColor" Value="{DynamicResource SystemBackground}" />
+        <Setter Property="Shell.NavBarIsVisible" Value="False" />
     </Style>
 
-    <Style x:Key="ScreenTitle" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeExtraBold" />
-        <Setter Property="FontSize" Value="22" />
+    <!-- ===== Текст: роли ===== -->
+
+    <Style TargetType="Label" BasedOn="{StaticResource TextBody}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+    </Style>
+
+    <!-- Large Title корневого экрана: «Будильники», «Распорядок», «Циферблат», «Настройки». -->
+    <Style x:Key="LargeTitle" TargetType="Label" BasedOn="{StaticResource TextLargeTitleEmphasized}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+    </Style>
+
+    <!-- Подстрока под Large Title: «Ближайший — через 8 ч 15 мин», дата на «Распорядке». -->
+    <Style x:Key="LargeSubtitle" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+    </Style>
+
+    <!-- Inline-заголовок вложенного экрана и шторки: по центру панели, короче 15 символов. -->
+    <Style x:Key="NavTitle" TargetType="Label" BasedOn="{StaticResource TextHeadline}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="LineBreakMode" Value="TailTruncation" />
+    </Style>
+
+    <!-- Заголовок секции: 17 Semibold, SecondaryLabel, обычный регистр — не капс. -->
+    <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource TextHeadline}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+        <Setter Property="Margin" Value="16,0,16,6" />
+    </Style>
+
+    <!-- Сноска под секцией. -->
+    <Style x:Key="SectionFooter" TargetType="Label" BasedOn="{StaticResource TextFootnote}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+        <Setter Property="Margin" Value="16,6,16,0" />
+    </Style>
+
+    <!-- Строка списка: название слева (Label), значение справа (SecondaryLabel), подзаголовок под названием. -->
+    <Style x:Key="RowTitle" TargetType="Label" BasedOn="{StaticResource TextBody}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
-    <!-- Надпись-«бровь»: 11/600, капсом. -->
-    <Style x:Key="Eyebrow" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="CharacterSpacing" Value="1" />
-        <Setter Property="TextTransform" Value="Uppercase" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    <Style x:Key="RowValue" TargetType="Label" BasedOn="{StaticResource TextBody}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="End" />
+        <Setter Property="HorizontalTextAlignment" Value="End" />
     </Style>
 
-    <Style x:Key="SectionHeader" TargetType="Label" BasedOn="{StaticResource Eyebrow}">
-        <Setter Property="Margin" Value="4,14,0,6" />
+    <Style x:Key="RowSubtitle" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
     </Style>
 
-    <Style x:Key="Muted" TargetType="Label">
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="FontSize" Value="12" />
+    <!-- Действие в строке списка: текст Tint по центру; удаление — DestructiveRowAction отдельной секцией внизу. -->
+    <Style x:Key="RowAction" TargetType="Label" BasedOn="{StaticResource TextBody}">
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+        <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
-    <Style x:Key="Footnote" TargetType="Label">
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="FontSize" Value="11.5" />
+    <Style x:Key="DestructiveRowAction" TargetType="Label" BasedOn="{StaticResource RowAction}">
+        <Setter Property="TextColor" Value="{DynamicResource Destructive}" />
     </Style>
 
-    <Style x:Key="Card" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource Surface}" />
-        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
-        <Setter Property="Padding" Value="16,12" />
+    <Style x:Key="Footnote" TargetType="Label" BasedOn="{StaticResource TextFootnote}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
     </Style>
 
-    <!-- Группа строк: карточка без внутренних отступов; строки 54 pt разделены RowDivider. -->
-    <Style x:Key="RowGroup" TargetType="Border" BasedOn="{StaticResource Card}">
+    <Style x:Key="Caption" TargetType="Label" BasedOn="{StaticResource TextCaption1}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+    </Style>
+
+    <!-- Ошибка формы — сноской под группой: что не так и как исправить. -->
+    <Style x:Key="ErrorText" TargetType="Label" BasedOn="{StaticResource TextFootnote}">
+        <Setter Property="TextColor" Value="{DynamicResource Destructive}" />
+        <Setter Property="Margin" Value="16,6,16,0" />
+    </Style>
+
+    <!-- Время: в строке будильника 48 Light, на экране сигнала 76 Light; цифры табличные. -->
+    <Style x:Key="TimeRow" TargetType="Label" BasedOn="{StaticResource TextTimeRow}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+    </Style>
+
+    <Style x:Key="TimeHero" TargetType="Label" BasedOn="{StaticResource TextTimeHero}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+        <Setter Property="HorizontalOptions" Value="Center" />
+    </Style>
+
+    <!-- ===== Список inset grouped ===== -->
+
+    <!-- Группа строк: радиус 26, без обводки и тени, ячейки на SecondarySystemGroupedBackground. -->
+    <Style x:Key="Section" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource SecondarySystemGroupedBackground}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 26" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
+    <!-- Строка: 52 при обычном размере текста и растёт вместе с ним; поля 16. -->
     <Style x:Key="Row" TargetType="Grid">
-        <Setter Property="HeightRequest" Value="54" />
-        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource SizeRow}" />
+        <Setter Property="Padding" Value="16,8" />
         <Setter Property="ColumnSpacing" Value="12" />
     </Style>
 
-    <Style x:Key="RowKey" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeMedium" />
-        <Setter Property="FontSize" Value="13.5" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="VerticalOptions" Value="Center" />
+    <!-- Разделитель: Separator в один физический пиксель, от начала текста до края. -->
+    <Style x:Key="RowSeparator" TargetType="BoxView">
+        <Setter Property="HeightRequest" Value="{DynamicResource HairlineWidth}" />
+        <Setter Property="Color" Value="{DynamicResource Separator}" />
+        <Setter Property="Margin" Value="16,0,0,0" />
     </Style>
 
-    <Style x:Key="RowValue" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeBold" />
-        <Setter Property="FontSize" Value="14.5" />
-        <Setter Property="VerticalOptions" Value="Center" />
+    <!-- Подсказка в контенте (вместо баннера): та же карточка, что секция, с полями. -->
+    <Style x:Key="Tip" TargetType="Border" BasedOn="{StaticResource Section}">
+        <Setter Property="Padding" Value="16,12" />
     </Style>
 
-    <Style x:Key="RowDivider" TargetType="BoxView">
-        <Setter Property="HeightRequest" Value="1" />
-        <Setter Property="Color" Value="{StaticResource Divider}" />
-        <Setter Property="Margin" Value="16,0" />
-    </Style>
+    <!-- ===== Кнопки: капсулы, стиль показывает важность ===== -->
 
-    <!-- Колодец 42×42 для иконок: назад, настройки, листание месяца. -->
-    <Style x:Key="IconWell" TargetType="Border">
-        <Setter Property="WidthRequest" Value="42" />
-        <Setter Property="HeightRequest" Value="42" />
-        <Setter Property="Background" Value="{StaticResource Surface2}" />
-        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 15" />
-    </Style>
-
-    <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource MetalBrush}" />
-        <Setter Property="TextColor" Value="{StaticResource OnMetal}" />
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="CornerRadius" Value="18" />
-        <Setter Property="HeightRequest" Value="54" />
-        <Setter Property="Padding" Value="22,0" />
-        <Setter Property="Shadow">
-            <Shadow Brush="#2E3136" Offset="0,10" Radius="22" Opacity="0.28" />
-        </Setter>
-        <!-- Неактивная кнопка: opacity .35 (DESIGN.md §3). -->
+    <Style x:Key="FilledButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+        <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="{OnPlatform Android=InterSemiBold}" />
+        <Setter Property="FontAttributes" Value="{OnPlatform iOS=Bold, Default=None}" />
+        <Setter Property="CharacterSpacing" Value="{OnPlatform Android=-0.4167, Default=0}" />
+        <Setter Property="HeightRequest" Value="{StaticResource SizeButtonL}" />
+        <Setter Property="CornerRadius" Value="25" />
+        <Setter Property="Padding" Value="20,0" />
+        <Setter Property="BorderWidth" Value="0" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
                     <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Pressed">
+                        <VisualState.Setters>
+                            <Setter Property="Scale" Value="0.97" />
+                            <Setter Property="Opacity" Value="0.78" />
+                        </VisualState.Setters>
+                    </VisualState>
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="Opacity" Value="0.35" />
+                            <Setter Property="BackgroundColor" Value="{DynamicResource QuaternarySystemFill}" />
+                            <Setter Property="TextColor" Value="{DynamicResource TertiaryLabel}" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -115,91 +176,187 @@
         </Setter>
     </Style>
 
-    <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
-        <Setter Property="BorderColor" Value="{StaticResource Hairline}" />
-        <Setter Property="BorderWidth" Value="1" />
-        <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+    <!-- Второе по важности: «Исправить», «Дать доступ». -->
+    <Style x:Key="TintedButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource TintFill}" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+    </Style>
+
+    <!-- Нейтральное: «Отмена», «Сегодня». -->
+    <Style x:Key="GrayButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource TertiarySystemFill}" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+    </Style>
+
+    <!-- Текстовая кнопка в контенте. -->
+    <Style x:Key="PlainButton" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+        <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />
+        <Setter Property="FontAttributes" Value="None" />
+    </Style>
+
+    <!-- Удаление: роль destructive красит текст; prominent-заливки у удаления не бывает. -->
+    <Style x:Key="DestructiveButton" TargetType="Button" BasedOn="{StaticResource PlainButton}">
+        <Setter Property="TextColor" Value="{DynamicResource Destructive}" />
+    </Style>
+
+    <!-- Размер M (34): кнопки в карточках и строках. Область нажатия добирается до 44 полями контейнера. -->
+    <Style x:Key="FilledButtonM" TargetType="Button" BasedOn="{StaticResource FilledButton}">
+        <Setter Property="HeightRequest" Value="{StaticResource SizeButtonM}" />
+        <Setter Property="CornerRadius" Value="17" />
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="CornerRadius" Value="18" />
-        <Setter Property="HeightRequest" Value="54" />
-        <Setter Property="Padding" Value="22,0" />
+        <Setter Property="CharacterSpacing" Value="{OnPlatform Android=-0.2564, Default=0}" />
+        <Setter Property="Padding" Value="14,0" />
     </Style>
 
-    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-        <Setter Property="BorderColor" Value="{StaticResource Gold}" />
-        <Setter Property="TextColor" Value="{StaticResource GoldInk}" />
+    <Style x:Key="TintedButtonM" TargetType="Button" BasedOn="{StaticResource FilledButtonM}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource TintFill}" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
     </Style>
 
-    <Style x:Key="CompactAccentButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
-        <Setter Property="HeightRequest" Value="38" />
-        <Setter Property="CornerRadius" Value="13" />
+    <Style x:Key="GrayButtonM" TargetType="Button" BasedOn="{StaticResource FilledButtonM}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource TertiarySystemFill}" />
+        <Setter Property="TextColor" Value="{DynamicResource Tint}" />
+    </Style>
+
+    <!-- Размер S (28): «Исправить» в строке «Надёжности». -->
+    <Style x:Key="TintedButtonS" TargetType="Button" BasedOn="{StaticResource TintedButtonM}">
+        <Setter Property="HeightRequest" Value="{StaticResource SizeButtonS}" />
+        <Setter Property="CornerRadius" Value="14" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="CharacterSpacing" Value="{OnPlatform Android=-0.0962, Default=0}" />
+        <Setter Property="Padding" Value="12,0" />
     </Style>
 
-    <!-- Компактная primary-кнопка 38 в паре с CompactAccentButton: действия карточки на «Циферблате». -->
-    <Style x:Key="CompactPrimaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-        <!-- Тень от PrimaryButton рамка карточки обрезает: вокруг кнопки виден светлый прямоугольник. -->
-        <Setter Property="Shadow" Value="{x:Null}" />
-        <Setter Property="HeightRequest" Value="38" />
-        <Setter Property="CornerRadius" Value="13" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="Padding" Value="14,0" />
+    <!-- Стеклянная кнопка панели (✕, ✓, «+», «назад»): круг 44. На Android и при «Понижении прозрачности» — заливка без размытия.
+         Внутри — Image 20–22 с design:IconTint.Color="{DynamicResource Label}"; главная (✓) — стиль GlassButtonProminent. -->
+    <Style x:Key="GlassButton" TargetType="Border">
+        <Setter Property="WidthRequest" Value="{StaticResource SizeGlassButton}" />
+        <Setter Property="HeightRequest" Value="{StaticResource SizeGlassButton}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource GlassFill}" />
+        <Setter Property="Stroke" Value="{DynamicResource GlassEdge}" />
+        <Setter Property="StrokeThickness" Value="{DynamicResource HairlineWidth}" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 22" />
+        <Setter Property="Padding" Value="0" />
     </Style>
 
-    <Style x:Key="Chip" TargetType="Border">
-        <Setter Property="HeightRequest" Value="40" />
-        <Setter Property="Padding" Value="14,0" />
-        <Setter Property="Background" Value="{StaticResource Surface2}" />
-        <Setter Property="Stroke" Value="{StaticResource Hairline}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 20" />
+    <Style x:Key="GlassButtonProminent" TargetType="Border" BasedOn="{StaticResource GlassButton}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+        <Setter Property="StrokeThickness" Value="0" />
     </Style>
 
-    <Style x:Key="ChipText" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
-        <Setter Property="FontSize" Value="12.5" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
+    <!-- Кнопка-переключатель вне списка (фильтры, быстрые варианты времени): капсула 34; «вкл» — ToggleChipOn. -->
+    <Style x:Key="ToggleChip" TargetType="Border">
+        <Setter Property="HeightRequest" Value="{StaticResource SizeButtonM}" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource TertiarySystemFill}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 17" />
+    </Style>
+
+    <Style x:Key="ToggleChipOn" TargetType="Border" BasedOn="{StaticResource ToggleChip}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource Tint}" />
+    </Style>
+
+    <Style x:Key="ToggleChipText" TargetType="Label" BasedOn="{StaticResource TextSubheadlineEmphasized}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>
 
-    <Style x:Key="SheetTitle" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeExtraBold" />
-        <Setter Property="FontSize" Value="21" />
-        <Setter Property="VerticalOptions" Value="Center" />
-    </Style>
-
-    <Style x:Key="SheetHint" TargetType="Label">
-        <Setter Property="FontFamily" Value="ManropeSemiBold" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="TextColor" Value="{StaticResource TextMuted}" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalOptions" Value="End" />
-    </Style>
+    <!-- ===== Контролы ===== -->
 
     <Style TargetType="Switch">
-        <Setter Property="OnColor" Value="{StaticResource Metal700}" />
-        <Setter Property="ThumbColor" Value="White" />
+        <Setter Property="OnColor" Value="{DynamicResource Success}" />
+        <Setter Property="ThumbColor" Value="{DynamicResource Knob}" />
+    </Style>
+
+    <Style TargetType="Slider">
+        <Setter Property="MinimumTrackColor" Value="{DynamicResource Tint}" />
+        <Setter Property="MaximumTrackColor" Value="{DynamicResource SystemFill}" />
+        <Setter Property="ThumbColor" Value="{DynamicResource Knob}" />
     </Style>
 
     <Style TargetType="CheckBox">
-        <Setter Property="Color" Value="{StaticResource Text}" />
+        <Setter Property="Color" Value="{DynamicResource Tint}" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{DynamicResource SecondaryLabel}" />
+    </Style>
+
+    <Style TargetType="ProgressBar">
+        <Setter Property="ProgressColor" Value="{DynamicResource Tint}" />
     </Style>
 
     <Style TargetType="Entry">
-        <Setter Property="TextColor" Value="{StaticResource Text}" />
-        <Setter Property="PlaceholderColor" Value="{StaticResource Hairline}" />
-        <Setter Property="FontFamily" Value="ManropeMedium" />
-        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource PlaceholderText}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontFamily" Value="{OnPlatform Android=InterRegular}" />
+        <Setter Property="CharacterSpacing" Value="{OnPlatform Android=-0.4167, Default=0}" />
+        <Setter Property="design:Typography.Style" Value="Body" />
         <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="ClearButtonVisibility" Value="WhileEditing" />
         <!-- Поле по центру строки, на одной линии с подписью. Растянуть его на всю строку нельзя: EditText центрирует
              текст по измеренной высоте, а MAUI растягивает поле без перемера, и текст уходит к верху. Высота 44 —
              зона касания; она входит в измерение, поэтому текст внутри тоже по центру. -->
         <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource SizeHit}" />
+    </Style>
+
+    <!-- ===== Старые ключи (тема «Шлифованный металл · Кость») — до переноса экранов; удаляются в задаче «Чистка и приёмка» ===== -->
+    <!-- SectionHeader, Footnote, Row и RowValue уже определены выше — с тем же смыслом в новом виде. -->
+
+    <Style x:Key="ScreenTitle" TargetType="Label" BasedOn="{StaticResource LargeTitle}">
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <!-- «Бровь» капсом уходит: дни недели и подписи — Caption 1 Semibold обычным регистром. -->
+    <Style x:Key="Eyebrow" TargetType="Label" BasedOn="{StaticResource TextCaption1Emphasized}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+        <Setter Property="TextTransform" Value="None" />
+    </Style>
+
+    <Style x:Key="Muted" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+    </Style>
+
+    <Style x:Key="Card" TargetType="Border" BasedOn="{StaticResource Tip}" />
+
+    <Style x:Key="RowGroup" TargetType="Border" BasedOn="{StaticResource Section}" />
+
+    <!-- Ключ строки в новом дизайне — название (Label), а не приглушённая подпись. -->
+    <Style x:Key="RowKey" TargetType="Label" BasedOn="{StaticResource RowTitle}" />
+
+    <Style x:Key="RowDivider" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}" />
+
+    <Style x:Key="IconWell" TargetType="Border" BasedOn="{StaticResource GlassButton}" />
+
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource FilledButton}" />
+
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource GrayButton}" />
+
+    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource TintedButton}" />
+
+    <Style x:Key="CompactAccentButton" TargetType="Button" BasedOn="{StaticResource TintedButtonM}" />
+
+    <Style x:Key="CompactPrimaryButton" TargetType="Button" BasedOn="{StaticResource FilledButtonM}" />
+
+    <Style x:Key="Chip" TargetType="Border" BasedOn="{StaticResource ToggleChip}" />
+
+    <Style x:Key="ChipText" TargetType="Label" BasedOn="{StaticResource ToggleChipText}" />
+
+    <Style x:Key="SheetTitle" TargetType="Label" BasedOn="{StaticResource TextHeadline}">
+        <Setter Property="TextColor" Value="{DynamicResource Label}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+    </Style>
+
+    <Style x:Key="SheetHint" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
+        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
+        <Setter Property="VerticalOptions" Value="Center" />
+        <Setter Property="HorizontalOptions" Value="End" />
     </Style>
 
 </ResourceDictionary>

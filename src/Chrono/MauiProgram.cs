@@ -1,3 +1,4 @@
+using Chrono.Design;
 using Chrono.Platform;
 using Chrono.Services;
 using Chrono.ViewModels;
@@ -19,8 +20,11 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            // Дизайн Apple: Inter для Android, SF с Dynamic Type для iOS, окраска значков, ThemeService (DESIGN.md).
+            .UseChronoDesign()
             .ConfigureFonts(fonts =>
             {
+                // Manrope — у экранов, ещё не перенесённых на дизайн Apple; убирается в задаче плана «Чистка и приёмка».
                 fonts.AddFont("Manrope-Regular.ttf", "ManropeRegular");
                 fonts.AddFont("Manrope-SemiBold.ttf", "ManropeSemiBold");
                 fonts.AddFont("Manrope-Medium.ttf", "ManropeMedium");
@@ -59,21 +63,7 @@ public static class MauiProgram
             }
         });
 
-        // Выключенный тумблер на белой карточке почти не виден (серая дорожка платформы): красим дорожку и бегунок
-        // по состоянию. Вешаем на ключи MAUI (OnColor, ThumbColor, IsOn), чтобы отработать после их собственных
-        // маппингов, которые сбрасывают тинт.
-        var trackTint = new Android.Content.Res.ColorStateList(
-            new[] { new[] { Android.Resource.Attribute.StateChecked }, Array.Empty<int>() },
-            new[] { Android.Graphics.Color.ParseColor("#2E3136").ToArgb(), Android.Graphics.Color.ParseColor("#D9D3C8").ToArgb() });
-        var thumbTint = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.White);
-        foreach (var key in new[] { "OnColor", "ThumbColor", "IsOn" })
-        {
-            Microsoft.Maui.Handlers.SwitchHandler.Mapper.AppendToMapping(key, (handler, view) =>
-            {
-                handler.PlatformView.TrackTintList = trackTint;
-                handler.PlatformView.ThumbTintList = thumbTint;
-            });
-        }
+        // Цвета тумблера по токенам текущего вида — в Design/NativeControls (Platforms/Android/Design).
 #endif
 
         builder.Services.AddSingleton(TimeProvider.System);
