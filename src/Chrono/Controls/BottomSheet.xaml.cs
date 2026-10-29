@@ -4,6 +4,7 @@ using Chrono.Resources.Strings;
 using Microsoft.Maui.Controls.Shapes;
 #if ANDROID
 using Google.Android.Material.Dialog;
+using Microsoft.Maui.Platform;
 #endif
 
 namespace Chrono.Controls;
@@ -105,9 +106,6 @@ public partial class BottomSheet : ContentView
     {
         this.InitializeComponent();
     }
-
-    /// <summary>✕, затемнение, свайп вниз или «Назад» — правки отброшены (до выполнения <see cref="CancelCommand"/>).</summary>
-    public event EventHandler? Cancelled;
 
     public bool IsOpen
     {
@@ -271,6 +269,19 @@ public partial class BottomSheet : ContentView
                     // Закрытие диалога приходит после нажатия кнопки, поэтому TrySetResult выше уже сработал; здесь — только выходы без кнопки.
                     dialog.DismissEvent += (_, _) => answer.TrySetResult(AppResources.SheetCancel);
                     dialog.Show();
+
+                    // Тема активити MAUI — не Material, и диалог рисовался серой прямоугольной коробкой с белыми кнопками:
+                    // поверхность — непрозрачное крупное стекло со скруглением 28, кнопки — цвет акцента.
+                    var density = activity.Resources!.DisplayMetrics!.Density;
+                    var surface = new Android.Graphics.Drawables.GradientDrawable();
+                    surface.SetCornerRadius(28 * density);
+                    surface.SetColor(NativeControls.Resource("GlassOpaque").ToPlatform());
+                    dialog.Window?.SetBackgroundDrawable(new Android.Graphics.Drawables.InsetDrawable(surface, (int)(16 * density)));
+                    var tint = NativeControls.Resource("Tint").ToPlatform();
+                    dialog.GetButton((int)Android.Content.DialogButtonType.Positive)?.SetTextColor(tint);
+                    dialog.GetButton((int)Android.Content.DialogButtonType.Negative)?.SetTextColor(tint);
+                    dialog.GetButton((int)Android.Content.DialogButtonType.Neutral)?.SetTextColor(tint);
+
                     choice = await answer.Task;
                 }
 #endif
@@ -303,7 +314,6 @@ public partial class BottomSheet : ContentView
             }
         }
 
-        this.Cancelled?.Invoke(this, EventArgs.Empty);
         this.CancelCommand?.Execute(null);
     }
 
