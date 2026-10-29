@@ -21,7 +21,7 @@ public static partial class Typography
 
     /// <summary>
     /// Стиль, который ведёт шрифт платформы: задан и не перебит локальными FontFamily или FontSize
-    /// (у экранов, ещё не перенесённых на новый дизайн, — Manrope и свои кегли).
+    /// (локальное переопределение гарнитуры или кегля имеет приоритет).
     /// </summary>
     internal static TextStyle? Leading(BindableObject view, string? family, double size)
     {

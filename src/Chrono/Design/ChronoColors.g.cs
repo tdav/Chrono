@@ -70,21 +70,4 @@ public static class ChronoColors
         new("TintFill", "#29FF8D28", "#29FF9230", "#29C55300", "#29FFA056"),
         new("DestructiveFill", "#29FF383C", "#29FF4245", "#29E9152D", "#29FF6165"),
     ];
-
-    /// <summary>Старые ключи темы «Шлифованный металл · Кость» → ключи новых цветов (DESIGN.json › legacy). Удаляются после переноса экранов.</summary>
-    public static readonly IReadOnlyList<(string OldKey, string NewKey)> Legacy =
-    [
-        ("Surface", "SecondarySystemGroupedBackground"),
-        ("Surface2", "TertiarySystemFill"),
-        ("Hairline", "TertiaryLabel"),
-        ("Divider", "Separator"),
-        ("Metal900", "Tint"),
-        ("Metal700", "Tint"),
-        ("Metal500", "Tint"),
-        ("Text", "Label"),
-        ("TextMuted", "SecondaryLabel"),
-        ("OnMetal", "OnTint"),
-        ("Gold", "Tint"),
-        ("GoldInk", "Warning"),
-    ];
 }

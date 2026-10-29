@@ -2,9 +2,7 @@
 <!-- Стили дизайна Apple (DESIGN.md §3). Правила:
      • цвета — только {DynamicResource …}: ThemeService меняет их при смене темы и контраста;
      • текст — стили ролей ниже на основе Text* из Typography.xaml (кегль, начертание, Dynamic Type);
-     • размеры — из Metrics.xaml.
-     Раздел «Старые ключи» в конце нужен, пока экраны ссылаются на ключи темы «Шлифованный металл · Кость»:
-     они выглядят уже по-новому; удаляются в задаче плана «Чистка и приёмка». -->
+     • размеры — из Metrics.xaml. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:design="clr-namespace:Chrono.Design">
@@ -318,59 +316,6 @@
              зона касания; она входит в измерение, поэтому текст внутри тоже по центру. -->
         <Setter Property="VerticalOptions" Value="Center" />
         <Setter Property="MinimumHeightRequest" Value="{StaticResource SizeHit}" />
-    </Style>
-
-    <!-- ===== Старые ключи (тема «Шлифованный металл · Кость») — до переноса экранов; удаляются в задаче «Чистка и приёмка» ===== -->
-    <!-- SectionHeader, Footnote, Row и RowValue уже определены выше — с тем же смыслом в новом виде. -->
-
-    <Style x:Key="ScreenTitle" TargetType="Label" BasedOn="{StaticResource LargeTitle}">
-        <Setter Property="VerticalOptions" Value="Center" />
-    </Style>
-
-    <!-- «Бровь» капсом уходит: дни недели и подписи — Caption 1 Semibold обычным регистром. -->
-    <Style x:Key="Eyebrow" TargetType="Label" BasedOn="{StaticResource TextCaption1Emphasized}">
-        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
-        <Setter Property="TextTransform" Value="None" />
-    </Style>
-
-    <Style x:Key="Muted" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
-        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
-    </Style>
-
-    <Style x:Key="Card" TargetType="Border" BasedOn="{StaticResource Tip}" />
-
-    <Style x:Key="RowGroup" TargetType="Border" BasedOn="{StaticResource Section}" />
-
-    <!-- Ключ строки в новом дизайне — название (Label), а не приглушённая подпись. -->
-    <Style x:Key="RowKey" TargetType="Label" BasedOn="{StaticResource RowTitle}" />
-
-    <Style x:Key="RowDivider" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}" />
-
-    <Style x:Key="IconWell" TargetType="Border" BasedOn="{StaticResource GlassButton}" />
-
-    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource FilledButton}" />
-
-    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource GrayButton}" />
-
-    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource TintedButton}" />
-
-    <Style x:Key="CompactAccentButton" TargetType="Button" BasedOn="{StaticResource TintedButtonM}" />
-
-    <Style x:Key="CompactPrimaryButton" TargetType="Button" BasedOn="{StaticResource FilledButtonM}" />
-
-    <Style x:Key="Chip" TargetType="Border" BasedOn="{StaticResource ToggleChip}" />
-
-    <Style x:Key="ChipText" TargetType="Label" BasedOn="{StaticResource ToggleChipText}" />
-
-    <Style x:Key="SheetTitle" TargetType="Label" BasedOn="{StaticResource TextHeadline}">
-        <Setter Property="TextColor" Value="{DynamicResource Label}" />
-        <Setter Property="VerticalOptions" Value="Center" />
-    </Style>
-
-    <Style x:Key="SheetHint" TargetType="Label" BasedOn="{StaticResource TextSubheadline}">
-        <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
-        <Setter Property="VerticalOptions" Value="Center" />
-        <Setter Property="HorizontalOptions" Value="End" />
     </Style>
 
 </ResourceDictionary>

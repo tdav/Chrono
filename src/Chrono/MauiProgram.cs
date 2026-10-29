@@ -22,15 +22,6 @@ public static class MauiProgram
             .UseMauiApp<App>()
             // Дизайн Apple: Inter для Android, SF с Dynamic Type для iOS, окраска значков, ThemeService (DESIGN.md).
             .UseChronoDesign()
-            .ConfigureFonts(fonts =>
-            {
-                // Manrope — у экранов, ещё не перенесённых на дизайн Apple; убирается в задаче плана «Чистка и приёмка».
-                fonts.AddFont("Manrope-Regular.ttf", "ManropeRegular");
-                fonts.AddFont("Manrope-SemiBold.ttf", "ManropeSemiBold");
-                fonts.AddFont("Manrope-Medium.ttf", "ManropeMedium");
-                fonts.AddFont("Manrope-Bold.ttf", "ManropeBold");
-                fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
-            })
             .ConfigureLifecycleEvents(events =>
             {
 #if IOS
@@ -51,16 +42,6 @@ public static class MauiProgram
         {
             handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
             handler.PlatformView.SetPadding(0, 0, 0, 0);
-        });
-
-        // Крупные цифры по центру подложки (барабан времени): TextView резервирует сверху место под высокие знаки шрифта
-        // (у Manrope — диакритика), и цифры без выносных элементов садились на 0,18 кегля ниже центра полосы.
-        Microsoft.Maui.Handlers.LabelHandler.Mapper.AppendToMapping("Digits", (handler, view) =>
-        {
-            if (view is Label label && label.StyleClass?.Contains("Digits") == true)
-            {
-                handler.PlatformView.SetIncludeFontPadding(false);
-            }
         });
 
         // Цвета тумблера по токенам текущего вида — в Design/NativeControls (Platforms/Android/Design).

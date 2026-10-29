@@ -13,7 +13,7 @@ public static partial class Typography
                 return;
             }
 
-            // Только текст в новых стилях (Inter): у ещё не перенесённых экранов Manrope с локальным кеглем — их не трогаем.
+            // Только текст в стилях Inter: подписи с локальной гарнитурой другого шрифта не трогаем.
             var style = GetStyle(label);
             if (style == TextStyle.None || label.FontFamily?.StartsWith("Inter", StringComparison.Ordinal) != true)
             {

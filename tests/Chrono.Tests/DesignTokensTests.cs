@@ -154,14 +154,6 @@ public sealed class DesignTokensTests
         Assert.True(Contrast(Token("OnTint", appearance), Token("Tint", appearance)) >= 4.5, "Текст на заливке Tint");
     }
 
-    [Fact]
-    public void Legacy_CoversEveryKeyOfOldTheme()
-    {
-        string[] oldKeys = ["Surface", "Surface2", "Hairline", "Divider", "Metal900", "Metal700", "Metal500", "Text", "TextMuted", "OnMetal", "Gold", "GoldInk"];
-        Assert.Equal(oldKeys.Order(), ChronoColors.Legacy.Select(l => l.OldKey).Order());
-        Assert.All(ChronoColors.Legacy, l => Assert.Contains(ChronoColors.All, t => t.Key == l.NewKey));
-    }
-
     /// <summary>
     /// DynamicResource на несуществующий ключ MAUI молча пропускает, StaticResource падает только при открытии экрана —
     /// поэтому ключи стилей проверяются здесь.

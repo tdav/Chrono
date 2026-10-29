@@ -28,10 +28,6 @@ HEADER_XAML = (
 )
 # MAUI на Android переводит CharacterSpacing в em с коэффициентом 0.0624 (Microsoft.Maui.Platform.UnitExtensions.ToEm).
 MAUI_EM = 0.0624
-# Старые кисти темы «Шлифованный металл · Кость»: ключ → токен (заливка) — до переноса экранов.
-LEGACY_BRUSHES = {"CanvasBrush": "systemGroupedBackground", "MetalBrush": "tint", "GoldEdgeBrush": "tint"}
-# Затухание барабана: цвет панели шторки к прозрачному.
-FADE_COLOR = "secondarySystemGroupedBackground"
 
 
 def pascal(name):
@@ -83,8 +79,6 @@ def colors_cs():
     for name in DESIGN["color"]:
         values = ", ".join(f'"{argb(resolve(name, a))}"' for a in APPEARANCES)
         rows.append(f'        new("{pascal(name)}", {values}),')
-    legacy = [(k, pascal(v)) for k, v in DESIGN["legacy"].items() if k != "note" and k != pascal(v)]
-    legacy_rows = [f'        ("{old}", "{new}"),' for old, new in legacy]
     return (
         HEADER_CS
         + "namespace Chrono.Design;\n\n"
@@ -92,10 +86,6 @@ def colors_cs():
         + "    /// <summary>Все цвета DESIGN.json: ключ ресурса и #AARRGGBB для Light, Dark, LightHighContrast, DarkHighContrast.</summary>\n"
         + "    public static readonly IReadOnlyList<ColorToken> All =\n    [\n"
         + "\n".join(rows)
-        + "\n    ];\n\n"
-        + "    /// <summary>Старые ключи темы «Шлифованный металл · Кость» → ключи новых цветов (DESIGN.json › legacy). Удаляются после переноса экранов.</summary>\n"
-        + "    public static readonly IReadOnlyList<(string OldKey, string NewKey)> Legacy =\n    [\n"
-        + "\n".join(legacy_rows)
         + "\n    ];\n}\n"
     )
 
@@ -145,28 +135,7 @@ def colors_xaml():
     ]
     for name in DESIGN["color"]:
         lines.append(f'    <Color x:Key="{pascal(name)}">{argb(resolve(name, "light"))}</Color>')
-    lines += ["", "    <!-- Старые ключи темы «Шлифованный металл · Кость» (DESIGN.json › legacy). Удаляются после переноса экранов. -->"]
-    for old, new in DESIGN["legacy"].items():
-        if old == "note" or old == pascal(new):
-            continue
-        lines.append(f'    <Color x:Key="{old}">{argb(resolve(new, "light"))}</Color>')
-    for key, token in LEGACY_BRUSHES.items():
-        lines.append(f'    <SolidColorBrush x:Key="{key}" Color="{argb(resolve(token, "light"))}" />')
-    r, g, b, _ = resolve(FADE_COLOR, "light")
-    solid, clear = argb((r, g, b, 1)), argb((r, g, b, 0))
-    lines += [
-        '    <LinearGradientBrush x:Key="FadeDownBrush" StartPoint="0,0" EndPoint="0,1">',
-        f'        <GradientStop Color="{solid}" Offset="0" />',
-        f'        <GradientStop Color="{clear}" Offset="1" />',
-        "    </LinearGradientBrush>",
-        '    <LinearGradientBrush x:Key="FadeUpBrush" StartPoint="0,0" EndPoint="0,1">',
-        f'        <GradientStop Color="{clear}" Offset="0" />',
-        f'        <GradientStop Color="{solid}" Offset="1" />',
-        "    </LinearGradientBrush>",
-        "",
-        "</ResourceDictionary>",
-        "",
-    ]
+    lines += ["", "</ResourceDictionary>", ""]
     return "\n".join(lines)
 
 

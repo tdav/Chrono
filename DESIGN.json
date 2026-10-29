@@ -105,21 +105,5 @@
     "shadowSegment": {"light": "0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04)", "dark": "none", "lightHighContrast": "0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04)", "darkHighContrast": "none"}
   },
   "motion": {"quick": 200, "sheet": 500, "spring": "cubic-bezier(0.32, 0.72, 0, 1)", "standard": "cubic-bezier(0.25, 0.1, 0.25, 1)"},
-  "material": {"glassBlur": 24, "glassSaturate": 1.8, "glassBlurClear": 10, "scrollEdgeBlur": 6, "note": "Размытие — только iOS (системное стекло). На Android стекло — заливка glassFill без размытия."},
-  "legacy": {
-    "note": "Ключи темы «Шлифованный металл · Кость» → новые токены. ThemeService пишет их в ресурсы, пока экраны не перенесены; удаляются в последней задаче плана.",
-    "Surface": "secondarySystemGroupedBackground",
-    "Surface2": "tertiarySystemFill",
-    "Hairline": "tertiaryLabel",
-    "Divider": "separator",
-    "Metal900": "tint",
-    "Metal700": "tint",
-    "Metal500": "tint",
-    "Text": "label",
-    "TextMuted": "secondaryLabel",
-    "OnMetal": "onTint",
-    "Gold": "tint",
-    "GoldInk": "warning",
-    "Scrim": "scrim"
-  }
+  "material": {"glassBlur": 24, "glassSaturate": 1.8, "glassBlurClear": 10, "scrollEdgeBlur": 6, "note": "Размытие — только iOS (системное стекло). На Android стекло — заливка glassFill без размытия."}
 }

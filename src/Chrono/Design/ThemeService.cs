@@ -90,29 +90,6 @@ public sealed class ThemeService
             resources[key] = color;
         }
 
-        // Ключи темы «Шлифованный металл · Кость», пока экраны на них ссылаются; удаляются в задаче плана «Чистка и приёмка».
-        foreach (var (oldKey, newKey) in ChronoColors.Legacy)
-        {
-            resources[oldKey] = colors[newKey];
-        }
-
-        resources["CanvasBrush"] = new SolidColorBrush(colors["SystemGroupedBackground"]);
-        resources["MetalBrush"] = new SolidColorBrush(colors["Tint"]);
-        resources["GoldEdgeBrush"] = new SolidColorBrush(colors["Tint"]);
-        var panel = colors["SecondarySystemGroupedBackground"];
-        resources["FadeDownBrush"] = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(0, 1),
-            GradientStops = { new GradientStop(panel, 0f), new GradientStop(panel.WithAlpha(0f), 1f) },
-        };
-        resources["FadeUpBrush"] = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(0, 1),
-            GradientStops = { new GradientStop(panel.WithAlpha(0f), 0f), new GradientStop(panel, 1f) },
-        };
-
         // Scroll edge шапки (LargeTitleHeader): содержимое под строкой кнопок гаснет к фону экрана, 24 pt.
         var screen = colors["SystemGroupedBackground"];
         resources["ScrollEdgeBrush"] = new LinearGradientBrush

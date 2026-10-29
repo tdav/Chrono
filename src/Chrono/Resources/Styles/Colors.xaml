@@ -66,29 +66,4 @@
     <Color x:Key="TintFill">#29FF8D28</Color>
     <Color x:Key="DestructiveFill">#29FF383C</Color>
 
-    <!-- Старые ключи темы «Шлифованный металл · Кость» (DESIGN.json › legacy). Удаляются после переноса экранов. -->
-    <Color x:Key="Surface">#FFFFFFFF</Color>
-    <Color x:Key="Surface2">#1F767680</Color>
-    <Color x:Key="Hairline">#4D3C3C43</Color>
-    <Color x:Key="Divider">#4A3C3C43</Color>
-    <Color x:Key="Metal900">#FFFF8D28</Color>
-    <Color x:Key="Metal700">#FFFF8D28</Color>
-    <Color x:Key="Metal500">#FFFF8D28</Color>
-    <Color x:Key="Text">#FF000000</Color>
-    <Color x:Key="TextMuted">#993C3C43</Color>
-    <Color x:Key="OnMetal">#FFFFFFFF</Color>
-    <Color x:Key="Gold">#FFFF8D28</Color>
-    <Color x:Key="GoldInk">#FFFF8D28</Color>
-    <SolidColorBrush x:Key="CanvasBrush" Color="#FFF2F2F7" />
-    <SolidColorBrush x:Key="MetalBrush" Color="#FFFF8D28" />
-    <SolidColorBrush x:Key="GoldEdgeBrush" Color="#FFFF8D28" />
-    <LinearGradientBrush x:Key="FadeDownBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#FFFFFFFF" Offset="0" />
-        <GradientStop Color="#00FFFFFF" Offset="1" />
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="FadeUpBrush" StartPoint="0,0" EndPoint="0,1">
-        <GradientStop Color="#00FFFFFF" Offset="0" />
-        <GradientStop Color="#FFFFFFFF" Offset="1" />
-    </LinearGradientBrush>
-
 </ResourceDictionary>
