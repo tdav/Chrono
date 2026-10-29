@@ -45,12 +45,5 @@
                        SemanticProperties.Description="{x:Static res:AppResources.DurationCustom}" />
             </Grid>
         </Border>
-
-        <Grid ColumnDefinitions="*,1.5*" ColumnSpacing="12">
-            <Button Text="{x:Static res:AppResources.Cancel}" Style="{StaticResource SecondaryButton}"
-                    Command="{Binding CancelCommand}" />
-            <Button Grid.Column="1" Text="{x:Static res:AppResources.SheetOk}" Style="{StaticResource PrimaryButton}"
-                    Command="{Binding OkCommand}" />
-        </Grid>
     </VerticalStackLayout>
 </ContentView>

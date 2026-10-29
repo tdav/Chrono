@@ -672,4 +672,13 @@
   <data name="ThemeDark" xml:space="preserve">
     <value>Тёмная</value>
   </data>
+  <data name="SheetCancel" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="SheetDone" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="DontSave" xml:space="preserve">
+    <value>Не сохранять</value>
+  </data>
 </root>

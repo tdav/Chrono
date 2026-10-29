@@ -189,4 +189,7 @@
   <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="SheetCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SheetDone" xml:space="preserve"><value>Done</value></data>
+  <data name="DontSave" xml:space="preserve"><value>Don't save</value></data>
 </root>

@@ -1,30 +1,55 @@
 using System.Windows.Input;
+using Chrono.Design;
+using Chrono.Resources.Strings;
+using Microsoft.Maui.Controls.Shapes;
 
 namespace Chrono.Controls;
 
-/// <summary>Нижняя шторка поверх страницы: затемнение, панель с заголовком и произвольным содержимым.</summary>
+/// <summary>Детент шторки (DESIGN.md §3.1): средний — стекло по содержимому, большой — почти на весь экран.</summary>
+public enum SheetDetent
+{
+    Medium,
+    Large,
+}
+
+/// <summary>Какие детенты разрешены: без большого граббер только закрывает шторку свайпом вниз.</summary>
+[Flags]
+public enum SheetDetents
+{
+    Medium = 1,
+    Large = 2,
+}
+
+/// <summary>
+/// Нижняя шторка поверх страницы (DESIGN.md §3.1): затемнение, граббер, панель ✕ / заголовок / ✓ и содержимое.
+/// Правки внутри — черновик: ✓ выполняет <see cref="ConfirmCommand"/>, ✕, затемнение, свайп вниз и системная «Назад» —
+/// <see cref="CancelCommand"/>, а при <see cref="IsDirty"/> сначала спрашивают «Не сохранять / Сохранить / Отменить».
+/// Уточнения открываются шагом внутри шторки (<see cref="Push"/>), а не новой шторкой.
+/// </summary>
 public partial class BottomSheet : ContentView
 {
+    // Пружина без перелёта cubic-bezier(0.32, 0.72, 0, 1) (DESIGN.md §2.9); ближайшая встроенная форма — быстрый старт и долгое затухание.
+    private static readonly Easing Spring = new(t => 1 - Math.Pow(1 - t, 4));
+
+    // Свайп вниз дальше этого закрывает шторку, вверх дальше этого — большой детент.
+    private const double SwipeDistance = 80;
+
     public static readonly BindableProperty IsOpenProperty = BindableProperty.Create(
         nameof(IsOpen), typeof(bool), typeof(BottomSheet), false,
-        propertyChanged: (b, _, n) =>
-        {
-            // Содержимое создаётся при первом открытии: восемь шторок редактора со списками,
-            // собранные вместе со страницей, задерживали её открытие почти на секунду.
-            var sheet = (BottomSheet)b;
-            if ((bool)n && sheet.Body.Content is null && sheet.SheetTemplate is { } template)
-            {
-                sheet.Body.Content = (View)template.CreateContent();
-            }
-
-            sheet.IsVisible = (bool)n;
-        });
+        propertyChanged: (b, _, n) => _ = ((BottomSheet)b).ShowAsync((bool)n));
 
     public static readonly BindableProperty TitleProperty = BindableProperty.Create(
-        nameof(Title), typeof(string), typeof(BottomSheet), string.Empty);
+        nameof(Title), typeof(string), typeof(BottomSheet), string.Empty,
+        propertyChanged: (b, _, _) => ((BottomSheet)b).UpdateChrome());
 
     public static readonly BindableProperty HintProperty = BindableProperty.Create(
-        nameof(Hint), typeof(string), typeof(BottomSheet), string.Empty);
+        nameof(Hint), typeof(string), typeof(BottomSheet), string.Empty,
+        propertyChanged: (b, _, n) =>
+        {
+            var sheet = (BottomSheet)b;
+            sheet.HintLabel.Text = (string)n;
+            sheet.HintLabel.IsVisible = !string.IsNullOrEmpty((string)n);
+        });
 
     public static readonly BindableProperty SheetTemplateProperty = BindableProperty.Create(
         nameof(SheetTemplate), typeof(DataTemplate), typeof(BottomSheet), null);
@@ -32,10 +57,57 @@ public partial class BottomSheet : ContentView
     public static readonly BindableProperty CancelCommandProperty = BindableProperty.Create(
         nameof(CancelCommand), typeof(ICommand), typeof(BottomSheet), null);
 
+    public static readonly BindableProperty ConfirmCommandProperty = BindableProperty.Create(
+        nameof(ConfirmCommand), typeof(ICommand), typeof(BottomSheet), null,
+        propertyChanged: (b, o, n) =>
+        {
+            // ✓ неактивна, пока команда не может выполниться (например, «Своё, мин» с ошибкой).
+            var sheet = (BottomSheet)b;
+            if (o is ICommand old)
+            {
+                old.CanExecuteChanged -= sheet.OnConfirmCanExecuteChanged;
+            }
+
+            if (n is ICommand command)
+            {
+                command.CanExecuteChanged += sheet.OnConfirmCanExecuteChanged;
+            }
+
+            sheet.UpdateChrome();
+        });
+
+    public static readonly BindableProperty CanConfirmProperty = BindableProperty.Create(
+        nameof(CanConfirm), typeof(bool), typeof(BottomSheet), true,
+        propertyChanged: (b, _, _) => ((BottomSheet)b).UpdateChrome());
+
+    public static readonly BindableProperty IsDirtyProperty = BindableProperty.Create(
+        nameof(IsDirty), typeof(bool), typeof(BottomSheet), false);
+
+    public static readonly BindableProperty DetentProperty = BindableProperty.Create(
+        nameof(Detent), typeof(SheetDetent), typeof(BottomSheet), SheetDetent.Medium,
+        propertyChanged: (b, _, _) => ((BottomSheet)b).ApplyDetent(animate: true));
+
+    public static readonly BindableProperty AllowedDetentsProperty = BindableProperty.Create(
+        nameof(AllowedDetents), typeof(SheetDetents), typeof(BottomSheet), SheetDetents.Medium | SheetDetents.Large);
+
+    public static readonly BindableProperty ShowGrabberProperty = BindableProperty.Create(
+        nameof(ShowGrabber), typeof(bool), typeof(BottomSheet), true,
+        propertyChanged: (b, _, n) => ((BottomSheet)b).Grabber.Opacity = (bool)n ? 1 : 0);
+
+    // Вложенные шаги: что было в шторке до Push — содержимое и заголовок.
+    private readonly Stack<(View? Content, string Title)> steps = new();
+    private double panY;
+
     public BottomSheet()
     {
         this.InitializeComponent();
     }
+
+    /// <summary>✓ — шторка закрывается с переносом правок (до выполнения <see cref="ConfirmCommand"/>).</summary>
+    public event EventHandler? Confirmed;
+
+    /// <summary>✕, затемнение, свайп вниз или «Назад» — правки отброшены (до выполнения <see cref="CancelCommand"/>).</summary>
+    public event EventHandler? Cancelled;
 
     public bool IsOpen
     {
@@ -43,12 +115,14 @@ public partial class BottomSheet : ContentView
         set => this.SetValue(IsOpenProperty, value);
     }
 
+    /// <summary>Inline-заголовок панели, короче 15 символов.</summary>
     public string Title
     {
         get => (string)this.GetValue(TitleProperty);
         set => this.SetValue(TitleProperty, value);
     }
 
+    /// <summary>Сноска под панелью («через 20 ч 10 мин»); пустая — не показывается.</summary>
     public string Hint
     {
         get => (string)this.GetValue(HintProperty);
@@ -62,10 +136,307 @@ public partial class BottomSheet : ContentView
         set => this.SetValue(SheetTemplateProperty, value);
     }
 
-    /// <summary>Выполняется при нажатии на затемнение.</summary>
+    /// <summary>Закрытие без переноса правок.</summary>
     public ICommand? CancelCommand
     {
         get => (ICommand?)this.GetValue(CancelCommandProperty);
         set => this.SetValue(CancelCommandProperty, value);
+    }
+
+    /// <summary>✓ «Готово»: перенос правок и закрытие.</summary>
+    public ICommand? ConfirmCommand
+    {
+        get => (ICommand?)this.GetValue(ConfirmCommandProperty);
+        set => this.SetValue(ConfirmCommandProperty, value);
+    }
+
+    /// <summary>false — форма с ошибкой: ✓ неактивна.</summary>
+    public bool CanConfirm
+    {
+        get => (bool)this.GetValue(CanConfirmProperty);
+        set => this.SetValue(CanConfirmProperty, value);
+    }
+
+    /// <summary>В шторке есть непринятые правки: закрытие без ✓ спрашивает подтверждение.</summary>
+    public bool IsDirty
+    {
+        get => (bool)this.GetValue(IsDirtyProperty);
+        set => this.SetValue(IsDirtyProperty, value);
+    }
+
+    public SheetDetent Detent
+    {
+        get => (SheetDetent)this.GetValue(DetentProperty);
+        set => this.SetValue(DetentProperty, value);
+    }
+
+    public SheetDetents AllowedDetents
+    {
+        get => (SheetDetents)this.GetValue(AllowedDetentsProperty);
+        set => this.SetValue(AllowedDetentsProperty, value);
+    }
+
+    /// <summary>Граббер 36 × 5 — когда шторка может менять высоту.</summary>
+    public bool ShowGrabber
+    {
+        get => (bool)this.GetValue(ShowGrabberProperty);
+        set => this.SetValue(ShowGrabberProperty, value);
+    }
+
+    // «Уменьшение движения»: шторка растворяется вместо выезда, пружин нет (DESIGN.md §2.9).
+    private static bool ReduceMotion =>
+        IPlatformApplication.Current?.Services.GetService<ThemeService>()?.ReduceMotion ?? false;
+
+    /// <summary>Шаг внутри шторки: слева появляется «назад», ✓ и ✕ прячутся до возврата.</summary>
+    public void Push(View step, string title)
+    {
+        this.steps.Push((this.Body.Content, this.TitleLabel.Text));
+        this.Body.Content = step;
+        this.TitleLabel.Text = title;
+        this.UpdateChrome();
+    }
+
+    /// <summary>Возврат на шаг назад; на первом шаге ничего не делает.</summary>
+    public void Pop()
+    {
+        if (this.steps.Count == 0)
+        {
+            return;
+        }
+
+        (this.Body.Content, this.TitleLabel.Text) = this.steps.Pop();
+        this.UpdateChrome();
+    }
+
+    /// <summary>Системная «Назад»: шаг назад или закрытие шторки. false — шторка закрыта, «Назад» обрабатывает страница.</summary>
+    public bool HandleBack()
+    {
+        if (!this.IsOpen)
+        {
+            return false;
+        }
+
+        if (this.steps.Count > 0)
+        {
+            this.Pop();
+        }
+        else
+        {
+            _ = this.CancelAsync();
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Закрытие без ✓ (✕, затемнение, свайп вниз, «Назад»). С правками — диалог из ✕:
+    /// «Не сохранять» отбрасывает, «Сохранить» переносит, «Отменить» оставляет шторку открытой.
+    /// </summary>
+    public async Task CancelAsync()
+    {
+        if (this.IsDirty)
+        {
+            Element? element = this.Parent;
+            while (element is not null and not Page)
+            {
+                element = element.Parent;
+            }
+
+            var choice = element is Page page
+                ? await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save)
+                : AppResources.DontSave;
+            if (choice == AppResources.Save)
+            {
+                this.Confirm();
+                return;
+            }
+
+            if (choice != AppResources.DontSave)
+            {
+                // «Отменить»: шторка остаётся, после свайпа возвращается на место.
+                await this.Panel.TranslateToAsync(0, 0, 250, Spring);
+                return;
+            }
+        }
+
+        this.Cancelled?.Invoke(this, EventArgs.Empty);
+        this.CancelCommand?.Execute(null);
+    }
+
+    private void Confirm()
+    {
+        if (!this.CanConfirm || this.ConfirmCommand?.CanExecute(null) == false)
+        {
+            return;
+        }
+
+        this.Confirmed?.Invoke(this, EventArgs.Empty);
+        this.ConfirmCommand?.Execute(null);
+    }
+
+    // Появление и закрытие: пружина 0.5 с снизу и затемнение; при «Уменьшении движения» — растворение 0.2 с.
+    private async Task ShowAsync(bool open)
+    {
+        this.Panel.CancelAnimations();
+        this.ScrimView.CancelAnimations();
+        this.CancelAnimations();
+        var reduceMotion = ReduceMotion;
+
+        if (open)
+        {
+            // Содержимое создаётся при первом открытии: восемь шторок редактора со списками,
+            // собранные вместе со страницей, задерживали её открытие почти на секунду.
+            if (this.Body.Content is null && this.steps.Count == 0 && this.SheetTemplate is { } template)
+            {
+                this.Body.Content = (View)template.CreateContent();
+            }
+
+            this.ApplyDetent(animate: false);
+            this.IsVisible = true;
+            if (reduceMotion)
+            {
+                this.Opacity = 0;
+                await this.FadeToAsync(1, 200);
+            }
+            else
+            {
+                this.Panel.TranslationY = this.Height > 0 ? this.Height : 1000;
+                this.ScrimView.Opacity = 0;
+                await Task.WhenAll(this.Panel.TranslateToAsync(0, 0, 500, Spring), this.ScrimView.FadeToAsync(1, 250));
+            }
+
+            return;
+        }
+
+        if (!this.IsVisible)
+        {
+            return;
+        }
+
+        if (reduceMotion)
+        {
+            await this.FadeToAsync(0, 200);
+        }
+        else
+        {
+            await Task.WhenAll(
+                this.Panel.TranslateToAsync(0, this.Panel.Height + this.Panel.Margin.Bottom, 250, Easing.CubicIn),
+                this.ScrimView.FadeToAsync(0, 250));
+        }
+
+        // Шторку открыли снова, пока она уезжала: оставляем открытой.
+        if (this.IsOpen)
+        {
+            return;
+        }
+
+        this.IsVisible = false;
+        this.Opacity = 1;
+        this.Panel.TranslationY = 0;
+        this.ScrimView.Opacity = 1;
+        while (this.steps.Count > 0)
+        {
+            this.Pop();
+        }
+
+        // Страница позади возвращается на место, следующее открытие начнётся со среднего детента.
+        this.Detent = SheetDetent.Medium;
+        this.ApplyDetent(animate: false);
+    }
+
+    // Вид детента: средний — стекло по содержимому с отступом 8 и углами 47; большой — непрозрачный фон почти на весь экран,
+    // верхние углы 38, а страница позади (соседи шторки в общем Grid) уменьшается до 0.92 и сдвигается вниз на 46.
+    private void ApplyDetent(bool animate)
+    {
+        var large = this.Detent == SheetDetent.Large && this.IsOpen;
+        if (large)
+        {
+            this.Panel.Margin = new Thickness(0, 12, 0, 0);
+            this.Panel.VerticalOptions = LayoutOptions.Fill;
+            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(38, 38, 0, 0) };
+            this.Panel.SetDynamicResource(BackgroundColorProperty, "ElevatedGroupedBackground");
+        }
+        else
+        {
+            this.Panel.Margin = new Thickness(8);
+            this.Panel.VerticalOptions = LayoutOptions.End;
+            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(47) };
+            this.Panel.SetDynamicResource(BackgroundColorProperty, "GlassFillLarge");
+        }
+
+        if (this.Parent is not Layout layout)
+        {
+            return;
+        }
+
+        var duration = animate && !ReduceMotion ? 500u : 0u;
+        foreach (var view in layout.Children.OfType<VisualElement>().Where(v => v is not BottomSheet))
+        {
+            _ = view.ScaleToAsync(large ? 0.92 : 1, duration, Spring);
+            _ = view.TranslateToAsync(0, large ? 46 : 0, duration, Spring);
+        }
+    }
+
+    // Кнопки и затемнение в панели меняются вместе с шагом и доступностью ✓.
+    private void UpdateChrome()
+    {
+        var nested = this.steps.Count > 0;
+        if (!nested)
+        {
+            this.TitleLabel.Text = this.Title;
+        }
+
+        this.CancelButton.IsVisible = !nested;
+        this.BackButton.IsVisible = nested;
+        var canConfirm = this.CanConfirm && this.ConfirmCommand?.CanExecute(null) != false;
+        this.ConfirmButton.IsVisible = !nested && this.ConfirmCommand is not null;
+        this.ConfirmButton.IsEnabled = canConfirm;
+        this.ConfirmButton.Opacity = canConfirm ? 1 : 0.4;
+    }
+
+    private void OnConfirmCanExecuteChanged(object? sender, EventArgs e) => this.UpdateChrome();
+
+    private void OnCancelTapped(object? sender, TappedEventArgs e) => _ = this.CancelAsync();
+
+    private void OnConfirmTapped(object? sender, TappedEventArgs e) => this.Confirm();
+
+    private void OnBackTapped(object? sender, TappedEventArgs e) => this.Pop();
+
+    private void OnGrabberTapped(object? sender, TappedEventArgs e)
+    {
+        if (this.ShowGrabber && this.AllowedDetents.HasFlag(SheetDetents.Large))
+        {
+            this.Detent = this.Detent == SheetDetent.Large ? SheetDetent.Medium : SheetDetent.Large;
+        }
+    }
+
+    // Свайп по грабберу и панели: панель едет за пальцем вниз; отпустили — закрытие, большой детент или возврат.
+    private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
+    {
+        switch (e.StatusType)
+        {
+            case GestureStatus.Running:
+                this.panY = e.TotalY;
+                this.Panel.TranslationY = Math.Max(0, e.TotalY);
+                break;
+            case GestureStatus.Completed:
+            case GestureStatus.Canceled:
+                if (this.panY > SwipeDistance)
+                {
+                    _ = this.CancelAsync();
+                }
+                else
+                {
+                    if (this.panY < -SwipeDistance && this.ShowGrabber && this.AllowedDetents.HasFlag(SheetDetents.Large))
+                    {
+                        this.Detent = SheetDetent.Large;
+                    }
+
+                    _ = this.Panel.TranslateToAsync(0, 0, 250, Spring);
+                }
+
+                this.panY = 0;
+                break;
+        }
     }
 }

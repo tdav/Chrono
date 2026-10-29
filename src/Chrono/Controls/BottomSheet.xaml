@@ -2,35 +2,77 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
              x:Class="Chrono.Controls.BottomSheet"
              x:Name="Root" x:DataType="controls:BottomSheet" IsVisible="False">
-    <!-- Слой поверх страницы: затемнение (нажатие = «Отмена») и панель снизу. Без анимаций — состояние меняется сразу. -->
-    <!-- Явный Content: корневой Grid контрола кладётся в Content, а не в SheetContent (содержимое шторки задаётся снаружи шаблоном BottomSheet.SheetTemplate). -->
+    <!-- Шторка (DESIGN.md §3.1): затемнение Scrim (нажатие = ✕) и панель снизу. Средний детент — стекло GlassFillLarge
+         с отступом 8 и углами 47; большой — ElevatedGroupedBackground, верхние углы 38, страница позади уходит назад.
+         Вид детента ставит код (ApplyDetent). Явный Content: корневой Grid кладётся в Content, а содержимое шторки
+         задаётся снаружи шаблоном SheetTemplate и разворачивается при первом открытии. -->
     <ContentView.Content>
-    <Grid>
-        <BoxView Color="{StaticResource Scrim}">
-            <BoxView.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding CancelCommand, Source={x:Reference Root}}" />
-            </BoxView.GestureRecognizers>
-        </BoxView>
-        <Border VerticalOptions="End" Background="{StaticResource Surface}" StrokeThickness="0"
-                StrokeShape="RoundRectangle 28,28,0,0" Padding="22,10,22,34">
-            <Border.Shadow>
-                <Shadow Brush="Black" Offset="0,-10" Radius="40" Opacity="0.25" />
-            </Border.Shadow>
-            <!-- Пустой обработчик нажатия: тап по панели не должен проваливаться в затемнение под ней. -->
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer />
-            </Border.GestureRecognizers>
-            <VerticalStackLayout Spacing="16">
-                <BoxView WidthRequest="44" HeightRequest="5" CornerRadius="3" Color="{StaticResource Hairline}" HorizontalOptions="Center" />
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Text="{Binding Title, Source={x:Reference Root}}" Style="{StaticResource SheetTitle}" />
-                    <Label Grid.Column="1" Text="{Binding Hint, Source={x:Reference Root}}" Style="{StaticResource SheetHint}" />
+        <Grid>
+            <BoxView x:Name="ScrimView" Color="{DynamicResource Scrim}">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCancelTapped" />
+                </BoxView.GestureRecognizers>
+            </BoxView>
+            <Border x:Name="Panel" VerticalOptions="End" Margin="8" Padding="16,0,16,16" StrokeThickness="0"
+                    BackgroundColor="{DynamicResource GlassFillLarge}" StrokeShape="RoundRectangle 47">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.15" />
+                </Border.Shadow>
+                <!-- Пустой обработчик нажатия: тап по панели не должен проваливаться в затемнение под ней. -->
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <!-- Граббер и панель — одна зона жестов: касание граббера переключает детенты, свайп вниз закрывает, вверх — большой детент. -->
+                    <VerticalStackLayout Spacing="4">
+                        <VerticalStackLayout.GestureRecognizers>
+                            <PanGestureRecognizer PanUpdated="OnPanUpdated" />
+                        </VerticalStackLayout.GestureRecognizers>
+                        <ContentView x:Name="Grabber" HeightRequest="16">
+                            <ContentView.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnGrabberTapped" />
+                            </ContentView.GestureRecognizers>
+                            <BoxView WidthRequest="36" HeightRequest="5" CornerRadius="2.5" Color="{DynamicResource TertiaryLabel}"
+                                     HorizontalOptions="Center" VerticalOptions="End" />
+                        </ContentView>
+                        <!-- Панель: ✕ «Отменить» слева, заголовок по центру, ✓ «Готово» справа; во вложенном шаге — «назад» слева и ничего справа. -->
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,0,0,4">
+                            <Border x:Name="CancelButton" Style="{StaticResource GlassButton}"
+                                    SemanticProperties.Description="{x:Static res:AppResources.SheetCancel}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnCancelTapped" />
+                                </Border.GestureRecognizers>
+                                <Image Source="icon_close.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Label}" />
+                            </Border>
+                            <Border x:Name="BackButton" Style="{StaticResource GlassButton}" IsVisible="False"
+                                    SemanticProperties.Description="{x:Static res:AppResources.Back}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnBackTapped" />
+                                </Border.GestureRecognizers>
+                                <Image Source="icon_back.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource Label}" />
+                            </Border>
+                            <Label x:Name="TitleLabel" Grid.Column="1" Style="{StaticResource NavTitle}" />
+                            <Border x:Name="ConfirmButton" Grid.Column="2" Style="{StaticResource GlassButtonProminent}"
+                                    SemanticProperties.Description="{x:Static res:AppResources.SheetDone}">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnConfirmTapped" />
+                                </Border.GestureRecognizers>
+                                <Image Source="icon_check.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"
+                                       design:IconTint.Color="{DynamicResource OnTint}" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                    <Label x:Name="HintLabel" Grid.Row="1" Style="{StaticResource Footnote}" HorizontalOptions="Center"
+                           Margin="0,0,0,8" IsVisible="False" />
+                    <ContentView x:Name="Body" Grid.Row="2" />
                 </Grid>
-                <ContentView x:Name="Body" />
-            </VerticalStackLayout>
-        </Border>
-    </Grid>
+            </Border>
+        </Grid>
     </ContentView.Content>
 </ContentView>

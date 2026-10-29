@@ -1,3 +1,4 @@
+using Chrono.Controls;
 using Chrono.ViewModels;
 
 namespace Chrono.Views;
@@ -48,9 +49,15 @@ public partial class AlarmEditPage : ContentPage
             return true;
         }
 
+        // Открытая шторка решает сама: шаг назад внутри неё или закрытие (с вопросом, если есть правки).
         if (this.viewModel.IsAnySheetOpen)
         {
-            this.viewModel.CloseSheetCommand.Execute(null);
+            var sheet = ((Layout)this.Content).Children.OfType<BottomSheet>().FirstOrDefault(s => s.IsOpen);
+            if (sheet?.HandleBack() != true)
+            {
+                this.viewModel.CloseSheetCommand.Execute(null);
+            }
+
             return true;
         }
 
