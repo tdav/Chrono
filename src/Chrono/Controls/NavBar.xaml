@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:res="clr-namespace:Chrono.Resources.Strings"
+             x:Class="Chrono.Controls.NavBar"
+             x:Name="Root" x:DataType="controls:NavBar">
+    <!-- Панель навигации вложенного экрана (DESIGN.md §3 › Шапка): строка 44, поля 16, inline-заголовок NavTitle по центру,
+         слева «назад» (если задана BackCommand) или LeadingContent, справа TrailingContent. Подложки нет. -->
+    <ContentView.Content>
+        <Grid ColumnDefinitions="Auto,*,Auto" Padding="16,0" HeightRequest="{StaticResource SizeHit}">
+            <!-- Заголовок на всю строку, а его поля (код) равны большей из сторон: он стоит по центру экрана, а не по центру свободного места. -->
+            <Label x:Name="TitleLabel" Grid.ColumnSpan="3" Style="{StaticResource NavTitle}" InputTransparent="True"
+                   Text="{Binding Title, Source={x:Reference Root}}"
+                   Opacity="{Binding TitleOpacity, Source={x:Reference Root}}" />
+            <controls:GlassIconButton x:Name="BackButton" IsVisible="False" VerticalOptions="Center"
+                                      Source="icon_back.png" Description="{x:Static res:AppResources.Back}"
+                                      Command="{Binding BackCommand, Source={x:Reference Root}}" />
+            <ContentView x:Name="LeadingHost" VerticalOptions="Center"
+                         Content="{Binding LeadingContent, Source={x:Reference Root}}" />
+            <ContentView x:Name="TrailingHost" Grid.Column="2" VerticalOptions="Center"
+                         Content="{Binding TrailingContent, Source={x:Reference Root}}" />
+        </Grid>
+    </ContentView.Content>
+</ContentView>

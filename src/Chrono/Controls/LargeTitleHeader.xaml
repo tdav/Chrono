@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             x:Class="Chrono.Controls.LargeTitleHeader"
+             x:Name="Root" x:DataType="controls:LargeTitleHeader"
+             InputTransparent="True" CascadeInputTransparent="False">
+    <!-- Шапка корневого экрана вкладки (DESIGN.md §3 › Шапка). Лежит поверх прокручиваемого содержимого (в той же ячейке Grid, VerticalOptions="Start"),
+         первым элементом содержимого страница ставит отступ высотой HeaderHeight. Сверху вниз: строка кнопок 44 (NavBar), Large Title и подстрока.
+         Подложки нет: под строкой кнопок содержимое гаснет к фону экрана (scroll edge) — сплошная часть под самими кнопками и затухание 24 pt ниже. -->
+    <ContentView.Content>
+        <Grid RowDefinitions="Auto,Auto" InputTransparent="True" CascadeInputTransparent="False">
+            <BoxView Color="{DynamicResource SystemGroupedBackground}" InputTransparent="True" />
+            <BoxView Grid.Row="1" VerticalOptions="Start" HeightRequest="{StaticResource Space6}" InputTransparent="True"
+                     Background="{DynamicResource ScrollEdgeBrush}" />
+
+            <!-- Large Title прокручивается вместе с содержимым (смещение задаёт UpdateScroll) и обрезается по верхней границе этой строки. -->
+            <Grid x:Name="TitleClip" Grid.Row="1" IsClippedToBounds="True" InputTransparent="True">
+                <VerticalStackLayout x:Name="TitleBlock" Padding="16,4,16,8">
+                    <Label x:Name="TitleLabel" Style="{StaticResource LargeTitle}" MaxLines="1" LineBreakMode="TailTruncation"
+                           SemanticProperties.HeadingLevel="Level1"
+                           Text="{Binding Title, Source={x:Reference Root}}" />
+                    <Label x:Name="SubtitleLabel" Style="{StaticResource LargeSubtitle}" IsVisible="False"
+                           Text="{Binding Subtitle, Source={x:Reference Root}}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <controls:NavBar x:Name="Bar" TitleOpacity="0"
+                             Title="{Binding Title, Source={x:Reference Root}}"
+                             LeadingContent="{Binding LeadingContent, Source={x:Reference Root}}"
+                             TrailingContent="{Binding TrailingContent, Source={x:Reference Root}}" />
+        </Grid>
+    </ContentView.Content>
+</ContentView>

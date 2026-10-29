@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Chrono.Controls"
+             xmlns:design="clr-namespace:Chrono.Design"
+             x:Class="Chrono.Controls.GlassIconButton"
+             x:Name="Root" x:DataType="controls:GlassIconButton">
+    <!-- Стеклянная кнопка панели (DESIGN.md §3): круг 44 с символом или капсула 44 с короткой подписью.
+         Вид по умолчанию — обычная (Label); главная (IsProminent) перекрашивается кодом: стиль GlassButtonProminent, символ и подпись OnTint. -->
+    <ContentView.Content>
+        <Border x:Name="Surface" Style="{StaticResource GlassButton}" MinimumWidthRequest="{StaticResource SizeGlassButton}"
+                SemanticProperties.Description="{Binding Description, Source={x:Reference Root}}">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding Command, Source={x:Reference Root}}"
+                                      CommandParameter="{Binding CommandParameter, Source={x:Reference Root}}" />
+                <!-- Нажатие: события подписываются в конструкторе. -->
+                <PointerGestureRecognizer x:Name="Pointer" />
+            </Border.GestureRecognizers>
+            <Grid>
+                <Image x:Name="Glyph" Source="{Binding Source, Source={x:Reference Root}}" WidthRequest="22" HeightRequest="22"
+                       HorizontalOptions="Center" VerticalOptions="Center"
+                       design:IconTint.Color="{DynamicResource Label}" />
+                <!-- Подпись капсулы: body, поля 16; цвет — стиль Label по умолчанию. -->
+                <Label x:Name="Caption" IsVisible="False" Text="{Binding Text, Source={x:Reference Root}}" Margin="16,0"
+                       HorizontalOptions="Center" VerticalOptions="Center" LineBreakMode="NoWrap" />
+            </Grid>
+        </Border>
+    </ContentView.Content>
+</ContentView>
