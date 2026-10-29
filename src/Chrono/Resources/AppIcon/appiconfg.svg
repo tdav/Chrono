@@ -1,19 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
-  <!-- Передний слой: металлический круг с колоколом в безопасной зоне adaptive icon (круг 66 из 108). -->
-  <defs>
-    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3A3E44"/>
-      <stop offset="0.55" stop-color="#2E3136"/>
-      <stop offset="1" stop-color="#26292D"/>
-    </linearGradient>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#E3C88F"/>
-      <stop offset="1" stop-color="#B8975A"/>
-    </linearGradient>
-  </defs>
-  <circle cx="54" cy="54" r="30" fill="url(#metal)" stroke="url(#rim)" stroke-width="1.5"/>
-  <g transform="translate(54 54) scale(0.5) translate(-35 -37)">
-    <path d="M35 6c-12 0-20 9-20 22v14l-7 10h54l-7-10V28C55 15 47 6 35 6z" fill="#F5F2EC"/>
-    <circle cx="35" cy="62" r="6" fill="#D1B27C"/>
+  <!-- Передний слой: белый колокол Chrono в безопасной зоне adaptive icon (круг 66 из 108). Он же — монохромный слой темы значков Android 13+. -->
+  <g transform="translate(54 54) scale(0.78) translate(-35 -37)" fill="#FFFFFF">
+    <path d="M35 6c-12 0-20 9-20 22v14l-7 10h54l-7-10V28C55 15 47 6 35 6z"/>
+    <circle cx="35" cy="62" r="6"/>
   </g>
 </svg>
