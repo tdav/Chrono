@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Chrono.Controls"
              x:Class="Chrono.Controls.LargeTitleHeader"
-             x:Name="Root" x:DataType="controls:LargeTitleHeader"
-             InputTransparent="True" CascadeInputTransparent="False">
+             x:Name="Root" x:DataType="controls:LargeTitleHeader">
     <!-- Шапка корневого экрана вкладки (DESIGN.md §3 › Шапка). Лежит поверх прокручиваемого содержимого (в той же ячейке Grid, VerticalOptions="Start"),
          первым элементом содержимого страница ставит отступ высотой HeaderHeight. Сверху вниз: строка кнопок 44 (NavBar), Large Title и подстрока.
          Подложки нет: под строкой кнопок содержимое гаснет к фону экрана (scroll edge) — сплошная часть под самими кнопками и затухание 24 pt ниже. -->
