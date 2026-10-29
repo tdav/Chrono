@@ -75,7 +75,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(AccessNeedsAttention))]
     public partial bool AccessGranted { get; set; }
 
-    public bool AccessNeedsAttention => !this.AccessGranted;
+    // Где умного пробуждения нет (iOS), исправлять нечего: «!» не показывается, остаётся только фраза.
+    public bool AccessNeedsAttention => !this.AccessGranted && this.IsSmartWakeSupported;
 
     [ObservableProperty]
     public partial bool CanGrantAccess { get; set; }
@@ -155,6 +156,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         this.Attach();
         this.ShowStatus(this.syncLauncher.Status);
 
+        // Возврат с экрана «Надёжность» снова приводит сюда (OnAppearing), поэтому бейдж отражает исправленное.
+        // Считается до обращения к Health Connect: оно идёт сотни миллисекунд, и всё это время строка показывала бы ложное ✓.
+        this.ReliabilityIssues = (await this.reliability.GetStatusAsync()).Count(status => !status.Ok);
+
         SmartWakeAccess access;
         try
         {
@@ -175,9 +180,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         };
         this.AccessGranted = access == SmartWakeAccess.Granted;
         this.CanGrantAccess = this.SmartWakeEnabled && access is SmartWakeAccess.NoPermission or SmartWakeAccess.HealthConnectMissing;
-
-        // Возврат с экрана «Надёжность» снова приводит сюда (OnAppearing), поэтому бейдж отражает исправленное.
-        this.ReliabilityIssues = (await this.reliability.GetStatusAsync()).Count(status => !status.Ok);
     }
 
     partial void OnSmartWakeEnabledChanged(bool value)
