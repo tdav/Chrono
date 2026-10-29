@@ -14,7 +14,7 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:ChoiceOption">
                         <VerticalStackLayout>
-                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+                            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto" SemanticProperties.Description="{Binding AccessibleName}">
                                 <Label Text="{Binding Name}" Style="{StaticResource RowTitle}" />
                                 <Image Grid.Column="1" Source="icon_check.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"
                                        design:IconTint.Color="{DynamicResource Tint}" IsVisible="{Binding IsSelected}" />

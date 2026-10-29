@@ -11,7 +11,7 @@
         <BindableLayout.ItemTemplate>
             <DataTemplate x:DataType="vm:ChoiceOption">
                 <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}"
-                      SemanticProperties.Description="{Binding Name}">
+                      SemanticProperties.Description="{Binding AccessibleName}">
                     <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0"
                             BackgroundColor="{DynamicResource TertiarySystemFill}" HorizontalOptions="Center" VerticalOptions="Center">
                         <Border.Triggers>

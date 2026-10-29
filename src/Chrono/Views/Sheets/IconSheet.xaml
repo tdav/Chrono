@@ -30,7 +30,7 @@
                 <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:ChoiceOption">
-                            <Grid FlexLayout.Basis="16.5%" HeightRequest="58" SemanticProperties.Description="{Binding Name}">
+                            <Grid FlexLayout.Basis="16.5%" HeightRequest="58" SemanticProperties.Description="{Binding AccessibleName}">
                                 <!-- Кольцо выбранного: Tint, 2, через просвет 2 от круга (46 + 2 × 2 + 2 × 2 = 54). -->
                                 <Border WidthRequest="54" HeightRequest="54" StrokeShape="RoundRectangle 27" StrokeThickness="2"
                                         Stroke="{DynamicResource Tint}" HorizontalOptions="Center" VerticalOptions="Center"

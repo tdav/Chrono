@@ -1,3 +1,4 @@
+using Chrono.Resources.Strings;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Chrono.ViewModels;
@@ -19,5 +20,9 @@ public sealed partial class ChoiceOption : ObservableObject
     public bool IsLast { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AccessibleName))]
     public partial bool IsSelected { get; set; }
+
+    /// <summary>Имя для TalkBack / VoiceOver: выбранный пункт читается «Пн, выбрано», остальные — просто названием.</summary>
+    public string AccessibleName => this.IsSelected ? string.Format(AppResources.ChoiceSelected, this.Name) : this.Name;
 }

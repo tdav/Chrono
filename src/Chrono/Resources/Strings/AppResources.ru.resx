@@ -852,4 +852,7 @@
   <data name="SheetSaveChanges" xml:space="preserve">
     <value>Сохранить изменения?</value>
   </data>
+  <data name="ChoiceSelected" xml:space="preserve">
+    <value>{0}, выбрано</value>
+  </data>
 </root>
