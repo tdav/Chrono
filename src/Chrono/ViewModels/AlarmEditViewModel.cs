@@ -30,6 +30,8 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         var start = DateTime.Now.AddHours(1);
         this.Time = new TimeOnly(start.Hour, start.Minute);
 
+        // Сноска шторки времени считает момент срабатывания по правилу записи (дата, повтор), а не по «Ближайшему».
+        this.TimeSheet.Target = this.Target;
         this.TimeSheet.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(TimeSheetModel.Hour) or nameof(TimeSheetModel.Minute))
@@ -411,6 +413,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.OnPropertyChanged(nameof(this.PlateTitle));
         this.OnPropertyChanged(nameof(this.RelText));
         this.OnPropertyChanged(nameof(this.TimeHint));
+        this.TimeSheet.RefreshFootnote();
     }
 
     public void StopPreview() => this.soundPlayer.Stop();
