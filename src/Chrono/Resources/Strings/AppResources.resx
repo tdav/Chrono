@@ -51,6 +51,27 @@
   <data name="Fix" xml:space="preserve"><value>Fix</value></data>
   <data name="OemHint" xml:space="preserve"><value>On Xiaomi, Huawei and Samsung phones also allow Autostart for Chrono: Settings → Apps → Chrono → Autostart / Battery.</value></data>
   <data name="SilentHint" xml:space="preserve"><value>In silent mode only vibration will play.</value></data>
+  <data name="SystemGroup" xml:space="preserve"><value>System</value></data>
+  <data name="ReliabilityIssues" xml:space="preserve"><value>Issues: {0}</value></data>
+  <data name="VersionFooter" xml:space="preserve"><value>Chrono {0}</value></data>
+  <data name="MathChallengeFooter" xml:space="preserve"><value>To stop the alarm, you need to solve a problem</value></data>
+  <data name="ReliabilityIntro" xml:space="preserve"><value>For the alarm to ring on time, the system must not restrict Chrono.</value></data>
+  <data name="ReliabilityFooter" xml:space="preserve"><value>The check runs each time this screen opens.</value></data>
+  <data name="RelTitle_Notifications" xml:space="preserve"><value>Notifications</value></data>
+  <data name="RelOk_Notifications" xml:space="preserve"><value>Allowed</value></data>
+  <data name="RelProblem_Notifications" xml:space="preserve"><value>Turned off — the alarm may not appear</value></data>
+  <data name="RelTitle_ExactAlarms" xml:space="preserve"><value>Exact alarms</value></data>
+  <data name="RelOk_ExactAlarms" xml:space="preserve"><value>Permission granted</value></data>
+  <data name="RelProblem_ExactAlarms" xml:space="preserve"><value>Permission needed — the alarm may be late</value></data>
+  <data name="RelTitle_FullScreen" xml:space="preserve"><value>Over the lock screen</value></data>
+  <data name="RelOk_FullScreen" xml:space="preserve"><value>Allowed</value></data>
+  <data name="RelProblem_FullScreen" xml:space="preserve"><value>Not allowed — the alarm won't show on the lock screen</value></data>
+  <data name="RelTitle_Battery" xml:space="preserve"><value>Battery saver</value></data>
+  <data name="RelOk_Battery" xml:space="preserve"><value>Chrono is not restricted</value></data>
+  <data name="RelProblem_Battery" xml:space="preserve"><value>Chrono is restricted in the background — the alarm may be late</value></data>
+  <data name="RelTitle_TimeSensitive" xml:space="preserve"><value>Time-sensitive notifications</value></data>
+  <data name="RelOk_TimeSensitive" xml:space="preserve"><value>Allowed</value></data>
+  <data name="RelProblem_TimeSensitive" xml:space="preserve"><value>Not allowed — Focus mode may silence the alarm</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
   <data name="SmartWake" xml:space="preserve"><value>Smart wake</value></data>
   <data name="SmartWakeDescription" xml:space="preserve"><value>Up to 30 minutes before the alarm, Chrono looks for light sleep using your smart watch data (via Health Connect) and phone motion, and wakes you then instead of in deep sleep. If light sleep isn't detected, the alarm rings at the set time. Keep the phone on the bed.</value></data>

@@ -15,6 +15,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly SyncStore syncStore;
     private readonly SyncLauncher syncLauncher;
     private readonly IMemoryCache cache;
+    private readonly IReliabilityChecks reliability;
 
     public SettingsViewModel(
         ISmartWake smartWake,
@@ -23,7 +24,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         GoogleCalendarClient google,
         SyncStore syncStore,
         SyncLauncher syncLauncher,
-        IMemoryCache cache)
+        IMemoryCache cache,
+        IReliabilityChecks reliability)
     {
         this.smartWake = smartWake;
         this.alarmService = alarmService;
@@ -32,6 +34,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         this.syncStore = syncStore;
         this.syncLauncher = syncLauncher;
         this.cache = cache;
+        this.reliability = reliability;
         this.smartWakeEnabled = smartWake.IsSupported && SmartWakeSettings.Enabled;
         this.mathChallengeEnabled = DismissSettings.MathChallenge;
         this.theme = ThemeSettings.Theme;
@@ -61,10 +64,40 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool IsThemeDark => this.Theme == AppTheme.Dark;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAccessText))]
     public partial string AccessText { get; set; } = "";
+
+    // Пока доступ не проверен, строка статуса данных часов скрыта: иначе мелькал бы значок без текста.
+    public bool HasAccessText => this.AccessText.Length > 0;
+
+    /// <summary>Доступ к данным часов есть: статус показывается значком ✓ (иначе «!») и словами в <see cref="AccessText"/>.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AccessNeedsAttention))]
+    public partial bool AccessGranted { get; set; }
+
+    public bool AccessNeedsAttention => !this.AccessGranted;
 
     [ObservableProperty]
     public partial bool CanGrantAccess { get; set; }
+
+    /// <summary>Число пунктов «Надёжности», требующих исправления: красный бейдж в строке «Надёжность».</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasReliabilityIssues))]
+    [NotifyPropertyChangedFor(nameof(NoReliabilityIssues))]
+    [NotifyPropertyChangedFor(nameof(ReliabilityDescription))]
+    public partial int ReliabilityIssues { get; set; }
+
+    public bool HasReliabilityIssues => this.ReliabilityIssues > 0;
+
+    public bool NoReliabilityIssues => this.ReliabilityIssues == 0;
+
+    // Бейдж — одно число, и экранный диктор прочёл бы просто «1»: описание строки называет раздел и смысл числа.
+    public string ReliabilityDescription => this.HasReliabilityIssues
+        ? $"{AppResources.ReliabilityTitle}, {string.Format(AppResources.ReliabilityIssues, this.ReliabilityIssues)}"
+        : AppResources.ReliabilityTitle;
+
+    /// <summary>Сноска внизу экрана: версия приложения.</summary>
+    public string VersionText => string.Format(AppResources.VersionFooter, AppInfo.Current.VersionString);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSignedIn))]
@@ -140,7 +173,11 @@ public sealed partial class SettingsViewModel : ObservableObject
             SmartWakeAccess.HealthConnectMissing => AppResources.SmartWakeAccessMissing,
             _ => AppResources.SmartWakeUnsupported,
         };
+        this.AccessGranted = access == SmartWakeAccess.Granted;
         this.CanGrantAccess = this.SmartWakeEnabled && access is SmartWakeAccess.NoPermission or SmartWakeAccess.HealthConnectMissing;
+
+        // Возврат с экрана «Надёжность» снова приводит сюда (OnAppearing), поэтому бейдж отражает исправленное.
+        this.ReliabilityIssues = (await this.reliability.GetStatusAsync()).Count(status => !status.Ok);
     }
 
     partial void OnSmartWakeEnabledChanged(bool value)
