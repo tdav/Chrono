@@ -12,7 +12,8 @@
          Вид чипа (обычный или раскрытый) ставит UpdateExpanded; цвета — только DynamicResource. -->
     <ContentView.Content>
         <VerticalStackLayout>
-            <Grid Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
+            <!-- Описание строки для TalkBack («Дата, сб, 24 окт., свёрнуто») ставит UpdateRowDescription: оно зависит от названия, чипа и раскрытия. -->
+            <Grid x:Name="Line" Style="{StaticResource Row}" ColumnDefinitions="*,Auto">
                 <Grid.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnRowTapped" />
                 </Grid.GestureRecognizers>
@@ -20,7 +21,7 @@
                 <!-- Чип: 34, скругление 8 (как в эталоне SheetCalendar), значение Tint; фон — TertiarySystemFill, раскрытый — TintFill. -->
                 <Border x:Name="Chip" Grid.Column="1" HeightRequest="{StaticResource SizeButtonM}" Padding="11,0" StrokeThickness="0"
                         StrokeShape="RoundRectangle 8" VerticalOptions="Center">
-                    <Label Style="{StaticResource TextBody}" TextColor="{DynamicResource Tint}" LineBreakMode="NoWrap"
+                    <Label x:Name="ChipLabel" Style="{StaticResource TextBody}" TextColor="{DynamicResource Tint}" LineBreakMode="NoWrap"
                            HorizontalOptions="Center" VerticalOptions="Center"
                            Text="{Binding Model.ChipText, Source={x:Reference Root}}" />
                 </Border>
@@ -83,6 +84,12 @@
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="vm:CalendarDayItem">
                                 <Grid Grid.Row="{Binding Row}" Grid.Column="{Binding Column}">
+                                    <!-- Пустые ячейки перед первым числом месяца: TalkBack не должен останавливаться на пустоте. -->
+                                    <Grid.Triggers>
+                                        <DataTrigger TargetType="Grid" Binding="{Binding Cell.Date}" Value="{x:Null}">
+                                            <Setter Property="AutomationProperties.IsInAccessibleTree" Value="False" />
+                                        </DataTrigger>
+                                    </Grid.Triggers>
                                     <Border WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 20" StrokeThickness="0"
                                             BackgroundColor="Transparent" HorizontalOptions="Center" VerticalOptions="Center">
                                         <Border.Triggers>

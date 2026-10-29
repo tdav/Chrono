@@ -32,7 +32,7 @@
                         <DataTemplate x:DataType="vm:ChoiceOption">
                             <!-- Пункт: подсветка QuaternarySystemFill на время нажатия ставит код; область нажатия — весь пункт. -->
                             <Border MinimumHeightRequest="{StaticResource SizeHit}" Padding="12,0" StrokeShape="RoundRectangle 14" StrokeThickness="0"
-                                    SemanticProperties.Description="{Binding Name}">
+                                    SemanticProperties.Description="{Binding AccessibleName}">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnItemTapped" />
                                     <PointerGestureRecognizer PointerPressed="OnItemPressed" PointerReleased="OnItemReleased" PointerExited="OnItemReleased" />

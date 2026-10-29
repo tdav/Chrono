@@ -5,6 +5,7 @@
      • размеры — из Metrics.xaml. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:controls="clr-namespace:Chrono.Controls"
                     xmlns:design="clr-namespace:Chrono.Design">
 
     <!-- Толщина разделителя — один физический пиксель; точное значение ThemeService.Attach пишет по плотности экрана. -->
@@ -141,6 +142,11 @@
         <Setter Property="Margin" Value="16,0,0,0" />
     </Style>
 
+    <!-- Разделитель строки со значком 30 («Настройки», «Надёжность»): начинается там же, где название (16 поле + 30 значок + 12 просвет = 58). -->
+    <Style x:Key="IconRowSeparator" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}">
+        <Setter Property="Margin" Value="58,0,0,0" />
+    </Style>
+
     <!-- Подсказка в контенте (вместо баннера): та же карточка, что секция, с полями. -->
     <Style x:Key="Tip" TargetType="Border" BasedOn="{StaticResource Section}">
         <Setter Property="Padding" Value="16,12" />
@@ -205,7 +211,14 @@
         <Setter Property="TextColor" Value="{DynamicResource Destructive}" />
     </Style>
 
-    <!-- Размер M (34): кнопки в карточках и строках. Область нажатия добирается до 44 полями контейнера. -->
+    <!-- Область нажатия кнопок S и M: вид по дизайну (28 и 34), а касание — 44 по высоте. Кнопку кладут в controls:HitTarget
+         (Button с VerticalOptions="Center"): обёртка 44 передаёт ей нажатие вокруг капсулы. -->
+    <Style TargetType="controls:HitTarget">
+        <Setter Property="MinimumHeightRequest" Value="{StaticResource SizeHit}" />
+        <Setter Property="MinimumWidthRequest" Value="{StaticResource SizeHit}" />
+    </Style>
+
+    <!-- Размер M (34): кнопки в карточках и строках; область нажатия до 44 добирает HitTarget. -->
     <Style x:Key="FilledButtonM" TargetType="Button" BasedOn="{StaticResource FilledButton}">
         <Setter Property="HeightRequest" Value="{StaticResource SizeButtonM}" />
         <Setter Property="CornerRadius" Value="17" />
@@ -232,7 +245,7 @@
         <Setter Property="FontAttributes" Value="None" />
     </Style>
 
-    <!-- Размер S (28): «Исправить» в строке «Надёжности». -->
+    <!-- Размер S (28): «Исправить» в строке «Надёжности»; область нажатия до 44 добирает HitTarget. -->
     <Style x:Key="TintedButtonS" TargetType="Button" BasedOn="{StaticResource TintedButtonM}">
         <Setter Property="HeightRequest" Value="{StaticResource SizeButtonS}" />
         <Setter Property="CornerRadius" Value="14" />

@@ -77,8 +77,8 @@ public sealed partial class RingViewModel : ObservableObject, IQueryAttributable
         var alarm = this.alarmService.GetAll().FirstOrDefault(a => a.Id == id);
         this.ringingAlarm = alarm;
         this.TimeText = (alarm?.At ?? DateTime.Now).ToString("HH:mm");
-        // Дата — сегодняшняя: у повторяющегося At уже указывает на следующее срабатывание.
-        this.DateText = DateTime.Now.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture);
+        // Дата — сегодняшняя: у повторяющегося At уже указывает на следующее срабатывание. Над временем: «Будильник · суббота, 24 октября».
+        this.DateText = string.Format(AppResources.RingDate, DateTime.Now.ToString("dddd, d MMMM", CultureInfo.CurrentUICulture));
         this.Label = string.IsNullOrWhiteSpace(alarm?.Label) ? AppResources.DefaultLabel : alarm.Label;
     }
 

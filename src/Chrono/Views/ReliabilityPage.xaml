@@ -7,11 +7,6 @@
              x:DataType="vm:ReliabilityViewModel">
 
     <ContentPage.Resources>
-        <!-- Разделитель строки со значком: начинается там же, где название (16 поле + 30 значок + 12 просвет = 58). -->
-        <Style x:Key="IconRowSeparator" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}">
-            <Setter Property="Margin" Value="58,0,0,0" />
-        </Style>
-
         <!-- Пояснение под панелью: callout, SecondaryLabel; поля 16 — на одной линии с названиями строк. -->
         <Style x:Key="Intro" TargetType="Label" BasedOn="{StaticResource TextCallout}">
             <Setter Property="TextColor" Value="{DynamicResource SecondaryLabel}" />
@@ -44,10 +39,13 @@
                                             <Label Text="{Binding Title}" Style="{StaticResource RowTitle}" />
                                             <Label Text="{Binding Subtitle}" Style="{StaticResource RowSubtitle}" />
                                         </VerticalStackLayout>
-                                        <Button Grid.Column="2" Text="{x:Static res:AppResources.Fix}" Style="{StaticResource TintedButtonS}"
-                                                VerticalOptions="Center" IsVisible="{Binding NeedsFix}"
-                                                Command="{Binding FixCommand, Source={RelativeSource AncestorType={x:Type vm:ReliabilityViewModel}}, x:DataType=vm:ReliabilityViewModel}"
-                                                CommandParameter="{Binding .}" />
+                                        <!-- Капсула 28; область нажатия 44 даёт HitTarget. -->
+                                        <controls:HitTarget Grid.Column="2" VerticalOptions="Center" IsVisible="{Binding NeedsFix}">
+                                            <Button Text="{x:Static res:AppResources.Fix}" Style="{StaticResource TintedButtonS}" VerticalOptions="Center"
+                                                    SemanticProperties.Description="{Binding Title, StringFormat={x:Static res:AppResources.FixDescription}}"
+                                                    Command="{Binding FixCommand, Source={RelativeSource AncestorType={x:Type vm:ReliabilityViewModel}}, x:DataType=vm:ReliabilityViewModel}"
+                                                    CommandParameter="{Binding .}" />
+                                        </controls:HitTarget>
                                     </Grid>
                                     <BoxView Style="{StaticResource IconRowSeparator}" IsVisible="{Binding HasSeparator}" />
                                 </VerticalStackLayout>

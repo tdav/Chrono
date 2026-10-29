@@ -2,6 +2,9 @@ using System.Windows.Input;
 using Chrono.Design;
 using Chrono.Resources.Strings;
 using Microsoft.Maui.Controls.Shapes;
+#if ANDROID
+using Google.Android.Material.Dialog;
+#endif
 
 namespace Chrono.Controls;
 
@@ -248,9 +251,33 @@ public partial class BottomSheet : ContentView
             this.asking = true;
             try
             {
-                choice = element is Page page
-                    ? await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save)
-                    : AppResources.DontSave;
+                if (element is not Page page)
+                {
+                    choice = AppResources.DontSave;
+                }
+#if ANDROID
+                // Android: диалог Material из трёх кнопок. Positive — «Сохранить», Negative — «Отменить» (справа, рядом с ней), Neutral —
+                // «Не сохранять» (слева): primary крайняя справа, как в остальных модальных окнах. Список AppCompat с «Сохранить» строкой
+                // (DisplayActionSheetAsync) выглядел как старый серый диалог. Любой другой выход — «Назад», касание вне диалога — это «Отменить».
+                else if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is { } activity)
+                {
+                    var answer = new TaskCompletionSource<string>();
+                    var dialog = new MaterialAlertDialogBuilder(activity)
+                        .SetTitle(AppResources.SheetSaveChanges)!
+                        .SetPositiveButton(AppResources.Save, (_, _) => answer.TrySetResult(AppResources.Save))!
+                        .SetNegativeButton(AppResources.SheetCancel, (_, _) => answer.TrySetResult(AppResources.SheetCancel))!
+                        .SetNeutralButton(AppResources.DontSave, (_, _) => answer.TrySetResult(AppResources.DontSave))!
+                        .Create();
+                    // Закрытие диалога приходит после нажатия кнопки, поэтому TrySetResult выше уже сработал; здесь — только выходы без кнопки.
+                    dialog.DismissEvent += (_, _) => answer.TrySetResult(AppResources.SheetCancel);
+                    dialog.Show();
+                    choice = await answer.Task;
+                }
+#endif
+                else
+                {
+                    choice = await page.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DontSave, AppResources.Save);
+                }
             }
             finally
             {

@@ -90,15 +90,21 @@
                                    TextColor="{DynamicResource Label}" VerticalOptions="Center" />
                         </Grid>
                         <Label Text="{Binding SelectedDetails}" Style="{StaticResource RowSubtitle}" Margin="0,0,4,0" />
-                        <!-- Действия справа: «Изменить» — главное, крайнее справа. Поля 4 вокруг кнопок добирают область нажатия до 44;
-                             на крупном шрифте кнопки переносятся на следующую строку. -->
+                        <!-- Действия справа: «Изменить» — главное, крайнее справа. Каждая капсула 34 лежит в HitTarget (область нажатия 44);
+                             поля 4 по бокам — зазор между кнопками. На крупном шрифте кнопки переносятся на следующую строку. -->
                         <FlexLayout Wrap="Wrap" JustifyContent="End" AlignItems="Center">
-                            <Button Text="{x:Static res:AppResources.DialClearSelection}" Style="{StaticResource PlainButtonM}" Margin="4,5"
-                                    Command="{Binding ClearSelectionCommand}" />
-                            <Button Text="{Binding SelectedDoneText}" Style="{StaticResource GrayButtonM}" Margin="4,5"
-                                    Command="{Binding ToggleDoneCommand}" />
-                            <Button Text="{x:Static res:AppResources.DialEdit}" Style="{StaticResource FilledButtonM}" Margin="4,5"
-                                    Command="{Binding EditCommand}" />
+                            <controls:HitTarget Margin="4,0">
+                                <Button Text="{x:Static res:AppResources.DialClearSelection}" Style="{StaticResource PlainButtonM}" VerticalOptions="Center"
+                                        Command="{Binding ClearSelectionCommand}" />
+                            </controls:HitTarget>
+                            <controls:HitTarget Margin="4,0">
+                                <Button Text="{Binding SelectedDoneText}" Style="{StaticResource GrayButtonM}" VerticalOptions="Center"
+                                        Command="{Binding ToggleDoneCommand}" />
+                            </controls:HitTarget>
+                            <controls:HitTarget Margin="4,0">
+                                <Button Text="{x:Static res:AppResources.DialEdit}" Style="{StaticResource FilledButtonM}" VerticalOptions="Center"
+                                        Command="{Binding EditCommand}" />
+                            </controls:HitTarget>
                         </FlexLayout>
                     </VerticalStackLayout>
                 </Border>

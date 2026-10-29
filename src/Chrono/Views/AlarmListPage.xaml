@@ -85,7 +85,7 @@
                                                 <!-- Красный круг «−» режима «Изменить»; область нажатия 44 × 44 заходит в поле строки. -->
                                                 <Grid WidthRequest="{StaticResource SizeHit}" HeightRequest="{StaticResource SizeHit}" Margin="-10,0,2,0" VerticalOptions="Center"
                                                       IsVisible="{Binding IsEditing, Source={RelativeSource AncestorType={x:Type vm:AlarmListViewModel}}, x:DataType=vm:AlarmListViewModel}"
-                                                      SemanticProperties.Description="{x:Static res:AppResources.Delete}">
+                                                      SemanticProperties.Description="{Binding TimeText, StringFormat={x:Static res:AppResources.DeleteAlarmAt}}">
                                                     <Grid.GestureRecognizers>
                                                         <TapGestureRecognizer Tapped="OnMinusTapped" />
                                                     </Grid.GestureRecognizers>

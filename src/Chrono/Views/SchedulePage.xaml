@@ -38,7 +38,15 @@
 
         <ScrollView x:Name="Scroll" VerticalScrollBarVisibility="Never">
             <VerticalStackLayout Padding="0,0,0,24">
-                <Grid HeightRequest="{Binding HeaderHeight, Source={x:Reference Header}, x:DataType=controls:LargeTitleHeader, Mode=OneWay}" />
+                <Grid HeightRequest="{Binding HeaderHeight, Source={x:Reference Header}, x:DataType=controls:LargeTitleHeader, Mode=OneWay}">
+                    <!-- Смена недели для TalkBack / VoiceOver: свайп по дням недоступен экранному диктору, и сюда кладутся две настоящие кнопки
+                         с теми же командами, что у свайпов. Размер 1 × 1, без текста и заливки, под шапкой (она выше по ZIndex) — зрячий вид экрана
+                         не меняется, а в дереве доступности кнопки есть и идут перед днями. -->
+                    <Button Style="{StaticResource PlainButton}" WidthRequest="1" HeightRequest="1" Padding="0" HorizontalOptions="Start" VerticalOptions="End"
+                            SemanticProperties.Description="{x:Static res:AppResources.PrevWeek}" Command="{Binding PrevWeekCommand}" />
+                    <Button Style="{StaticResource PlainButton}" WidthRequest="1" HeightRequest="1" Padding="0" HorizontalOptions="Start" VerticalOptions="End"
+                            Margin="3,0,0,0" SemanticProperties.Description="{x:Static res:AppResources.NextWeek}" Command="{Binding NextWeekCommand}" />
+                </Grid>
 
                 <!-- Неделя с понедельника: семь колонок поровну. Касание выбирает день; свайп — на каждой колонке:
                      распознаватель на родителе перекрывался бы нажатием дочерних. -->
