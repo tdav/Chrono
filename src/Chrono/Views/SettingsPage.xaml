@@ -7,11 +7,6 @@
              x:DataType="vm:SettingsViewModel">
 
     <ContentPage.Resources>
-        <!-- Разделитель строки со значком: начинается там же, где название (16 поле + 30 значок + 12 просвет = 58). -->
-        <Style x:Key="IconRowSeparator" TargetType="BoxView" BasedOn="{StaticResource RowSeparator}">
-            <Setter Property="Margin" Value="58,0,0,0" />
-        </Style>
-
         <!-- Сегменты «Оформление» (DESIGN.md §3 › Сегменты): выбранный — капсула SegmentThumb с подписью Semibold. -->
         <Style x:Key="ThemeThumb" TargetType="Border">
             <Setter Property="HeightRequest" Value="28" />
