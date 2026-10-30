@@ -18,8 +18,8 @@
     <x:Double x:Key="RadiusIcon">7</x:Double>
     <x:Double x:Key="RadiusMd">14</x:Double>
     <x:Double x:Key="RadiusCard">26</x:Double>
-    <x:Double x:Key="RadiusAlert">38</x:Double>
-    <x:Double x:Key="RadiusSheet">38</x:Double>
+    <x:Double x:Key="RadiusAlert">10</x:Double>
+    <x:Double x:Key="RadiusSheet">10</x:Double>
     <x:Double x:Key="RadiusDevice">55</x:Double>
     <x:Double x:Key="RadiusCapsule">999</x:Double>
 

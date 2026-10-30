@@ -371,8 +371,8 @@ public partial class BottomSheet : ContentView
         this.Detent = SheetDetent.Medium;
     }
 
-    // Вид детента: средний — стекло по содержимому с отступом 8 и углами 47; большой — непрозрачный фон почти на весь экран,
-    // верхние углы 38, а страница позади (соседи шторки в общем Grid) уменьшается до 0.92 и сдвигается вниз на 46.
+    // Вид детента: средний — стекло по содержимому с отступом 8 и углами RadiusSheet; большой — непрозрачный фон почти на весь
+    // экран, верхние углы RadiusSheet (одно скругление 10 на все модальные окна, дизайн-система v4), а страница позади (соседи шторки в общем Grid) уменьшается до 0.92 и сдвигается вниз на 46.
     private void ApplyDetent(bool animate)
     {
         var large = this.Detent == SheetDetent.Large && this.IsOpen;
@@ -389,18 +389,19 @@ public partial class BottomSheet : ContentView
             this.resized = null;
         }
 
+        var radius = (double)Application.Current!.Resources["RadiusSheet"];
         if (large)
         {
             this.Panel.Margin = new Thickness(0, 12, 0, 0);
             this.Panel.VerticalOptions = LayoutOptions.Fill;
-            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(38, 38, 0, 0) };
+            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(radius, radius, 0, 0) };
             this.Panel.SetDynamicResource(BackgroundColorProperty, "ElevatedGroupedBackground");
         }
         else
         {
             this.Panel.Margin = new Thickness(8);
             this.Panel.VerticalOptions = LayoutOptions.End;
-            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(47) };
+            this.Panel.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(radius) };
             this.Panel.SetDynamicResource(BackgroundColorProperty, "GlassFillLarge");
         }
 

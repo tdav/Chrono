@@ -7,7 +7,7 @@
              x:Class="Chrono.Controls.BottomSheet"
              x:Name="Root" x:DataType="controls:BottomSheet" IsVisible="False">
     <!-- Шторка (DESIGN.md §3.1): затемнение Scrim (нажатие = ✕) и панель снизу. Средний детент — стекло GlassFillLarge
-         с отступом 8 и углами 47; большой — ElevatedGroupedBackground, верхние углы 38, страница позади уходит назад.
+         с отступом 8 и углами RadiusSheet (10); большой — ElevatedGroupedBackground, верхние углы RadiusSheet, страница позади уходит назад.
          Вид детента ставит код (ApplyDetent). Явный Content: корневой Grid кладётся в Content, а содержимое шторки
          задаётся снаружи шаблоном SheetTemplate и разворачивается при первом открытии. -->
     <ContentView.Content>
@@ -18,7 +18,7 @@
                 </BoxView.GestureRecognizers>
             </BoxView>
             <Border x:Name="Panel" VerticalOptions="End" Margin="8" Padding="16,0,16,16" StrokeThickness="0"
-                    BackgroundColor="{DynamicResource GlassFillLarge}" StrokeShape="RoundRectangle 47">
+                    BackgroundColor="{DynamicResource GlassFillLarge}" StrokeShape="RoundRectangle 10">
                 <Border.Shadow>
                     <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.10" />
                 </Border.Shadow>

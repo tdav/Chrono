@@ -41,17 +41,28 @@ public static class ChoiceDialog
             dialog.Show();
 
             // Тема активити MAUI — не Material, и диалог рисовался серой прямоугольной коробкой с белыми кнопками:
-            // поверхность — непрозрачное крупное стекло со скруглением 28, кнопки — цвет акцента. Удаление не красное:
-            // человек сам его выбрал (DESIGN.md §3 › Алерт).
+            // поверхность — непрозрачное крупное стекло со скруглением RadiusAlert (10, одно на все модальные окна),
+            // кнопки — цвет акцента, их подсветка — с теми же углами. Удаление не красное: человек сам его выбрал
+            // (DESIGN.md §3 › Алерт).
             var density = activity.Resources!.DisplayMetrics!.Density;
+            var corner = (float)(double)Application.Current!.Resources["RadiusAlert"] * density;
             var surface = new Android.Graphics.Drawables.GradientDrawable();
-            surface.SetCornerRadius(28 * density);
+            surface.SetCornerRadius(corner);
             surface.SetColor(NativeControls.Resource("GlassOpaque").ToPlatform());
             dialog.Window?.SetBackgroundDrawable(new Android.Graphics.Drawables.InsetDrawable(surface, (int)(16 * density)));
             var tint = NativeControls.Resource("Tint").ToPlatform();
-            dialog.GetButton((int)Android.Content.DialogButtonType.Positive)?.SetTextColor(tint);
-            dialog.GetButton((int)Android.Content.DialogButtonType.Negative)?.SetTextColor(tint);
-            dialog.GetButton((int)Android.Content.DialogButtonType.Neutral)?.SetTextColor(tint);
+            var shape = Google.Android.Material.Shape.ShapeAppearanceModel.InvokeBuilder().SetAllCornerSizes(corner).Build();
+            foreach (var type in new[] { Android.Content.DialogButtonType.Positive, Android.Content.DialogButtonType.Negative, Android.Content.DialogButtonType.Neutral })
+            {
+                var button = dialog.GetButton((int)type);
+                button?.SetTextColor(tint);
+                // Разрядка букв Material (≈0.09 em) делала подписи шире, чем в дизайн-системе.
+                button?.LetterSpacing = 0;
+                if (button is Google.Android.Material.Button.MaterialButton material)
+                {
+                    material.ShapeAppearanceModel = shape;
+                }
+            }
 
             return await answer.Task;
         }
