@@ -112,6 +112,9 @@ public partial class GlassIconButton : ContentView
         }
 
         var tint = this.IsProminent || this.IsAccent ? "OnTint" : "Label";
+        // «+» в шапке опущен на 10 ниже строки кнопок (решение пользователя): сдвигом, а не отступом — высота строки и
+        // соседние кнопки не меняются, область нажатия едет вместе с кнопкой.
+        this.TranslationY = this.IsAccent ? 10 : 0;
         this.Surface.SetDynamicResource(NavigableElement.StyleProperty, this.IsProminent || this.IsAccent ? "GlassButtonProminent" : "GlassButton");
         this.Glyph.SetDynamicResource(IconTint.ColorProperty, tint);
         this.Caption.SetDynamicResource(Label.TextColorProperty, tint);
