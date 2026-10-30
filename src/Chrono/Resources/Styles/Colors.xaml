@@ -65,6 +65,12 @@
     <Color x:Key="Cat4">#FFCB30E0</Color>
     <Color x:Key="Cat5">#FF00C3D0</Color>
     <Color x:Key="Cat6">#FFFF2D55</Color>
+    <Color x:Key="OnCat1">#FFFFFFFF</Color>
+    <Color x:Key="OnCat2">#FFFFFFFF</Color>
+    <Color x:Key="OnCat3">#FF000000</Color>
+    <Color x:Key="OnCat4">#FFFFFFFF</Color>
+    <Color x:Key="OnCat5">#FF000000</Color>
+    <Color x:Key="OnCat6">#FFFFFFFF</Color>
     <Color x:Key="TintFill">#29FF8D28</Color>
     <Color x:Key="DestructiveFill">#29FF383C</Color>
 

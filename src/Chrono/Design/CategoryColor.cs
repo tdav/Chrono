@@ -23,7 +23,26 @@ public static class CategoryColor
             }
         });
 
+    // Символ на круге цвета категории: роль OnCat1…OnCat6 — белый, если даёт ≥ 3:1, иначе чёрный (оранжевая и бирюзовая
+    // категории, «Тёмная · контраст»): <c>design:CategoryColor.GlyphIndex="{Binding CategoryIndex}"</c> на значке.
+    public static readonly BindableProperty GlyphIndexProperty = BindableProperty.CreateAttached(
+        "GlyphIndex",
+        typeof(int),
+        typeof(CategoryColor),
+        -1,
+        propertyChanged: (bindable, _, index) =>
+        {
+            if (bindable is Element element && (int)index >= 0)
+            {
+                element.SetDynamicResource(IconTint.ColorProperty, "On" + DialLayout.CategoryKey((int)index));
+            }
+        });
+
     public static int GetIndex(BindableObject view) => (int)view.GetValue(IndexProperty);
 
     public static void SetIndex(BindableObject view, int value) => view.SetValue(IndexProperty, value);
+
+    public static int GetGlyphIndex(BindableObject view) => (int)view.GetValue(GlyphIndexProperty);
+
+    public static void SetGlyphIndex(BindableObject view, int value) => view.SetValue(GlyphIndexProperty, value);
 }

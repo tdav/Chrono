@@ -178,13 +178,13 @@
                                         <Label Text="{Binding TimeText}" Style="{StaticResource EntryTime}" IsVisible="{Binding IsNotCurrent}" />
                                         <Label Text="{Binding TimeText}" Style="{StaticResource EntryTimeNow}" IsVisible="{Binding IsCurrent}" />
 
-                                        <!-- Значок 18 белым на круге 32 цвета категории (цвет — роль Cat1…Cat6, следует теме). -->
+                                        <!-- Значок 18 на круге 32 цвета категории: круг — роль Cat1…Cat6, символ — OnCat1…OnCat6 (белый или чёрный по контрасту), следуют теме. -->
                                         <Border Grid.Column="1" WidthRequest="32" HeightRequest="32" VerticalOptions="Center"
                                                 StrokeShape="RoundRectangle 16" StrokeThickness="0"
                                                 design:CategoryColor.Index="{Binding CategoryIndex}">
                                             <Image Source="{Binding IconImage}" WidthRequest="18" HeightRequest="18"
                                                    HorizontalOptions="Center" VerticalOptions="Center"
-                                                   design:IconTint.Color="{DynamicResource OnColor}" />
+                                                   design:CategoryColor.GlyphIndex="{Binding CategoryIndex}" />
                                         </Border>
 
                                         <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
