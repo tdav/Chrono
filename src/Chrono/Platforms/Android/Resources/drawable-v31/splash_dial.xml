@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Значок системной заставки Android 12+ (тема Chrono.SplashTheme, values-v31/styles.xml) = первый кадр SplashPage (DESIGN.md §4.7).
+     Значок без подложки: холст 288 × 288 dp по центру окна, всё видимое — в круге 192 dp. Единица viewport = 1 dp, центр 144,144.
+     Те же числа — константы стартовой композиции в Views/SplashDrawable.cs и Resources/Splash/splash.svg: менять только вместе.
+     Цвет — системный акцент тёмной темы (тон 60), его же берёт анимация: SystemAccessibility.Accent(Appearance.Dark). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <!-- Кольцо циферблата: радиус 84, линия 2. -->
+    <path
+        android:pathData="M144,60 A84,84 0 1,1 144,228 A84,84 0 1,1 144,60 Z"
+        android:strokeColor="@android:color/system_accent1_400"
+        android:strokeWidth="2" />
+    <!-- 12 часовых рисок: от радиуса 70 до 78, линия 2.5. -->
+    <path
+        android:pathData="M144,74 L144,66 M179,83.378 L183,76.45 M204.622,109 L211.55,105 M214,144 L222,144 M204.622,179 L211.55,183 M179,204.622 L183,211.55 M144,214 L144,222 M109,204.622 L105,211.55 M83.378,179 L76.45,183 M74,144 L66,144 M83.378,109 L76.45,105 M109,83.378 L105,76.45"
+        android:strokeColor="@android:color/system_accent1_400"
+        android:strokeLineCap="butt"
+        android:strokeWidth="2.5" />
+    <!-- Часовая стрелка на 12: от центра до радиуса 40, линия 5, круглые концы. -->
+    <path
+        android:pathData="M144,144 L144,104"
+        android:strokeColor="@android:color/system_accent1_400"
+        android:strokeLineCap="round"
+        android:strokeWidth="5" />
+    <!-- Минутная стрелка на 12: до радиуса 62, линия 3. -->
+    <path
+        android:pathData="M144,144 L144,82"
+        android:strokeColor="@android:color/system_accent1_400"
+        android:strokeLineCap="round"
+        android:strokeWidth="3" />
+    <!-- Ось: круг радиуса 5 и отверстие радиуса 2 цветом фона заставки. -->
+    <path
+        android:fillColor="@android:color/system_accent1_400"
+        android:pathData="M139,144 A5,5 0 1,1 149,144 A5,5 0 1,1 139,144 Z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M142,144 A2,2 0 1,1 146,144 A2,2 0 1,1 142,144 Z" />
+</vector>

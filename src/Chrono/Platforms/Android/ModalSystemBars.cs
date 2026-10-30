@@ -33,7 +33,8 @@ internal sealed class ModalSystemBars : FragmentManager.FragmentLifecycleCallbac
         }
     }
 
-    private static void Apply(Android.Views.Window window, Configuration config)
+    // Значки по теме окна; его же вызывает SplashPage, уходя с чёрной заставки (на ней значки светлые).
+    internal static void Apply(Android.Views.Window window, Configuration config)
     {
         var dark = (config.UiMode & UiMode.NightMask) == UiMode.NightYes;
         var insets = WindowCompat.GetInsetsController(window, window.DecorView)!;

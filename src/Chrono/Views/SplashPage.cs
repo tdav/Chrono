@@ -1,69 +1,29 @@
 using Chrono.Design;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace Chrono.Views;
 
 /// <summary>
-/// Вторая ступень splash (DESIGN.md §4.7): фон SystemBackground, колокол Chrono на круге Tint 96 и «Chrono» крупным заголовком;
-/// колокол качается ≈0,7 с, затем окно переключается на AppShell.
+/// Заставка (DESIGN.md §4.7) — одна: системная заставка показывает её первый кадр, а страница продолжает из него
+/// полноэкранную анимацию SplashDrawable ≈ 2,1 с, затем окно переключается на AppShell.
+/// Фон чёрный в любой теме (заставка намеренно вне темы: системная знает только свою); рисунок — от края до края окна,
+/// чтобы центр совпал с центром значка системной заставки.
 /// </summary>
 public sealed class SplashPage : ContentPage
 {
+    private const string AnimationName = "ChronoSplash";
+
     private readonly IServiceProvider services;
-    private readonly Image bell;
-    private readonly Label title;
+    private readonly SplashDrawable scene;
+    private readonly GraphicsView canvas;
 
     public SplashPage(IServiceProvider services)
     {
         this.services = services;
-        // Цвета и шрифты — из стилей дизайна по DynamicResource: заставка верна и в светлой, и в тёмной теме.
-        this.SetDynamicResource(NavigableElement.StyleProperty, "PlainPage");
-
-        var disc = new Border
-        {
-            WidthRequest = 96,
-            HeightRequest = 96,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            StrokeShape = new RoundRectangle { CornerRadius = 48 },
-            StrokeThickness = 0,
-        };
-        disc.SetDynamicResource(BackgroundColorProperty, "Tint");
-        // Колокол ≈ 0,43 ширины круга — как на сигнале (48 из 112); ось качания у верха (AnchorY).
-        this.bell = new Image
-        {
-            Source = "bell.png",
-            WidthRequest = 41,
-            HeightRequest = 47,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            AnchorY = 0.08,
-        };
-        this.bell.SetDynamicResource(IconTint.ColorProperty, "OnTint");
-        this.title = new Label
-        {
-            Text = "Chrono",
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 16, 0, 0),
-            Opacity = 0,
-        };
-        this.title.SetDynamicResource(NavigableElement.StyleProperty, "LargeTitle");
-
-        // Круг стоит в центре экрана, как колокол нативного splash: средняя строка 96 между двумя равными; заголовок — под кругом.
-        var layout = new Grid
-        {
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Star },
-                new RowDefinition { Height = new GridLength(96) },
-                new RowDefinition { Height = GridLength.Star },
-            },
-        };
-        layout.Add(disc, 0, 1);
-        layout.Add(this.bell, 0, 1);
-        layout.Add(this.title, 0, 2);
-        this.Content = layout;
+        this.BackgroundColor = Colors.Black;
+        this.SafeAreaEdges = SafeAreaEdges.None;
+        this.scene = new SplashDrawable();
+        this.canvas = new GraphicsView { Drawable = this.scene };
+        this.Content = this.canvas;
     }
 
     protected override async void OnAppearing()
@@ -71,22 +31,41 @@ public sealed class SplashPage : ContentPage
         base.OnAppearing();
         Chrono.Services.StartTrace.Mark("SplashPage: показана");
 
-        // «Уменьшение движения» (DESIGN.md §2.9): колокол не качается, заголовок только проявляется.
+        // «Уменьшение движения» (DESIGN.md §2.9): сразу итоговая композиция, без вращения, стекания и перебора; ~0,6 с — и переход.
         var reduceMotion = this.services.GetRequiredService<ThemeService>().ReduceMotion;
-        var swing = async () =>
+        if (reduceMotion)
         {
-            if (reduceMotion)
+            this.scene.Time = SplashDrawable.Composed;
+            this.canvas.Invalidate();
+        }
+
+        // Отсчёт — с первого нарисованного кадра: до него на экране системная заставка с тем же кадром, и начало анимации
+        // не должно уйти на время её показа.
+        await this.scene.FirstFrame;
+        if (reduceMotion)
+        {
+            await Task.Delay(600);
+        }
+        else
+        {
+            var done = new TaskCompletionSource();
+            new Animation(progress =>
             {
-                return;
-            }
+                this.scene.Time = (float)progress * SplashDrawable.Duration;
+                this.canvas.Scale = this.scene.Zoom;
+                this.canvas.Invalidate();
+            }).Commit(this, AnimationName, 16, (uint)(SplashDrawable.Duration * 1000), Easing.Linear, (_, _) => done.TrySetResult());
+            await done.Task;
+        }
 
-            await this.bell.RotateToAsync(-16, 110, Easing.SinOut);
-            await this.bell.RotateToAsync(14, 200, Easing.SinInOut);
-            await this.bell.RotateToAsync(-8, 170, Easing.SinInOut);
-            await this.bell.RotateToAsync(0, 140, Easing.SinIn);
-        };
+#if ANDROID
+        // Сцена растворилась в фон приложения: значки панелей — снова по теме (на чёрной заставке они светлые, см. MainActivity).
+        if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is { Window: { } window, Resources.Configuration: { } config })
+        {
+            ModalSystemBars.Apply(window, config);
+        }
+#endif
 
-        await Task.WhenAll(swing(), this.title.FadeToAsync(1, 500, Easing.CubicIn));
         // Пауза нужна и для D1 (см. ниже): продолжение должно прийти отдельным сообщением главного цикла.
         await Task.Delay(100);
 
@@ -124,5 +103,12 @@ public sealed class SplashPage : ContentPage
 
         this.Window!.Page = this.services.GetRequiredService<AppShell>();
         Chrono.Services.StartTrace.Mark("SplashPage: Shell выставлен");
+    }
+
+    // Уход со страницы (окно получило Shell или закрывается): анимация больше не тикает.
+    protected override void OnDisappearing()
+    {
+        this.AbortAnimation(AnimationName);
+        base.OnDisappearing();
     }
 }

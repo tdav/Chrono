@@ -4,7 +4,6 @@
     <color name="colorPrimary">@android:color/system_accent1_600</color>
     <color name="colorPrimaryDark">#F2F2F7</color>
     <color name="colorAccent">@android:color/system_accent1_600</color>
-    <!-- Нативная заставка Android 12+: фон — системный акцент (тон 40), как Tint в светлой теме; в тёмной теме Tint — тон 60 (system_accent1_400),
-         а заставка остаётся на тоне 40: один цвет для обеих тем. Для Android 8–11 остаётся оранжевый #FF8D28 из MauiSplashScreen (Chrono.csproj). -->
-    <color name="maui_splash_color">@android:color/system_accent1_600</color>
+    <!-- Фон нативной заставки (maui_splash_color) здесь не переопределяется: он #000000 во всех версиях и темах —
+         Color у MauiSplashScreen в Chrono.csproj (DESIGN.md §4.7). -->
 </resources>

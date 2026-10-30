@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Тема запуска MainActivity: заставка MAUI (фон maui_splash_color #000000, рисунок splash.svg по центру — Android 8–11).
+         На Android 12+ у неё свой значок — values-v31/styles.xml. Признак maui_splash наследуется: MAUI сам сменит тему на основную.
+         Панели системы чёрные, как фон заставки: иначе в светлой теме сверху была бы светлая полоса colorPrimaryDark (DESIGN.md §4.7). -->
+    <style name="Chrono.SplashTheme" parent="Maui.SplashTheme">
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+    </style>
+</resources>

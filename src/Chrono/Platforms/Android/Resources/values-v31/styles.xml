@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ (SplashScreen API): значок системной заставки — стартовая композиция заставки Chrono (drawable-v31/splash_dial.xml)
+         вместо рисунка MAUI; фон — maui_splash_color (#000000, MauiSplashScreen в Chrono.csproj). Панели — как в values/styles.xml. DESIGN.md §4.7. -->
+    <style name="Chrono.SplashTheme" parent="Maui.SplashTheme">
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_dial</item>
+    </style>
+</resources>

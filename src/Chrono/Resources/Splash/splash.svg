@@ -1,7 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="108" height="108" viewBox="0 0 108 108">
-  <!-- Нативная заставка (DESIGN.md §4.7): белый колокол по центру холста; фон — Color у MauiSplashScreen в Chrono.csproj. -->
-  <g transform="translate(54 54) scale(0.7) translate(-35 -37)" fill="#FFFFFF">
-    <path d="M35 6c-12 0-20 9-20 22v14l-7 10h54l-7-10V28C55 15 47 6 35 6z"/>
-    <circle cx="35" cy="62" r="6"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 288 288">
+  <!-- Нативная заставка (DESIGN.md §4.7) = первый кадр SplashPage: iOS LaunchScreen и Android 8–11. Фон #000000 — Color у MauiSplashScreen,
+       BaseSize 288 — холст в dp/pt по центру экрана. Геометрия — та же, что у Platforms/Android/Resources/drawable-v31/splash_dial.xml
+       и констант стартовой композиции в Views/SplashDrawable.cs: менять только вместе. Цвет — оранжевый Tint тёмной темы (#FF9230),
+       его же берёт анимация без системного акцента. -->
+  <g fill="none" stroke="#FF9230">
+    <circle cx="144" cy="144" r="84" stroke-width="2"/>
+    <path stroke-width="2.5" stroke-linecap="butt" d="M144,74 L144,66 M179,83.378 L183,76.45 M204.622,109 L211.55,105 M214,144 L222,144 M204.622,179 L211.55,183 M179,204.622 L183,211.55 M144,214 L144,222 M109,204.622 L105,211.55 M83.378,179 L76.45,183 M74,144 L66,144 M83.378,109 L76.45,105 M109,83.378 L105,76.45"/>
+    <path stroke-width="5" stroke-linecap="round" d="M144,144 L144,104"/>
+    <path stroke-width="3" stroke-linecap="round" d="M144,144 L144,82"/>
   </g>
+  <circle cx="144" cy="144" r="5" fill="#FF9230"/>
+  <circle cx="144" cy="144" r="2" fill="#000000"/>
 </svg>

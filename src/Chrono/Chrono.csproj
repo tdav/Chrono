@@ -44,7 +44,8 @@
 
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FF8D28" BaseSize="128,128" />
+		<!-- Нативная заставка = первый кадр SplashPage (DESIGN.md §4.7): чёрный фон в любой теме, холст 288 dp по центру экрана. -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#000000" BaseSize="288,288" />
 		<MauiImage Include="Resources\Images\*" />
 		<MauiFont Include="Resources\Fonts\*" />
 		<!-- Без подпапок: на iOS звук уведомления ищется в корне бандла, на Android — в корне assets. -->
