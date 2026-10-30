@@ -21,6 +21,10 @@ public partial class GlassIconButton : ContentView
         nameof(IsProminent), typeof(bool), typeof(GlassIconButton), false,
         propertyChanged: (b, _, _) => ((GlassIconButton)b).UpdateLook());
 
+    public static readonly BindableProperty IsAccentProperty = BindableProperty.Create(
+        nameof(IsAccent), typeof(bool), typeof(GlassIconButton), false,
+        propertyChanged: (b, _, _) => ((GlassIconButton)b).UpdateLook());
+
     public static readonly BindableProperty CommandProperty = BindableProperty.Create(
         nameof(Command), typeof(ICommand), typeof(GlassIconButton), null);
 
@@ -61,6 +65,13 @@ public partial class GlassIconButton : ContentView
         set => this.SetValue(IsProminentProperty, value);
     }
 
+    /// <summary>Акцентная кнопка «+» в шапке (решение пользователя): заливка Tint, символ цвета текста — чёрный в светлой теме, белый в тёмной.</summary>
+    public bool IsAccent
+    {
+        get => (bool)this.GetValue(IsAccentProperty);
+        set => this.SetValue(IsAccentProperty, value);
+    }
+
     public ICommand? Command
     {
         get => (ICommand?)this.GetValue(CommandProperty);
@@ -98,7 +109,7 @@ public partial class GlassIconButton : ContentView
         }
 
         var tint = this.IsProminent ? "OnTint" : "Label";
-        this.Surface.SetDynamicResource(NavigableElement.StyleProperty, this.IsProminent ? "GlassButtonProminent" : "GlassButton");
+        this.Surface.SetDynamicResource(NavigableElement.StyleProperty, this.IsProminent || this.IsAccent ? "GlassButtonProminent" : "GlassButton");
         this.Glyph.SetDynamicResource(IconTint.ColorProperty, tint);
         this.Caption.SetDynamicResource(Label.TextColorProperty, tint);
     }

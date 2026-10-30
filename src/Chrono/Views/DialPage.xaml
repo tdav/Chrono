@@ -14,7 +14,7 @@
         <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" ZIndex="1"
                                    Title="{x:Static res:AppResources.Tab_Dial}" Subtitle="{Binding TitleDate}">
             <controls:LargeTitleHeader.TrailingContent>
-                <controls:GlassIconButton Source="icon_plus.png" Description="{x:Static res:AppResources.DialAdd}"
+                <controls:GlassIconButton Source="icon_plus.png" IsAccent="True" Description="{x:Static res:AppResources.DialAdd}"
                                           Command="{Binding AddCommand}" />
             </controls:LargeTitleHeader.TrailingContent>
         </controls:LargeTitleHeader>

@@ -25,7 +25,7 @@
                 <controls:GlassIconButton Text="{x:Static res:AppResources.Today}" Command="{Binding TodayCommand}" />
             </controls:LargeTitleHeader.LeadingContent>
             <controls:LargeTitleHeader.TrailingContent>
-                <controls:GlassIconButton Source="icon_plus.png" Description="{x:Static res:AppResources.NewAlarm}"
+                <controls:GlassIconButton Source="icon_plus.png" IsAccent="True" Description="{x:Static res:AppResources.NewAlarm}"
                                           Command="{Binding AddCommand}">
                     <controls:GlassIconButton.Triggers>
                         <DataTrigger TargetType="controls:GlassIconButton" Binding="{Binding IsAddEnabled}" Value="False">
