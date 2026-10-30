@@ -69,11 +69,13 @@ public sealed class ThemeService
             colors[token.Key] = Color.FromArgb(token.For(appearance));
         }
 
-        // Системный акцент (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %, как в DESIGN.json.
+        // Системный акцент (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %, Success — сам акцент
+        // (тумблер «вкл», ✓ статуса: зелёного в приложении нет, решение пользователя) — как в DESIGN.json.
         if (accent is not null)
         {
             colors["Tint"] = accent;
             colors["TintFill"] = accent.WithAlpha(0.16f);
+            colors["Success"] = accent;
         }
 
         // Крупное стекло (шторка, меню, алерт) непрозрачно всегда: размытия фона в MAUI нет, и сквозь 14 % заливки

@@ -14,7 +14,7 @@
     <Color x:Key="Tint">#FFFF8D28</Color>
     <Color x:Key="OnTint">#FFFFFFFF</Color>
     <Color x:Key="Destructive">#FFFF383C</Color>
-    <Color x:Key="Success">#FF34C759</Color>
+    <Color x:Key="Success">#FFFF8D28</Color>
     <Color x:Key="Warning">#FFFF8D28</Color>
     <Color x:Key="Red">#FFFF383C</Color>
     <Color x:Key="Orange">#FFFF8D28</Color>
@@ -58,7 +58,7 @@
     <Color x:Key="SegmentThumb">#FFFFFFFF</Color>
     <Color x:Key="Knob">#FFFFFFFF</Color>
     <Color x:Key="Cat1">#FF0088FF</Color>
-    <Color x:Key="Cat2">#FF34C759</Color>
+    <Color x:Key="Cat2">#FF6155F5</Color>
     <Color x:Key="Cat3">#FFFF8D28</Color>
     <Color x:Key="Cat4">#FFCB30E0</Color>
     <Color x:Key="Cat5">#FF00C3D0</Color>
