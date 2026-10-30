@@ -3,11 +3,12 @@ using Chrono.Design;
 namespace Chrono.Views;
 
 /// <summary>
-/// Сцена заставки Chrono (DESIGN.md §4.7): «время · IT · цифровые технологии» на чёрном фоне, 2,1 с.
+/// Сцена заставки Chrono (DESIGN.md §4.7): «время · IT · цифровые технологии» на чёрном фоне, 1,8 с до итоговой композиции.
 /// Кадр t = 0 — стартовая композиция, она же значок системной заставки: кольцо, 12 часовых рисок, стрелки на 12 и ось —
 /// в центре окна, в тех же dp и том же цвете. Из него вырастают слои: сетка точек и столбцы 0/1, вспышка 60 рисок,
-/// кольца-шестерни, дорожки печатной платы, стрелки к текущему времени, табло HH:MM:SS и «Chrono»; в конце сцена
-/// растворяется в фон экранов приложения.
+/// кольца-шестерни, дорожки печатной платы, стрелки к текущему времени, табло HH:MM:SS и «Chrono». Итоговая композиция
+/// затем лежит слоем поверх окна, под ней уже готовый Shell, и растворяется в него (SplashPage).
+/// Фон сцена рисует сама: в слое окна под ней нет страницы.
 /// Заставка намеренно вне темы: фон #000000 и белые вторичные линии заданы литералами — системная заставка знает только
 /// свою тему, и первый кадр обязан с ней совпасть. Акцент — системный тёмной темы (Material You), без него — оранжевый
 /// Tint тёмного вида.
@@ -17,10 +18,7 @@ namespace Chrono.Views;
 /// </summary>
 public sealed class SplashDrawable : IDrawable
 {
-    /// <summary>Длительность анимации, с: в конце на экране только фон приложения.</summary>
-    public const float Duration = 2.1f;
-
-    /// <summary>Итоговая композиция (до растворения), с: её «Уменьшение движения» показывает сразу.</summary>
+    /// <summary>Итоговая композиция, с: конец анимации; её «Уменьшение движения» показывает сразу.</summary>
     public const float Composed = 1.8f;
 
     // ── Стартовая композиция = значок системной заставки, dp от центра окна. Те же числа — в
@@ -120,9 +118,11 @@ public sealed class SplashDrawable : IDrawable
     private readonly Color[] accentAlpha = new Color[Steps + 1];
     private readonly Color[] whiteAlpha = new Color[Steps + 1];
     private readonly Color[] accentToWhite = new Color[Steps + 1];
-    private readonly Color appBackground;
     private readonly float[] titleX = new float[TitleLetters.Length];
     private readonly TaskCompletionSource firstFrame = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // Время, на котором застыла итоговая композиция.
+    private DateTime? composedAt;
 
     // Раскладка на текущий размер (Layout).
     private SizeF size = new(-1, -1);
@@ -154,16 +154,10 @@ public sealed class SplashDrawable : IDrawable
             this.whiteAlpha[i] = Colors.White.WithAlpha(amount);
             this.accentToWhite[i] = new Color(Lerp(this.accent.Red, 1, amount), Lerp(this.accent.Green, 1, amount), Lerp(this.accent.Blue, 1, amount));
         }
-
-        // В конце сцена растворяется в фон экранов приложения текущей темы — Shell встаёт на тот же цвет.
-        this.appBackground = NativeControls.Resource("SystemGroupedBackground");
     }
 
-    /// <summary>Время сцены, с: 0 — стартовая композиция, <see cref="Duration"/> — фон приложения.</summary>
+    /// <summary>Время сцены, с: 0 — стартовая композиция, <see cref="Composed"/> — итоговая.</summary>
     public float Time { get; set; }
-
-    /// <summary>Масштаб вида на уходе (1,8–2,1 с): лёгкое увеличение до 1.04; растворение рисует сама сцена.</summary>
-    public float Zoom => 1 + (0.04f * EaseInOut(Phase(this.Time, Composed, Duration)));
 
     /// <summary>Первый кадр на экране: до него видна системная заставка с тем же кадром, отсчёт анимации — с него.</summary>
     public Task FirstFrame => this.firstFrame.Task;
@@ -176,7 +170,17 @@ public sealed class SplashDrawable : IDrawable
         }
 
         var t = this.Time;
-        var now = DateTime.Now;
+        // Итоговая композиция — застывший кадр: слой поверх окна перерисовывается сам (в начале растворения), и стрелки
+        // с табло не должны прыгнуть на секунды, прошедшие, пока под ним строился Shell.
+        if (t < Composed)
+        {
+            this.composedAt = null;
+        }
+
+        var now = t >= Composed ? this.composedAt ??= DateTime.Now : DateTime.Now;
+
+        canvas.FillColor = Colors.Black;
+        canvas.FillRectangle(dirtyRect);
 
         // 0–0,6 с: циферблат из значка (центр окна, масштаб 1) плавно переезжает и растёт к итоговому месту.
         var settle = EaseInOut(Phase(t, 0, 0.6f));
@@ -194,14 +198,6 @@ public sealed class SplashDrawable : IDrawable
         this.DrawDial(canvas, t, c, k, now);
         this.DrawBoard(canvas, t, now);
         this.DrawTitle(canvas, t);
-
-        // 1,8–2,1 с: растворение в фон приложения.
-        var exit = EaseInOut(Phase(t, Composed, Duration));
-        if (exit > 0)
-        {
-            canvas.FillColor = this.appBackground.WithAlpha(this.appBackground.Alpha * exit);
-            canvas.FillRectangle(dirtyRect);
-        }
 
         this.firstFrame.TrySetResult();
     }
