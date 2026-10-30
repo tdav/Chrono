@@ -32,8 +32,8 @@
                                     <!-- Статус — значок и слова под названием; «Исправить» только у проблемного пункта. Высота растёт с переносом текста. -->
                                     <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*,Auto">
                                         <Grid>
-                                            <controls:StatusIcon Fill="{DynamicResource Success}" Source="icon_check.png" IsVisible="{Binding Ok}" />
-                                            <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding NeedsFix}" />
+                                            <controls:StatusIcon Fill="{DynamicResource Success}" GlyphColor="{DynamicResource OnTint}" Source="icon_check.png" IsVisible="{Binding Ok}" />
+                                            <controls:StatusIcon Fill="{DynamicResource Warning}" GlyphColor="{DynamicResource OnWarning}" Source="icon_alert.png" IsVisible="{Binding NeedsFix}" />
                                         </Grid>
                                         <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
                                             <Label Text="{Binding Title}" Style="{StaticResource RowTitle}" />

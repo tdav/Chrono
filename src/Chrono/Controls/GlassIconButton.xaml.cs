@@ -66,8 +66,8 @@ public partial class GlassIconButton : ContentView
     }
 
     /// <summary>
-    /// Акцентная кнопка «+» в шапке (решение пользователя): заливка Tint. Символ на системном акценте Android 12+ — OnTint
-    /// (белый: в светлой теме тон Material You тёмный), на оранжевом запасном — цвета текста (чёрный в светлой теме, белый в тёмной).
+    /// Акцентная кнопка «+» в шапке (решение пользователя): заливка Tint, символ OnTint — чёрный на оранжевом запасном акценте,
+    /// белый на системном Material You (подставляет ThemeService).
     /// </summary>
     public bool IsAccent
     {
@@ -111,7 +111,7 @@ public partial class GlassIconButton : ContentView
             this.Surface.ClearValue(VisualElement.WidthRequestProperty);
         }
 
-        var tint = this.IsProminent || (this.IsAccent && SystemAccessibility.Accent(Appearance.Light) is not null) ? "OnTint" : "Label";
+        var tint = this.IsProminent || this.IsAccent ? "OnTint" : "Label";
         this.Surface.SetDynamicResource(NavigableElement.StyleProperty, this.IsProminent || this.IsAccent ? "GlassButtonProminent" : "GlassButton");
         this.Glyph.SetDynamicResource(IconTint.ColorProperty, tint);
         this.Caption.SetDynamicResource(Label.TextColorProperty, tint);

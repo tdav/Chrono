@@ -184,7 +184,7 @@
                                                 design:CategoryColor.Index="{Binding CategoryIndex}">
                                             <Image Source="{Binding IconImage}" WidthRequest="18" HeightRequest="18"
                                                    HorizontalOptions="Center" VerticalOptions="Center"
-                                                   design:IconTint.Color="{DynamicResource OnTint}" />
+                                                   design:IconTint.Color="{DynamicResource OnColor}" />
                                         </Border>
 
                                         <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">

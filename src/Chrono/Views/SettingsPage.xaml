@@ -120,8 +120,8 @@
                                     <!-- Кнопка «Дать доступ» — второй строкой под текстом; RowSpacing 0: без кнопки строка не должна расти. -->
                                     <Grid Style="{StaticResource Row}" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="0">
                                         <Grid>
-                                            <controls:StatusIcon Fill="{DynamicResource Success}" Source="icon_check.png" IsVisible="{Binding AccessGranted}" />
-                                            <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding AccessNeedsAttention}" />
+                                            <controls:StatusIcon Fill="{DynamicResource Success}" GlyphColor="{DynamicResource OnTint}" Source="icon_check.png" IsVisible="{Binding AccessGranted}" />
+                                            <controls:StatusIcon Fill="{DynamicResource Warning}" GlyphColor="{DynamicResource OnWarning}" Source="icon_alert.png" IsVisible="{Binding AccessNeedsAttention}" />
                                         </Grid>
                                         <Label Grid.Column="1" Text="{Binding AccessText}" Style="{StaticResource RowTitle}" />
                                         <controls:HitTarget Grid.Row="1" Grid.Column="1" HorizontalOptions="Start" IsVisible="{Binding CanGrantAccess}">
@@ -213,8 +213,8 @@
                                     <TapGestureRecognizer Command="{Binding OpenReliabilityCommand}" />
                                 </Grid.GestureRecognizers>
                                 <Grid>
-                                    <controls:StatusIcon Fill="{DynamicResource Success}" Source="icon_check.png" IsVisible="{Binding NoReliabilityIssues}" />
-                                    <controls:StatusIcon Fill="{DynamicResource Warning}" Source="icon_alert.png" IsVisible="{Binding HasReliabilityIssues}" />
+                                    <controls:StatusIcon Fill="{DynamicResource Success}" GlyphColor="{DynamicResource OnTint}" Source="icon_check.png" IsVisible="{Binding NoReliabilityIssues}" />
+                                    <controls:StatusIcon Fill="{DynamicResource Warning}" GlyphColor="{DynamicResource OnWarning}" Source="icon_alert.png" IsVisible="{Binding HasReliabilityIssues}" />
                                 </Grid>
                                 <Label Grid.Column="1" Text="{x:Static res:AppResources.ReliabilityTitle}" Style="{StaticResource RowTitle}" />
                                 <!-- Бейдж: капсула высотой не меньше 24, одна цифра — круг. -->
@@ -222,7 +222,7 @@
                                         BackgroundColor="{DynamicResource Destructive}" StrokeThickness="0" StrokeShape="RoundRectangle 12"
                                         MinimumWidthRequest="24" MinimumHeightRequest="24" Padding="7,2">
                                     <Label Text="{Binding ReliabilityIssues}" Style="{StaticResource TextFootnoteEmphasized}"
-                                           TextColor="{DynamicResource OnTint}" HorizontalOptions="Center" VerticalOptions="Center" />
+                                           TextColor="{DynamicResource OnColor}" HorizontalOptions="Center" VerticalOptions="Center" />
                                 </Border>
                                 <Image Grid.Column="3" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
                                        design:IconTint.Color="{DynamicResource TertiaryLabel}" />

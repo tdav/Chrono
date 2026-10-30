@@ -12,7 +12,9 @@
     <Color x:Key="PlaceholderText">#4D3C3C43</Color>
     <Color x:Key="Link">#FF0088FF</Color>
     <Color x:Key="Tint">#FFFF8D28</Color>
-    <Color x:Key="OnTint">#FFFFFFFF</Color>
+    <Color x:Key="OnTint">#FF000000</Color>
+    <Color x:Key="OnWarning">#FF000000</Color>
+    <Color x:Key="OnColor">#FFFFFFFF</Color>
     <Color x:Key="Destructive">#FFFF383C</Color>
     <Color x:Key="Success">#FFFF8D28</Color>
     <Color x:Key="Warning">#FFFF8D28</Color>

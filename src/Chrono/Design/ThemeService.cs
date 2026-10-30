@@ -71,11 +71,16 @@ public sealed class ThemeService
 
         // Системный акцент (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %, Success — сам акцент
         // (тумблер «вкл», ✓ статуса: зелёного в приложении нет, решение пользователя) — как в DESIGN.json.
+        // OnTint в DESIGN.json — чёрный: он рассчитан на запасной оранжевый (белый на нём 2.31:1, чёрный 9.09:1). Тона Material You
+        // для Light, Dark и LightHighContrast (40, 60, 30) тёмные, и чёрный на них нечитаем, поэтому символ и текст на акценте — белые;
+        // тон 80 у DarkHighContrast светлый — там остаётся чёрный из DESIGN.json. OnWarning и OnColor акцент не трогает:
+        // Warning остаётся оранжевым, а OnColor лежит на заливках, которые от акцента не зависят.
         if (accent is not null)
         {
             colors["Tint"] = accent;
             colors["TintFill"] = accent.WithAlpha(0.16f);
             colors["Success"] = accent;
+            colors["OnTint"] = appearance == Appearance.DarkHighContrast ? Colors.Black : Colors.White;
         }
 
         // Крупное стекло (шторка, меню, алерт) непрозрачно всегда: размытия фона в MAUI нет, и сквозь 14 % заливки

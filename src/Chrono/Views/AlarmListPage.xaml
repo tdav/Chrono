@@ -64,9 +64,9 @@
                                                         <Grid WidthRequest="88" BackgroundColor="{DynamicResource Destructive}">
                                                             <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="2">
                                                                 <Image Source="icon_trash.png" WidthRequest="24" HeightRequest="24" HorizontalOptions="Center"
-                                                                       design:IconTint.Color="{DynamicResource OnTint}" />
+                                                                       design:IconTint.Color="{DynamicResource OnColor}" />
                                                                 <Label Text="{x:Static res:AppResources.Delete}" Style="{StaticResource TextFootnoteEmphasized}"
-                                                                       TextColor="{DynamicResource OnTint}" HorizontalTextAlignment="Center" />
+                                                                       TextColor="{DynamicResource OnColor}" HorizontalTextAlignment="Center" />
                                                             </VerticalStackLayout>
                                                         </Grid>
                                                     </SwipeItemView>
@@ -92,7 +92,7 @@
                                                     <Border WidthRequest="24" HeightRequest="24" StrokeShape="RoundRectangle 12" StrokeThickness="0"
                                                             BackgroundColor="{DynamicResource Destructive}" HorizontalOptions="Center" VerticalOptions="Center">
                                                         <Image Source="icon_minus.png" WidthRequest="14" HeightRequest="14" HorizontalOptions="Center" VerticalOptions="Center"
-                                                               design:IconTint.Color="{DynamicResource OnTint}" />
+                                                               design:IconTint.Color="{DynamicResource OnColor}" />
                                                     </Border>
                                                 </Grid>
 

@@ -33,7 +33,7 @@
             <Setter Property="StrokeShape" Value="RoundRectangle 10" />
         </Style>
         <Style x:Key="TabBadgeText" TargetType="Label" BasedOn="{StaticResource TextCaption2Emphasized}">
-            <Setter Property="TextColor" Value="{DynamicResource OnTint}" />
+            <Setter Property="TextColor" Value="{DynamicResource OnColor}" />
             <Setter Property="HorizontalOptions" Value="Center" />
             <Setter Property="VerticalOptions" Value="Center" />
         </Style>

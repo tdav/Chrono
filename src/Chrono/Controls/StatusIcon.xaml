@@ -8,14 +8,15 @@
              WidthRequest="{StaticResource SizeRowIcon}" HeightRequest="{StaticResource SizeRowIcon}"
              HorizontalOptions="Start" VerticalOptions="Center"
              AutomationProperties.IsInAccessibleTree="False">
-    <!-- Цветной значок строки (DESIGN.md §2.5, §2.6): квадрат 30 × 30 с радиусом 7 (icon) и белым (OnTint) символом.
+    <!-- Цветной значок строки (DESIGN.md §2.5, §2.6): квадрат 30 × 30 с радиусом 7 (icon) и символом цвета GlyphColor
+         (роль «на заливке»: OnTint на Success, OnWarning на Warning, по умолчанию OnColor).
          Статус всегда продублирован словами рядом, поэтому сам значок для чтения с экрана скрыт.
          Заливка — роль цвета через {DynamicResource …} (Success, Warning, Indigo …): она перекрашивается вместе с темой. -->
     <ContentView.Content>
         <Border BackgroundColor="{Binding Fill, Source={x:Reference Root}}" StrokeThickness="0" StrokeShape="RoundRectangle 7">
             <Image Source="{Binding Source, Source={x:Reference Root}}" WidthRequest="18" HeightRequest="18"
                    HorizontalOptions="Center" VerticalOptions="Center"
-                   design:IconTint.Color="{DynamicResource OnTint}" />
+                   design:IconTint.Color="{Binding GlyphColor, Source={x:Reference Root}}" />
         </Border>
     </ContentView.Content>
 </ContentView>
