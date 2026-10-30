@@ -46,7 +46,7 @@ public partial class App : Application
         // не должен ждать сети, синхронизация начнётся при следующем Resumed. Без входа RequestSoon ничего не делает.
         // Запуск отложен на StartupSyncDelay, чтобы не занимать главный поток до первого кадра.
         var startupSync = RingLauncher.PendingId is null;
-        this.Dispatcher.DispatchDelayed(StartupSyncDelay, () =>
+        void StartSyncTimer() => this.Dispatcher.DispatchDelayed(StartupSyncDelay, () =>
         {
             this.syncAllowed = true;
             if (startupSync)
@@ -54,6 +54,26 @@ public partial class App : Application
                 this.services.GetRequiredService<SyncLauncher>().RequestSoon();
             }
         });
+
+        // С заставкой отсчёт идёт от показа Shell, а не от создания окна: синхронизация занимает главный поток (загрузка
+        // System.Net.Http и HttpClient — ≈1,4 с в отладочной сборке на эмуляторе) и иначе останавливала бы анимацию заставки.
+        if (first is SplashPage)
+        {
+            void OnPageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(Window.Page) && window.Page is AppShell)
+                {
+                    window.PropertyChanged -= OnPageChanged;
+                    StartSyncTimer();
+                }
+            }
+
+            window.PropertyChanged += OnPageChanged;
+        }
+        else
+        {
+            StartSyncTimer();
+        }
 
         // Возврат в приложение: подтянуть изменения, сделанные в Google Календаре. Resumed первого запуска
         // (до StartupSyncDelay) пропускается: первая синхронизация и так стартует по таймеру выше.

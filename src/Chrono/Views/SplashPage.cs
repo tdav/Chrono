@@ -42,20 +42,47 @@ public sealed class SplashPage : ContentPage
         // Отсчёт — с первого нарисованного кадра: до него на экране системная заставка с тем же кадром, и начало анимации
         // не должно уйти на время её показа.
         await this.scene.FirstFrame;
+
+        // Сцена идёт по своим часам с шагом не больше 50 мс: если главный поток занят (сборка мусора, загрузка сборок),
+        // анимация приостанавливается, а не перескакивает к концу — её видно целиком.
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var last = TimeSpan.Zero;
+        Task Play(float until)
+        {
+            // Продолжение — отдельным сообщением: AbortAnimation в цикле снимает все анимации с этим именем, и следующий Play,
+            // запущенный синхронно из его Finished, был бы тут же снят — растворение не проигрывалось.
+            var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            new Animation(_ =>
+            {
+                var elapsed = clock.Elapsed;
+                this.scene.Time = Math.Min(this.scene.Time + (float)Math.Min((elapsed - last).TotalSeconds, 0.05), until);
+                last = elapsed;
+                this.canvas.Scale = this.scene.Zoom;
+                this.canvas.Invalidate();
+                if (this.scene.Time >= until)
+                {
+                    this.AbortAnimation(AnimationName);
+                    done.TrySetResult();
+                }
+            }).Commit(this, AnimationName, 16, 60_000, Easing.Linear, (_, _) => done.TrySetResult());
+            return done.Task;
+        }
+
         if (reduceMotion)
         {
             await Task.Delay(600);
         }
         else
         {
-            var done = new TaskCompletionSource();
-            new Animation(progress =>
-            {
-                this.scene.Time = (float)progress * SplashDrawable.Duration;
-                this.canvas.Scale = this.scene.Zoom;
-                this.canvas.Invalidate();
-            }).Commit(this, AnimationName, 16, (uint)(SplashDrawable.Duration * 1000), Easing.Linear, (_, _) => done.TrySetResult());
-            await done.Task;
+            await Play(SplashDrawable.Composed);
+        }
+
+        // Shell собирается, пока на экране итоговая композиция: иначе после растворения в фон приложения экран оставался бы
+        // пустым, пока Shell строится (≈1 с в отладочной сборке на эмуляторе). Выставляется он позже — после ожидания D1.
+        var shell = this.services.GetRequiredService<AppShell>();
+        if (!reduceMotion)
+        {
+            await Play(SplashDrawable.Duration);
         }
 
 #if ANDROID
@@ -101,7 +128,7 @@ public sealed class SplashPage : ContentPage
         }
 #endif
 
-        this.Window!.Page = this.services.GetRequiredService<AppShell>();
+        this.Window!.Page = shell;
         Chrono.Services.StartTrace.Mark("SplashPage: Shell выставлен");
     }
 

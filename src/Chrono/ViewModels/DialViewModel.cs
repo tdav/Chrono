@@ -18,6 +18,9 @@ public sealed partial class DialViewModel : ObservableObject
     private IReadOnlyList<DayEntry> entries = [];
     private DayEntry? selected;
     private DateTime now;
+    // Половина суток, в которой было «сейчас» при прошлом пересчёте: при первом показе и после полудня или полуночи
+    // сегмент переключается на текущую половину — на ней стрелка «сейчас».
+    private DialHalf? lastNowHalf;
 
     public DialViewModel(AlarmService alarmService, TimeProvider timeProvider)
     {
@@ -39,7 +42,7 @@ public sealed partial class DialViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(HalfIndex))]
     public partial bool IsEvening { get; set; }
 
-    /// <summary>Сегмент «Сейчас / Вечер» (SegmentedControl): 0 — сейчас, 1 — вечер. Переключение снимает выбор: записи может не быть на другой половине.</summary>
+    /// <summary>Сегмент «День / Вечер» (SegmentedControl): 0 — 00:00–12:00, 1 — 12:00–24:00. Переключение снимает выбор: записи может не быть на другой половине.</summary>
     public int HalfIndex
     {
         get => this.IsEvening ? 1 : 0;
@@ -109,7 +112,14 @@ public sealed partial class DialViewModel : ObservableObject
         this.entries = DayPlan.For(this.alarmService.GetAll(), this.alarmService.GetDone(), today, this.now);
 
         var nowHalf = DialLayout.HalfOf(this.now);
-        var half = this.IsEvening ? DialHalf.Evening : nowHalf;
+        if (nowHalf != this.lastNowHalf)
+        {
+            this.lastNowHalf = nowHalf;
+            this.IsEvening = nowHalf == DialHalf.Evening;
+        }
+
+        // «День» — всегда 00:00–12:00, «Вечер» — 12:00–24:00 (решение пользователя).
+        var half = this.IsEvening ? DialHalf.Evening : DialHalf.Morning;
         this.Slices = DialLayout.Slices(this.entries, today, half);
         this.ArrowAngle = half == nowHalf ? DialLayout.AngleOf(TimeOnly.FromDateTime(this.now)) : null;
 
