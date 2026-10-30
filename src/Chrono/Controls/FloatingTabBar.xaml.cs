@@ -182,8 +182,9 @@ public partial class FloatingTabBar : ContentView
 
         this.page.Appearing += this.OnPageAppearing;
         this.page.Disappearing += this.OnPageDisappearing;
-        // Страница могла показаться раньше, чем у капсулы появился обработчик.
-        this.RefreshBadge();
+        // Первый показ страницы Shell приходит раньше, чем у капсулы появляется обработчик (Appearing — до ToHandler),
+        // и повторного Appearing не будет: подписка на Resumed и бейдж — здесь же, как при показе.
+        this.OnPageAppearing(this, EventArgs.Empty);
     }
 
     private void OnPageAppearing(object? sender, EventArgs e)
@@ -222,7 +223,18 @@ public partial class FloatingTabBar : ContentView
             return;
         }
 
-        var issues = (await checks.GetStatusAsync()).Count(status => !status.Ok);
+        int issues;
+        try
+        {
+            issues = (await checks.GetStatusAsync()).Count(status => !status.Ok);
+        }
+        catch (Exception)
+        {
+            // Бейдж — подсказка, а не функция: сбой проверки не должен ронять приложение из Appearing/Resumed.
+            this.badge.IsVisible = false;
+            return;
+        }
+
         this.badgeText!.Text = issues.ToString();
         this.badge.IsVisible = issues > 0;
         // Число бейджа экранный диктор прочёл бы отдельно от вкладки: описание вкладки называет раздел и смысл числа.
