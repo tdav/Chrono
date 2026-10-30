@@ -1,4 +1,5 @@
 using System.Globalization;
+using Chrono.Design;
 using Chrono.Models;
 using Chrono.Resources.Strings;
 using Chrono.Services;
@@ -418,8 +419,14 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
     [RelayCommand]
     private async Task DeleteAsync()
     {
-        // Диалог растёт из строки «Удалить будильник»: «Удалить будильник» наверху (destructive), «Отменить» внизу.
-        var choice = await Shell.Current.DisplayActionSheetAsync(null, AppResources.SheetCancel, AppResources.DeleteAlarm);
+        // Страница уже уезжает (✓ или ✕): вопрос над ней не показываем.
+        if (this.IsLeaving)
+        {
+            return;
+        }
+
+        // Общий модальный вопрос: на Android «Удалить будильник» крайняя справа, «Отменить» слева от неё; на iOS — action sheet.
+        var choice = await ChoiceDialog.ShowAsync(Shell.Current, AppResources.DeleteAlarmQuestion, AppResources.SheetCancel, AppResources.DeleteAlarm);
         if (choice != AppResources.DeleteAlarm || !this.TryLeave())
         {
             return;

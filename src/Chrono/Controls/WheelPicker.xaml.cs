@@ -147,8 +147,21 @@ public partial class WheelPicker : ContentView
             index = position;
             this.aligned = Math.Abs((center.Top + center.Bottom) / 2f - list.Height / 2f) <= 2f;
         }
+#elif IOS
+        // Палец — Tracking/Dragging, его докат — Decelerating; без них прокрутку двигает раскладка, и ряд под центром Value не перезаписывает.
+        // Если UIScrollView списка не нашёлся (другое устройство обработчика), поведение прежнее — прокрутка пишет значение.
+        var scroll = this.List.Handler?.PlatformView as UIKit.UIScrollView
+            ?? (this.List.Handler?.PlatformView as UIKit.UIView)?.Subviews.OfType<UIKit.UIScrollView>().FirstOrDefault();
+        if (scroll is null || scroll.Tracking || scroll.Dragging || scroll.Decelerating)
+        {
+            this.moved = true;
+        }
+
+        if (scroll is { Tracking: true })
+        {
+            this.jumping = false;
+        }
 #else
-        // Здесь палец от раскладки не отличить: прокрутка пишет значение, как и раньше.
         this.moved = true;
 #endif
         index = Math.Clamp(index, 0, this.items.Count - 1);

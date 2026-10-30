@@ -1,3 +1,4 @@
+using Chrono.Design;
 using Chrono.Resources.Strings;
 using Chrono.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -288,6 +289,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task SignOutGoogleAsync()
     {
+        // Выход очищает очередь неотправленных изменений: сначала вопрос («Выйти» справа, «Отменить» слева от неё).
+        var choice = await ChoiceDialog.ShowAsync(Shell.Current, AppResources.SignOutQuestion, AppResources.SheetCancel, AppResources.SignOut);
+        if (choice != AppResources.SignOut)
+        {
+            return;
+        }
+
         try
         {
             // Без сети отзыв доступа не проходит и бросает: выход можно повторить, ничего не очищаем.

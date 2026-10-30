@@ -65,9 +65,18 @@ public partial class FloatingTabBar : ContentView
             tap.Tapped += async (_, _) =>
             {
                 // Нажатие на текущую вкладку ничего не делает: на корневой странице поверх неё ничего не открыто.
-                if (route != this.Current)
+                if (route == this.Current)
+                {
+                    return;
+                }
+
+                try
                 {
                     await Shell.Current.GoToAsync($"//{route}");
+                }
+                catch (Exception)
+                {
+                    // Переход прерван (идёт другая навигация, окно закрывается): остаёмся на текущей вкладке, приложение не падает.
                 }
             };
             cell.GestureRecognizers.Add(tap);

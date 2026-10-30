@@ -819,4 +819,10 @@
   <data name="RingDate" xml:space="preserve">
     <value>Будильник · {0}</value>
   </data>
+  <data name="DeleteAlarmQuestion" xml:space="preserve">
+    <value>Удалить будильник?</value>
+  </data>
+  <data name="SignOutQuestion" xml:space="preserve">
+    <value>Выйти из Google Календаря? Ещё не отправленные изменения не будут отправлены.</value>
+  </data>
 </root>
