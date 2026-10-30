@@ -6,11 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <!-- Имя ресурса AppResources в сборке задаётся корневым пространством имён и путём ссылки: как в приложении, Chrono.Resources.Strings.AppResources. -->
+    <RootNamespace>Chrono</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" Version="4.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="11.0.0-*" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <Using Include="Xunit" />
   </ItemGroup>
 
@@ -18,6 +21,7 @@
   <ItemGroup>
     <Compile Include="..\..\src\Chrono\Models\Alarm.cs" Link="Linked\Alarm.cs" />
     <Compile Include="..\..\src\Chrono\Models\Sounds.cs" Link="Linked\Sounds.cs" />
+    <Compile Include="..\..\src\Chrono\Models\ItemIcons.cs" Link="Linked\ItemIcons.cs" />
     <Compile Include="..\..\src\Chrono\Services\PlatformContracts.cs" Link="Linked\PlatformContracts.cs" />
     <Compile Include="..\..\src\Chrono\Services\AlarmStore.cs" Link="Linked\AlarmStore.cs" />
     <Compile Include="..\..\src\Chrono\Services\SyncStore.cs" Link="Linked\SyncStore.cs" />
@@ -41,6 +45,23 @@
     <Compile Include="..\..\src\Chrono\Design\ChronoColors.g.cs" Link="Linked\ChronoColors.g.cs" />
     <Compile Include="..\..\src\Chrono\Design\TextMetrics.cs" Link="Linked\TextMetrics.cs" />
     <Compile Include="..\..\src\Chrono\Design\TextStyles.g.cs" Link="Linked\TextStyles.g.cs" />
+  </ItemGroup>
+
+  <!-- Модели шторок и форм: зависят только от CommunityToolkit.Mvvm и строк приложения, MAUI не нужен. -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Chrono\ViewModels\ChoiceOption.cs" Link="Linked\ChoiceOption.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\OptionsSheetModel.cs" Link="Linked\OptionsSheetModel.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\DurationSheetModel.cs" Link="Linked\DurationSheetModel.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\RepeatSheetModel.cs" Link="Linked\RepeatSheetModel.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\CalendarSheetModel.cs" Link="Linked\CalendarSheetModel.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\SoundSheetModel.cs" Link="Linked\SoundSheetModel.cs" />
+    <Compile Include="..\..\src\Chrono\ViewModels\TimeSheetModel.cs" Link="Linked\TimeSheetModel.cs" />
+  </ItemGroup>
+
+  <!-- Строки приложения: настоящие ресурсы (нейтральные и русские), строго типизированный AppResources генерируется при сборке, как в приложении. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\src\Chrono\Resources\Strings\AppResources.resx" Link="Resources\Strings\AppResources.resx" StronglyTypedLanguage="CSharp" StronglyTypedClassName="AppResources" StronglyTypedNamespace="Chrono.Resources.Strings" StronglyTypedFileName="$(IntermediateOutputPath)AppResources.Designer.cs" PublicClass="true" />
+    <EmbeddedResource Include="..\..\src\Chrono\Resources\Strings\AppResources.ru.resx" Link="Resources\Strings\AppResources.ru.resx" />
   </ItemGroup>
 
 </Project>

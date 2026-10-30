@@ -131,6 +131,19 @@ public sealed class DialLayoutTests
     }
 
     [Fact]
+    public void HitTest_InnerEdgeOfRing_IsSeventyPercentOfRim()
+    {
+        // DESIGN.md §4.10: кольцо секторов начинается на 70 % радиуса обода; внутри — цифры и центр, касание ничего не выбирает.
+        var slices = DialLayout.Slices([E("09:00", 60)], Day, DialHalf.Morning);
+
+        Assert.Null(DialLayout.HitTest(slices, 280, 0.60));
+        Assert.Null(DialLayout.HitTest(slices, 280, 0.69));
+        Assert.NotNull(DialLayout.HitTest(slices, 280, 0.70));
+        Assert.NotNull(DialLayout.HitTest(slices, 280, 1.0));
+        Assert.Null(DialLayout.HitTest(slices, 280, 1.01));
+    }
+
+    [Fact]
     public void HitTest_Tick_WithinFourDegrees()
     {
         var entry = E("07:00", 0);

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Chrono.Design;
+using Chrono.Services;
 
 namespace Chrono.Tests;
 
@@ -187,4 +188,93 @@ public sealed class DesignTokensTests
     [InlineData(true, true, Appearance.DarkHighContrast)]
     public void Appearance_FollowsSystem(bool dark, bool highContrast, Appearance expected) =>
         Assert.Equal(expected, Appearances.From(dark, highContrast));
+
+    /// <summary>Время, обратный отсчёт и числа не прыгают по ширине (DESIGN.md §5 п.10): табличные цифры у стилей, где они выводятся.</summary>
+    [Theory]
+    [InlineData(TextStyle.Title1, true)]
+    [InlineData(TextStyle.Title2, true)]
+    [InlineData(TextStyle.Title3, true)]
+    [InlineData(TextStyle.Title3Emphasized, true)]
+    [InlineData(TextStyle.Subheadline, true)]
+    [InlineData(TextStyle.SubheadlineEmphasized, true)]
+    [InlineData(TextStyle.TimeHero, true)]
+    [InlineData(TextStyle.TimeRow, true)]
+    [InlineData(TextStyle.Body, false)]
+    [InlineData(TextStyle.Headline, false)]
+    [InlineData(TextStyle.Footnote, false)]
+    [InlineData(TextStyle.TabLabel, false)]
+    public void TextStyles_TabularDigitsWhereNumbersAreShown(TextStyle style, bool tabular) =>
+        Assert.Equal(tabular, TextStyles.Get(style).Tabular);
+
+    private static Dictionary<string, double> MetricsXaml() =>
+        Regex.Matches(File.ReadAllText(RepoPath("src", "Chrono", "Resources", "Styles", "Metrics.xaml")), @"<x:Double x:Key=""(\w+)"">([0-9.]+)</x:Double>")
+            .ToDictionary(m => m.Groups[1].Value, m => double.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture));
+
+    /// <summary>Metrics.xaml генерирует tools/gen_design.py: забытый запуск оставил бы экраны со старыми размерами.</summary>
+    [Fact]
+    public void MetricsXaml_MatchesDesignJson()
+    {
+        var design = Design();
+        var expected = new Dictionary<string, double>();
+        foreach (var (group, prefix) in new[] { ("spacing", ""), ("radius", "Radius"), ("size", "Size") })
+        {
+            foreach (var entry in design.GetProperty(group).EnumerateObject())
+            {
+                expected[prefix + Pascal(entry.Name)] = entry.Value.GetDouble();
+            }
+        }
+
+        var xaml = MetricsXaml();
+        Assert.Equal(expected.Keys.Order(), xaml.Keys.Order());
+        foreach (var (key, value) in expected)
+        {
+            Assert.True(value == xaml[key], $"{key}: Metrics.xaml = {xaml[key]}, DESIGN.json = {value} — запустите python tools/gen_design.py");
+        }
+    }
+
+    /// <summary>Барабан времени — ровно три строки: выбранная и по одной соседней (DESIGN.md §3.2; в макете 216, решение пользователя — 102).</summary>
+    [Fact]
+    public void MetricsXaml_WheelIsExactlyThreeRows()
+    {
+        var metrics = MetricsXaml();
+
+        Assert.Equal(34, metrics["SizeWheelRow"]);
+        Assert.Equal(3 * metrics["SizeWheelRow"], metrics["SizeWheel"]);
+    }
+
+    /// <summary>Colors.xaml — светлые значения для разметки и дизайнера; тема раскладывает те же цвета из ChronoColors (ThemeService).</summary>
+    [Fact]
+    public void ColorsXaml_MatchesLightColors()
+    {
+        var xaml = Regex.Matches(File.ReadAllText(RepoPath("src", "Chrono", "Resources", "Styles", "Colors.xaml")), @"<Color x:Key=""(\w+)"">(#[0-9A-Fa-f]{8})</Color>")
+            .ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
+
+        Assert.Equal(ChronoColors.All.Select(t => t.Key).Order(), xaml.Keys.Order());
+        foreach (var token in ChronoColors.All)
+        {
+            Assert.True(token.Light == xaml[token.Key], $"{token.Key}: Colors.xaml = {xaml[token.Key]}, ChronoColors = {token.Light} — запустите python tools/gen_design.py");
+        }
+    }
+
+    /// <summary>
+    /// Цвет дела на циферблате и в ленте берётся по ключу Cat1…Cat6 из DialLayout.CategoryKey: у каждой категории должен быть свой цвет
+    /// в каждом из четырёх видов, и лишних цветов-категорий без дел нет.
+    /// </summary>
+    [Fact]
+    public void CategoryColors_CoverEveryDialCategoryAndAreDistinct()
+    {
+        var keys = ChronoColors.All.Select(t => t.Key).ToList();
+
+        for (var index = 0; index < DialLayout.Categories; index++)
+        {
+            Assert.Contains(DialLayout.CategoryKey(index), keys);
+        }
+
+        Assert.Equal(DialLayout.Categories, keys.Count(key => Regex.IsMatch(key, @"^Cat\d+$")));
+        foreach (var appearance in AllAppearances)
+        {
+            var colors = Enumerable.Range(0, DialLayout.Categories).Select(index => Token(DialLayout.CategoryKey(index), appearance)).ToList();
+            Assert.Equal(DialLayout.Categories, colors.Distinct().Count());
+        }
+    }
 }

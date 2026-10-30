@@ -1,3 +1,4 @@
+using System.Globalization;
 using Chrono.Models;
 using Chrono.Services;
 
@@ -37,4 +38,30 @@ public sealed class FakeScheduler : IAlarmScheduler
     public void StopRinging(Guid id)
     {
     }
+}
+
+/// <summary>Запоминает вызовы проигрывателя мелодий.</summary>
+public sealed class FakeSoundPlayer : ISoundPlayer
+{
+    public List<(string SoundId, bool Loop)> Played { get; } = [];
+
+    public int Stops { get; private set; }
+
+    public void Play(string soundId, bool loop) => this.Played.Add((soundId, loop));
+
+    public void Stop() => this.Stops++;
+
+    public void Tick()
+    {
+    }
+}
+
+/// <summary>Переключает язык интерфейса на время теста: строки AppResources и названия дней и месяцев берутся из него.</summary>
+public sealed class UiCulture : IDisposable
+{
+    private readonly CultureInfo previous = CultureInfo.CurrentUICulture;
+
+    public UiCulture(string name) => CultureInfo.CurrentUICulture = new CultureInfo(name);
+
+    public void Dispose() => CultureInfo.CurrentUICulture = this.previous;
 }
