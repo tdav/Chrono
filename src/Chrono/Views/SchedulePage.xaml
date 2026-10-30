@@ -20,7 +20,7 @@
         <!-- Панель: «Сегодня» слева, «+» справа (на прошедшем дне неактивна: команда не выполняется, кнопка бледная). Объявлена первой, чтобы на неё
              можно было сослаться из отступа ниже, и поднята над прокруткой через ZIndex; прокрутку страница передаёт шапке в коде. -->
         <controls:LargeTitleHeader x:Name="Header" VerticalOptions="Start" ZIndex="1"
-                                   Title="{x:Static res:AppResources.Tab_Schedule}" Subtitle="{Binding Subtitle}">
+                                   Title="{x:Static res:AppResources.Tab_Schedule}" Subtitle="{Binding Subtitle}" SubtitleInBar="True">
             <controls:LargeTitleHeader.LeadingContent>
                 <controls:GlassIconButton Text="{x:Static res:AppResources.Today}" Command="{Binding TodayCommand}" />
             </controls:LargeTitleHeader.LeadingContent>

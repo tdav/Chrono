@@ -28,6 +28,11 @@
                              Title="{Binding Title, Source={x:Reference Root}}"
                              LeadingContent="{Binding LeadingContent, Source={x:Reference Root}}"
                              TrailingContent="{Binding TrailingContent, Source={x:Reference Root}}" />
+
+            <!-- Подстрока в строке кнопок (SubtitleInBar): по центру между кнопками; при прокрутке её сменяет inline-заголовок. -->
+            <Label x:Name="BarSubtitle" Style="{StaticResource TextSubheadline}" TextColor="{DynamicResource SecondaryLabel}"
+                   MaxLines="1" LineBreakMode="TailTruncation" HorizontalOptions="Center" VerticalOptions="Center"
+                   InputTransparent="True" IsVisible="False" Text="{Binding Subtitle, Source={x:Reference Root}}" />
         </Grid>
     </ContentView.Content>
 </ContentView>

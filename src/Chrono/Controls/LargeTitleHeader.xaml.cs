@@ -17,7 +17,11 @@ public partial class LargeTitleHeader : ContentView
 
     public static readonly BindableProperty SubtitleProperty = BindableProperty.Create(
         nameof(Subtitle), typeof(string), typeof(LargeTitleHeader), string.Empty,
-        propertyChanged: (b, _, n) => ((LargeTitleHeader)b).SubtitleLabel.IsVisible = !string.IsNullOrEmpty((string?)n));
+        propertyChanged: (b, _, _) => ((LargeTitleHeader)b).PlaceSubtitle());
+
+    public static readonly BindableProperty SubtitleInBarProperty = BindableProperty.Create(
+        nameof(SubtitleInBar), typeof(bool), typeof(LargeTitleHeader), false,
+        propertyChanged: (b, _, _) => ((LargeTitleHeader)b).PlaceSubtitle());
 
     public static readonly BindableProperty LeadingContentProperty = BindableProperty.Create(
         nameof(LeadingContent), typeof(View), typeof(LargeTitleHeader), null);
@@ -78,6 +82,13 @@ public partial class LargeTitleHeader : ContentView
         set => this.SetValue(TrailingContentProperty, value);
     }
 
+    /// <summary>Подстрока — в строке кнопок по центру, а не под Large Title (решение пользователя для «Распорядка»).</summary>
+    public bool SubtitleInBar
+    {
+        get => (bool)this.GetValue(SubtitleInBarProperty);
+        set => this.SetValue(SubtitleInBarProperty, value);
+    }
+
     /// <summary>Прокручиваемое содержимое страницы: по его смещению шапка сворачивается.</summary>
     public ScrollView? ScrollView
     {
@@ -96,6 +107,16 @@ public partial class LargeTitleHeader : ContentView
         // Inline-заголовок проявляется за ход, равный высоте Large Title.
         var span = this.TitleLabel.Height;
         this.Bar.TitleOpacity = span > 0 ? Math.Clamp(offset / span, 0, 1) : (offset > 0 ? 1 : 0);
+        // Подстрока в строке кнопок уступает место inline-заголовку.
+        this.BarSubtitle.Opacity = 1 - this.Bar.TitleOpacity;
+    }
+
+    // Два вызывающих (Subtitle и SubtitleInBar): подстрока показывается в одном из двух мест.
+    private void PlaceSubtitle()
+    {
+        var has = !string.IsNullOrEmpty(this.Subtitle);
+        this.SubtitleLabel.IsVisible = has && !this.SubtitleInBar;
+        this.BarSubtitle.IsVisible = has && this.SubtitleInBar;
     }
 
     private void OnScrolled(object? sender, ScrolledEventArgs e) => this.UpdateScroll(e.ScrollY);

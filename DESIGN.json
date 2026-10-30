@@ -97,7 +97,7 @@
   },
   "spacing": {"space1": 4, "space1_5": 6, "space2": 8, "space3": 12, "space4": 16, "space5": 20, "space6": 24, "space8": 32},
   "radius": {"xs": 4, "sm": 8, "icon": 7, "md": 14, "card": 26, "alert": 38, "sheet": 38, "device": 55, "capsule": 999},
-  "size": {"hit": 44, "row": 52, "rowIcon": 30, "glassButton": 44, "switchW": 64, "switchH": 28, "knobW": 38, "knobH": 24, "segment": 32, "buttonS": 28, "buttonM": 34, "buttonL": 50, "stepperW": 94, "stepperH": 32, "sliderTrack": 6, "progress": 4, "tabbar": 62, "tabbarInset": 21, "grabberW": 36, "grabberH": 5, "wheelRow": 34, "wheel": 151, "calendarCell": 44, "statusBar": 54, "deviceW": 402, "deviceH": 874},
+  "size": {"hit": 44, "row": 52, "rowIcon": 30, "glassButton": 44, "switchW": 64, "switchH": 28, "knobW": 38, "knobH": 24, "segment": 32, "buttonS": 28, "buttonM": 34, "buttonL": 50, "stepperW": 94, "stepperH": 32, "sliderTrack": 6, "progress": 4, "tabbar": 62, "tabbarInset": 21, "grabberW": 36, "grabberH": 5, "wheelRow": 34, "wheel": 102, "calendarCell": 44, "statusBar": 54, "deviceW": 402, "deviceH": 874},
   "shadow": {
     "shadowGlass": {"light": "0 8px 24px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06)", "dark": "0 8px 24px rgba(0,0,0,0.45)", "lightHighContrast": "0 8px 24px rgba(0,0,0,0.12)", "darkHighContrast": "0 8px 24px rgba(0,0,0,0.5)"},
     "shadowPopover": {"light": "0 12px 48px rgba(0,0,0,0.18)", "dark": "0 12px 48px rgba(0,0,0,0.6)", "lightHighContrast": "0 12px 48px rgba(0,0,0,0.2)", "darkHighContrast": "0 12px 48px rgba(0,0,0,0.7)"},

@@ -12,6 +12,7 @@ public partial class AlarmEditPage : ContentPage
     // Поле «Название» и меню звука создаются вместе с шаблоном шторки: ссылки приходят из их Loaded.
     private Entry? nameEntry;
     private PopupMenu? soundMenu;
+    private PopupMenu? alertMenu;
 
     public AlarmEditPage(AlarmEditViewModel viewModel)
     {
@@ -57,8 +58,8 @@ public partial class AlarmEditPage : ContentPage
             return true;
         }
 
-        // Порядок «Назад» (DESIGN.md §3.1): открытое меню звука, затем шаг шторки, затем сама шторка — с вопросом при правках.
-        if (this.soundMenu?.HandleBack() == true || this.Sheet.HandleBack())
+        // Порядок «Назад» (DESIGN.md §3.1): открытое меню (звук, оповещение), затем шаг шторки, затем сама шторка — с вопросом при правках.
+        if (this.soundMenu?.HandleBack() == true || this.alertMenu?.HandleBack() == true || this.Sheet.HandleBack())
         {
             return true;
         }
@@ -70,11 +71,25 @@ public partial class AlarmEditPage : ContentPage
     private void OnRepeatTapped(object? sender, TappedEventArgs e) =>
         this.PushStep(new RepeatSheet { BindingContext = this.viewModel.RepeatSheet }, AppResources.RepeatHeader);
 
-    private void OnAlertTapped(object? sender, TappedEventArgs e) =>
-        this.PushStep(new AlertSheet { BindingContext = this.viewModel.AlertSheet }, AppResources.RowAlert);
+    // Меню от строки «Оповещение»: выбор применяется в форму сразу (AlarmEditViewModel следит за AlertSheet.SelectedId).
+    private void OnAlertTapped(object? sender, TappedEventArgs e)
+    {
+        if (this.alertMenu is { } menu && sender is View row)
+        {
+            this.nameEntry?.Unfocus();
+            menu.Anchor = row;
+            menu.IsOpen = true;
+        }
+    }
 
-    private void OnIconTapped(object? sender, TappedEventArgs e) =>
-        this.PushStep(new IconSheet { BindingContext = this.viewModel.IconSheet }, AppResources.RowIcon);
+    // Иконки — без внешней прокрутки: сетка сама прокручивается и занимает всю свободную высоту шага до низа шторки.
+    private void OnIconTapped(object? sender, TappedEventArgs e)
+    {
+        this.nameEntry?.Unfocus();
+        this.Sheet.Push(
+            new ContentView { Padding = new Thickness(0, 8, 0, 24), Content = new IconSheet { BindingContext = this.viewModel.IconSheet } },
+            AppResources.RowIcon);
+    }
 
     private void OnDurationTapped(object? sender, TappedEventArgs e) =>
         this.PushStep(new DurationSheet { BindingContext = this.viewModel.DurationSheet }, AppResources.RowDuration);
@@ -94,7 +109,9 @@ public partial class AlarmEditPage : ContentPage
 
     private void OnSoundMenuLoaded(object? sender, EventArgs e) => this.soundMenu = (PopupMenu)sender!;
 
-    // Четыре вызывающих: шаг идёт в прокрутке (на низком экране список не должен обрезаться) с теми же отступами, что у формы.
+    private void OnAlertMenuLoaded(object? sender, EventArgs e) => this.alertMenu = (PopupMenu)sender!;
+
+    // Два вызывающих (повтор, длительность): шаг идёт в прокрутке (на низком экране список не должен обрезаться) с теми же отступами, что у формы.
     private void PushStep(View step, string title)
     {
         // Клавиатура после «Названия» уходит вместе с формой.

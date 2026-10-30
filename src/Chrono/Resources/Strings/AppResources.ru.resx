@@ -466,7 +466,7 @@
     <value>Циферблат</value>
   </data>
   <data name="DialNow" xml:space="preserve">
-    <value>Сейчас</value>
+    <value>День</value>
   </data>
   <data name="DialEvening" xml:space="preserve">
     <value>Вечер</value>

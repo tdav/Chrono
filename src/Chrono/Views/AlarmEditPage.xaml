@@ -118,7 +118,7 @@
                                                 </Grid.GestureRecognizers>
                                                 <Label Text="{x:Static res:AppResources.RowAlert}" Style="{StaticResource RowTitle}" />
                                                 <Label Grid.Column="1" Text="{Binding AlertText}" Style="{StaticResource RowValue}" />
-                                                <Image Grid.Column="2" Source="icon_chevron.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
+                                                <Image Grid.Column="2" Source="icon_chevron_updown.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"
                                                        design:IconTint.Color="{DynamicResource TertiaryLabel}" />
                                             </Grid>
 
@@ -173,6 +173,9 @@
                              и якорь (строка «Звук») оказался бы не там, где рисуется меню. -->
                         <controls:PopupMenu Items="{Binding SoundSheet.Options}" SelectCommand="{Binding SoundSheet.SelectCommand}"
                                             Description="{x:Static res:AppResources.Sound}" Loaded="OnSoundMenuLoaded" />
+                        <!-- Оповещение — тоже меню от строки (решение пользователя: всплывающее окно, а не шаг шторки). -->
+                        <controls:PopupMenu Items="{Binding AlertSheet.Options}" SelectCommand="{Binding AlertSheet.SelectCommand}"
+                                            Description="{x:Static res:AppResources.RowAlert}" Loaded="OnAlertMenuLoaded" />
                     </Grid>
                 </DataTemplate>
             </controls:BottomSheet.SheetTemplate>

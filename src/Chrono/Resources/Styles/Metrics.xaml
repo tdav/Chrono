@@ -44,7 +44,7 @@
     <x:Double x:Key="SizeGrabberW">36</x:Double>
     <x:Double x:Key="SizeGrabberH">5</x:Double>
     <x:Double x:Key="SizeWheelRow">34</x:Double>
-    <x:Double x:Key="SizeWheel">151</x:Double>
+    <x:Double x:Key="SizeWheel">102</x:Double>
     <x:Double x:Key="SizeCalendarCell">44</x:Double>
     <x:Double x:Key="SizeStatusBar">54</x:Double>
     <x:Double x:Key="SizeDeviceW">402</x:Double>

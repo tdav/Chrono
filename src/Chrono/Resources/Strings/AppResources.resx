@@ -120,7 +120,7 @@
   <data name="Tab_Alarms" xml:space="preserve"><value>Alarms</value></data>
   <data name="Tab_Schedule" xml:space="preserve"><value>Schedule</value></data>
   <data name="Tab_Dial" xml:space="preserve"><value>Dial</value></data>
-  <data name="DialNow" xml:space="preserve"><value>Now</value></data>
+  <data name="DialNow" xml:space="preserve"><value>Day</value></data>
   <data name="DialEvening" xml:space="preserve"><value>Evening</value></data>
   <data name="DialLeft" xml:space="preserve"><value>{0} left</value></data>
   <data name="DialUntilEnd" xml:space="preserve"><value>{0} · ends in {1} · next {2} at {3}</value></data>

@@ -13,8 +13,9 @@
 
     <!-- Вид иконки (DESIGN.md §3.7): превью 88 и сетка значков по 6 в ряд в одной секции. Выбор применяется сразу — превью следит за SelectedId.
          Самостоятельный View: кнопок «Ок» и «Отмена» нет — ✓ и ✕ в панели шторки. -->
+    <!-- Секция занимает всё место шага до низа шторки: превью сверху, сетка — в оставшейся высоте и прокручивается в ней. -->
     <Border Style="{StaticResource SheetSection}" Padding="8,16,8,8">
-        <VerticalStackLayout Spacing="{StaticResource Space4}">
+        <Grid RowDefinitions="Auto,*" RowSpacing="{StaticResource Space4}">
 
             <!-- Превью: круг 88 TintFill, значок 40 Tint. Название выбранного уже читается в сетке, поэтому для TalkBack превью лишнее. -->
             <Border WidthRequest="88" HeightRequest="88" StrokeShape="RoundRectangle 44" StrokeThickness="0" HorizontalOptions="Center"
@@ -24,9 +25,8 @@
             </Border>
 
             <!-- Сетка: ячейка занимает 16.5 % ширины (Basis) — ровно 6 колонок при любой ширине (шесть по 16.67 % не поместились бы из-за округления),
-                 круг по центру ячейки. Сетка в ScrollView высотой не больше 262 (ряд 58, пятый ряд виден наполовину — намёк на прокрутку):
-                 панель шторки прижата к низу, и без ограничения 50 значков выдавили бы её за экран. -->
-            <ScrollView MaximumHeightRequest="262" VerticalScrollBarVisibility="Never">
+                 круг по центру ячейки. Сетка прокручивается внутри строки * — до низа шторки (решение пользователя: вся свободная высота). -->
+            <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
                 <FlexLayout Wrap="Wrap" BindableLayout.ItemsSource="{Binding Options}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:ChoiceOption">
@@ -61,6 +61,6 @@
                     </BindableLayout.ItemTemplate>
                 </FlexLayout>
             </ScrollView>
-        </VerticalStackLayout>
+        </Grid>
     </Border>
 </ContentView>
