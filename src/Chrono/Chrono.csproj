@@ -12,7 +12,7 @@
 		<Nullable>enable</Nullable>
 
 		<ApplicationTitle>Chrono</ApplicationTitle>
-		<ApplicationId>com.chrono.alarm</ApplicationId>
+		<ApplicationId>com.chrono.sata</ApplicationId>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
@@ -26,16 +26,16 @@
 	<PropertyGroup>
 		<UseRuntimeAsync>false</UseRuntimeAsync>
 	</PropertyGroup>
-	
+
 	<PropertyGroup Condition="'$(ChronoStartTrace)' == 'true'">
 		<!-- Метки времени холодного старта в logcat (см. StartTrace): включаются только по -p:ChronoStartTrace=true. -->
 		<DefineConstants>$(DefineConstants);CHRONO_STARTTRACE</DefineConstants>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(Configuration)' == 'Release'">
-		<!-- Release по умолчанию собирает .aab (для Google Play); publish должен давать устанавливаемый .apk. -->
+	<!--<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' and '$(Configuration)' == 'Release'">
+		--><!-- Release по умолчанию собирает .aab (для Google Play); publish должен давать устанавливаемый .apk. --><!--
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
-	</PropertyGroup>
+	</PropertyGroup>-->
 
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
 		<!-- Time-sensitive уведомления; capability включается и в App ID на developer.apple.com. -->
@@ -54,7 +54,11 @@
 
 	<ItemGroup>
 		<!-- Строго типизированный AppResources генерируется при сборке, без Visual Studio. -->
-		<EmbeddedResource Update="Resources\Strings\AppResources.resx" StronglyTypedLanguage="CSharp" StronglyTypedClassName="AppResources" StronglyTypedNamespace="Chrono.Resources.Strings" StronglyTypedFileName="$(IntermediateOutputPath)AppResources.Designer.cs" PublicClass="true" />
+		<EmbeddedResource Update="Resources\Strings\AppResources.resx"
+						  StronglyTypedLanguage="CSharp" StronglyTypedClassName="AppResources"
+	 					StronglyTypedNamespace="Chrono.Resources.Strings"
+	 					StronglyTypedFileName="$(IntermediateOutputPath)AppResources.Designer.cs"
+	 	  				PublicClass="true" />
 	</ItemGroup>
 
 	<ItemGroup>
