@@ -4,5 +4,5 @@
      в PackageId_preferences и в копию попадает, как и alarms.json и sync.json из filesDir.
      Имя пакета вписано литералом: при смене ApplicationId исправить и здесь, и в data_extraction_rules.xml. -->
 <full-backup-content>
-	<exclude domain="sharedpref" path="com.chrono.alarm.microsoft.maui.essentials.preferences.xml" />
+	<exclude domain="sharedpref" path="com.chrono.sata.microsoft.maui.essentials.preferences.xml" />
 </full-backup-content>

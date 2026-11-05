@@ -22,7 +22,9 @@ if not defined CHRONO_KEY_PASS (
     exit /b 1
 )
 
+rem Release по умолчанию собирает .aab для Google Play (см. build-aab.bat), здесь нужен устанавливаемый .apk.
 dotnet publish "%~dp0src\Chrono\Chrono.csproj" -f net11.0-android -c Release -o "%OUT%" ^
+    -p:AndroidPackageFormat=apk ^
     -p:AndroidKeyStore=true ^
     -p:AndroidSigningKeyStore="%KEYSTORE%" ^
     -p:AndroidSigningKeyAlias=%CHRONO_KEY_ALIAS% ^
@@ -34,5 +36,5 @@ if errorlevel 1 (
 )
 
 echo.
-echo Готово: %OUT%\com.chrono.alarm-Signed.apk
-echo Установка на подключённый телефон: adb install -r "%OUT%\com.chrono.alarm-Signed.apk"
+echo Готово: %OUT%\com.chrono.sata-Signed.apk
+echo Установка на подключённый телефон: adb install -r "%OUT%\com.chrono.sata-Signed.apk"

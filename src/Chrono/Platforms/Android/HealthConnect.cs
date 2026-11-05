@@ -11,6 +11,14 @@ using Java.Time;
 using Kotlin.Coroutines;
 using Kotlin.Jvm;
 
+// Разрешения health.* попадают в манифест только в сборке с ChronoHealthConnect: Google Play требует
+// на них отдельную декларацию доступа к Health Connect.
+#if CHRONO_HEALTH
+[assembly: Android.App.UsesPermission(Chrono.Platform.HealthConnect.ReadHeartRate)]
+[assembly: Android.App.UsesPermission(Chrono.Platform.HealthConnect.ReadSleep)]
+[assembly: Android.App.UsesPermission(Chrono.Platform.HealthConnect.ReadInBackground)]
+#endif
+
 namespace Chrono.Platform;
 
 /// <summary>

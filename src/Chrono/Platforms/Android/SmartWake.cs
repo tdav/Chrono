@@ -14,7 +14,14 @@ public sealed class SmartWake : ISmartWake
 
     private static TaskCompletionSource<bool>? activityResult;
 
-    public bool IsSupported => true;
+#if CHRONO_HEALTH
+    public const bool Available = true;
+#else
+    // Без разрешений health.* (сборка без ChronoHealthConnect) функция недоступна, как на iOS.
+    public const bool Available = false;
+#endif
+
+    public bool IsSupported => Available;
 
     /// <summary>Вызывается из MainActivity.OnActivityResult (экран разрешений Health Connect на Android 13 и ниже).</summary>
     public static void OnActivityResult(int requestCode)
@@ -27,6 +34,11 @@ public sealed class SmartWake : ISmartWake
 
     public async Task<SmartWakeAccess> GetAccessAsync()
     {
+        if (!this.IsSupported)
+        {
+            return SmartWakeAccess.Unsupported;
+        }
+
         var context = global::Android.App.Application.Context;
         if (!HealthConnect.IsAvailable(context))
         {
@@ -40,6 +52,11 @@ public sealed class SmartWake : ISmartWake
 
     public async Task<SmartWakeAccess> RequestAccessAsync()
     {
+        if (!this.IsSupported)
+        {
+            return SmartWakeAccess.Unsupported;
+        }
+
         var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity!;
         if (!HealthConnect.IsAvailable(activity))
         {

@@ -157,7 +157,8 @@ public sealed class AlarmScheduler : IAlarmScheduler
                     // в статус-баре время окна вместо времени будильника. Окно нужно только звонящим записям.
                     var smartOperation = SmartWakeReceiver.CreatePendingIntent(context, alarm.Id);
                     var windowStart = alarm.At - SleepPhaseEstimator.Window;
-                    if (ring && SmartWakeSettings.Enabled && windowStart > now)
+                    // SmartWake.Available: значение Enabled = true может прийти из бэкапа Preferences в сборку без Health Connect.
+                    if (ring && SmartWake.Available && SmartWakeSettings.Enabled && windowStart > now)
                     {
                         var windowStartMs = new DateTimeOffset(DateTime.SpecifyKind(windowStart, DateTimeKind.Local)).ToUnixTimeMilliseconds();
                         manager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, windowStartMs, smartOperation);

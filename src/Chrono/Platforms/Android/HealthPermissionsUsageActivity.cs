@@ -9,8 +9,11 @@ namespace Chrono.Platform;
 /// Активити защищена системным разрешением, поэтому отдельная от MainActivity; она лишь открывает
 /// экран настроек, где описано, какие данные часов читаются и зачем.
 /// </summary>
+/// <remarks>Регистрируется в манифесте только в сборке с ChronoHealthConnect (CHRONO_HEALTH).</remarks>
+#if CHRONO_HEALTH
 [Activity(Exported = true, NoHistory = true, Permission = "android.permission.START_VIEW_PERMISSION_USAGE", Theme = "@style/Maui.SplashTheme")]
 [IntentFilter(["android.intent.action.VIEW_PERMISSION_USAGE"], Categories = ["android.intent.category.HEALTH_PERMISSIONS"])]
+#endif
 public sealed class HealthPermissionsUsageActivity : Activity
 {
     protected override void OnCreate(Bundle? savedInstanceState)

@@ -11,8 +11,10 @@ namespace Chrono;
 
 // Тема запуска — Maui.SplashTheme со своим значком системной заставки Android 12+ (Resources/values*/styles.xml, DESIGN.md §4.7).
 [Activity(Theme = "@style/Chrono.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
+#if CHRONO_HEALTH
 // Health Connect (Android 13 и ниже) открывает это действие, чтобы показать, зачем приложению данные о здоровье.
 [IntentFilter([ActionShowHealthRationale])]
+#endif
 public class MainActivity : MauiAppCompatActivity
 {
     public const string ActionShowHealthRationale = "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE";
