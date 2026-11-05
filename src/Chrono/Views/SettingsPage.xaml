@@ -102,8 +102,10 @@
                         </Border>
                     </VerticalStackLayout>
 
-                    <!-- Умное пробуждение: тумблер и статус данных часов — символом и словами (✓ Success / ! Warning). -->
-                    <VerticalStackLayout Spacing="0">
+                    <!-- Умное пробуждение: тумблер и статус данных часов — символом и словами (✓ Success / ! Warning).
+                         Скрыто, где функции нет (iOS, Android-сборка без ChronoHealthConnect): иначе экран обещал бы
+                         Health Connect и пульс, которых в сборке нет. -->
+                    <VerticalStackLayout Spacing="0" IsVisible="{Binding IsSmartWakeSupported}">
                         <Label Text="{x:Static res:AppResources.SmartWake}" Style="{StaticResource SectionHeader}"
                                SemanticProperties.HeadingLevel="Level2" />
                         <Border Style="{StaticResource Section}">
