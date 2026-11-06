@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nook: политика конфиденциальности / Privacy Policy</title>
+<style>
+  body { font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 0 auto; padding: 16px; color: #1c1c1e; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { color: #e5e5e7; background: #111; } a { color: #8ab4f8; } }
+  h1 { font-size: 1.75rem; } h2 { font-size: 1.3rem; margin-top: 1.6em; }
+  nav { margin: 8px 0 24px; } nav a { margin-right: 16px; font-weight: 600; }
+  section { padding-bottom: 24px; border-bottom: 1px solid #8884; margin-bottom: 24px; }
+  code { font-size: .9em; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<nav><a href="#ru">Русский</a><a href="#en">English</a></nav>
+
+<section id="ru" lang="ru">
+<h1>Nook: политика конфиденциальности</h1>
+<p>Дата вступления в силу: 6 ноября 2026 г.</p>
+
+<h2>1. Кто мы</h2>
+<p>Приложение Nook (чат-бот с искусственным интеллектом для Android, идентификатор пакета <code>com.nookbot.sata</code>) разрабатывает частное лицо. Контакт по вопросам конфиденциальности: <a href="mailto:tdavron@gmail.com">tdavron@gmail.com</a>.</p>
+
+<h2>2. Главное</h2>
+<p>Nook генерирует ответы целиком на вашем устройстве. Ваши сообщения и ответы модели никуда не отправляются: у разработчика нет серверов, а в приложении нет рекламы, аналитики и отчётов о сбоях. Регистрация и аккаунт не нужны.</p>
+
+<h2>3. Какие данные есть на устройстве</h2>
+<ul>
+<li><b>История чата.</b> Хранится только в оперативной памяти приложения и на диск не записывается. Она исчезает при создании нового чата или закрытии приложения.</li>
+<li><b>Настройки.</b> Выбранная модель, способ ускорения (NPU/GPU/CPU), системный промпт и параметры интерфейса — в настройках приложения на устройстве.</li>
+<li><b>Файлы моделей и список моделей.</b> Во внутренней памяти приложения.</li>
+<li><b>Токен Hugging Face (необязательно).</b> Нужен только для некоторых моделей (Gemma 3 1B), и только если вы сами его ввели. Хранится в защищённом хранилище Android (SecureStorage).</li>
+</ul>
+<p>Резервное копирование Android для приложения отключено: эти данные не попадают в облачные копии.</p>
+
+<h2>4. Обращения в сеть</h2>
+<p>Интернет нужен только для загрузки моделей. Приложение скачивает по HTTPS:</p>
+<ul>
+<li>список доступных моделей и файлы моделей — с <code>huggingface.co</code> (Hugging Face, Inc.);</li>
+<li>на устройствах со Snapdragon 8 Gen 3 — пакеты моделей для нейропроцессора с <code>huggingface.co</code>, а если он недоступен — с запасного зеркала <code>hf-mirror.com</code>.</li>
+</ul>
+<p>При загрузке эти сайты, как любой веб-сервер, получают технические данные запроса: IP-адрес и адрес запрашиваемого файла. Если вы ввели токен Hugging Face, он передаётся только на <code>huggingface.co</code> при загрузке модели, которой он нужен. Ваши сообщения, ответы и настройки в сеть не отправляются. Обработка на стороне Hugging Face регулируется <a href="https://huggingface.co/privacy">политикой конфиденциальности Hugging Face</a>.</p>
+
+<h2>5. Озвучка</h2>
+<p>Если вы нажмёте «Озвучить», текст ответа передаётся системному синтезатору речи Android, который выбран в настройках вашего устройства. Как он обрабатывает текст, определяет его разработчик.</p>
+
+<h2>6. Разрешения</h2>
+<ul>
+<li><b>Интернет и состояние сети</b> — загрузка моделей.</li>
+<li><b>Уведомления и фоновая служба загрузки</b> — показать прогресс и не прервать загрузку большого файла, когда приложение свёрнуто.</li>
+</ul>
+<p>Приложение не запрашивает доступ к контактам, геолокации, микрофону, камере, фото и файлам.</p>
+
+<h2>7. Лицензии моделей</h2>
+<p>Модели принадлежат их авторам и распространяются по их лицензиям: Qwen3 и Gemma 4 — Apache 2.0, LFM2 — LFM Open License, Gemma 3 — <a href="https://ai.google.dev/gemma/terms">условия использования Gemma</a>. Ответы модели генерируются автоматически и могут быть неточными.</p>
+
+<h2>8. Удаление данных</h2>
+<ul>
+<li>История чата удаляется кнопкой «Новый чат» или закрытием приложения.</li>
+<li>Модели и токен удаляются в настройках приложения.</li>
+<li>Удаление приложения или очистка его данных стирает всё перечисленное.</li>
+<li>Вопросы: <a href="mailto:tdavron@gmail.com">tdavron@gmail.com</a>. Данных о вас у разработчика нет.</li>
+</ul>
+
+<h2>9. Дети</h2>
+<p>Приложение не предназначено для детей младше 18 лет.</p>
+
+<h2>10. Изменения политики</h2>
+<p>При изменении политики мы обновим эту страницу и дату вступления в силу.</p>
+</section>
+
+<section id="en" lang="en">
+<h1>Nook: Privacy Policy</h1>
+<p>Effective date: November 6, 2026.</p>
+
+<h2>1. Who we are</h2>
+<p>Nook (an AI chatbot for Android, package <code>com.nookbot.sata</code>) is developed by an individual. Privacy contact: <a href="mailto:tdavron@gmail.com">tdavron@gmail.com</a>.</p>
+
+<h2>2. In short</h2>
+<p>Nook generates replies entirely on your device. Your messages and the model's replies are never sent anywhere: the developer runs no servers, and the app contains no ads, analytics or crash reporting. No registration or account is required.</p>
+
+<h2>3. Data on your device</h2>
+<ul>
+<li><b>Chat history.</b> Kept only in app memory and never written to disk. It disappears when you start a new chat or close the app.</li>
+<li><b>Settings.</b> Selected model, acceleration (NPU/GPU/CPU), system prompt and UI preferences — stored in the app's settings on the device.</li>
+<li><b>Model files and the model list.</b> In the app's internal storage.</li>
+<li><b>Hugging Face token (optional).</b> Only needed for some models (Gemma 3 1B) and only if you enter it yourself. Stored in Android secure storage (SecureStorage).</li>
+</ul>
+<p>Android backup is disabled for the app, so this data is not included in cloud backups.</p>
+
+<h2>4. Network access</h2>
+<p>Internet is used only to download models. Over HTTPS the app downloads:</p>
+<ul>
+<li>the list of available models and model files from <code>huggingface.co</code> (Hugging Face, Inc.);</li>
+<li>on Snapdragon 8 Gen 3 devices, NPU model packages from <code>huggingface.co</code>, or from the fallback mirror <code>hf-mirror.com</code> if the former is unreachable.</li>
+</ul>
+<p>Like any web server, these sites receive the technical data of each request: your IP address and the requested file address. If you entered a Hugging Face token, it is sent only to <code>huggingface.co</code> when downloading a model that requires it. Your messages, replies and settings are never sent. Processing by Hugging Face is governed by the <a href="https://huggingface.co/privacy">Hugging Face privacy policy</a>.</p>
+
+<h2>5. Text-to-speech</h2>
+<p>If you tap the speak button, the reply text is passed to the Android system text-to-speech engine selected in your device settings. How it processes the text is up to that engine's developer.</p>
+
+<h2>6. Permissions</h2>
+<ul>
+<li><b>Internet and network state</b> — downloading models.</li>
+<li><b>Notifications and a foreground download service</b> — to show progress and keep a large download running while the app is in the background.</li>
+</ul>
+<p>The app does not request access to contacts, location, microphone, camera, photos or files.</p>
+
+<h2>7. Model licenses</h2>
+<p>Models belong to their authors and are distributed under their licenses: Qwen3 and Gemma 4 — Apache 2.0, LFM2 — LFM Open License, Gemma 3 — <a href="https://ai.google.dev/gemma/terms">Gemma Terms of Use</a>. Replies are generated automatically and may be inaccurate.</p>
+
+<h2>8. Deleting data</h2>
+<ul>
+<li>Chat history is cleared with “New chat” or by closing the app.</li>
+<li>Models and the token can be removed in the app settings.</li>
+<li>Uninstalling the app or clearing its data erases everything listed above.</li>
+<li>Questions: <a href="mailto:tdavron@gmail.com">tdavron@gmail.com</a>. The developer holds no data about you.</li>
+</ul>
+
+<h2>9. Children</h2>
+<p>The app is not intended for children under 18.</p>
+
+<h2>10. Changes</h2>
+<p>If this policy changes, we will update this page and its effective date.</p>
+</section>
+</body>
+</html>
