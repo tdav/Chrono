@@ -109,6 +109,25 @@ public sealed class DayPlanTests
         Assert.Equal(new DateOnly(2026, 10, 25), week[6]);
     }
 
+    /// <summary>Сетка месяца — целые недели с понедельника: от недели с 1-м числом до недели с последним.</summary>
+    [Theory]
+    // Февраль 2027 начинается в понедельник и длится 28 дней: ровно четыре недели, соседних месяцев нет.
+    [InlineData(2027, 2, 14, "2027-02-01", "2027-02-28", 28)]
+    // Декабрь 2026: 1-е — вторник, 31-е — четверг; сетка захватывает 30 ноября и 1–3 января.
+    [InlineData(2026, 12, 31, "2026-11-30", "2027-01-03", 35)]
+    // Ноябрь 2026: 1-е — воскресенье, 30-е — понедельник; шесть недель.
+    [InlineData(2026, 11, 10, "2026-10-26", "2026-12-06", 42)]
+    public void Month_CoversWholeWeeksFromMonday(int year, int month, int day, string first, string last, int count)
+    {
+        var grid = DayPlan.Month(new DateOnly(year, month, day));
+
+        Assert.Equal(count, grid.Count);
+        Assert.Equal(DateOnly.ParseExact(first, "yyyy-MM-dd"), grid[0]);
+        Assert.Equal(DateOnly.ParseExact(last, "yyyy-MM-dd"), grid[^1]);
+        Assert.Equal(DayOfWeek.Monday, grid[0].DayOfWeek);
+        Assert.Equal(Enumerable.Range(0, count).Select(grid[0].AddDays), grid);
+    }
+
     [Fact]
     public void Week_Monday_StartsOnItself()
     {

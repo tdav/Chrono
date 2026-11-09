@@ -128,6 +128,20 @@
                         </Border>
                     </VerticalStackLayout>
 
+                    <!-- Распорядок: календарь над лентой дня — одна неделя или весь месяц (ScheduleSettings.MonthCalendar).
+                         Подписи сегментов задаёт страница в коде, как у циферблата. -->
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{x:Static res:AppResources.Tab_Schedule}" Style="{StaticResource SectionHeader}"
+                               SemanticProperties.HeadingLevel="Level2" />
+                        <Border Style="{StaticResource Section}">
+                            <Grid Style="{StaticResource Row}" Padding="16,4">
+                                <controls:SegmentedControl x:Name="ScheduleCalendar" VerticalOptions="Center"
+                                                           SelectedIndex="{Binding ScheduleCalendarIndex}" />
+                            </Grid>
+                        </Border>
+                        <Label Text="{x:Static res:AppResources.ScheduleCalendarFooter}" Style="{StaticResource SectionFooter}" />
+                    </VerticalStackLayout>
+
                     <!-- Умное пробуждение: тумблер и статус данных часов — символом и словами (✓ Success / ! Warning).
                          Скрыто, где функции нет (iOS, Android-сборка без ChronoHealthConnect): иначе экран обещал бы
                          Health Connect и пульс, которых в сборке нет. -->

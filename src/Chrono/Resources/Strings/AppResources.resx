@@ -231,6 +231,9 @@
   <data name="AccentIndigo" xml:space="preserve"><value>Indigo</value></data>
   <data name="AccentBlue" xml:space="preserve"><value>Blue</value></data>
   <data name="AccentGreen" xml:space="preserve"><value>Green</value></data>
+  <data name="ScheduleCalendarWeek" xml:space="preserve"><value>Week</value></data>
+  <data name="ScheduleCalendarMonth" xml:space="preserve"><value>Month</value></data>
+  <data name="ScheduleCalendarFooter" xml:space="preserve"><value>The calendar above the day's list on the Schedule screen: one week or the whole month</value></data>
   <data name="SheetCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="SheetDone" xml:space="preserve"><value>Done</value></data>
   <data name="DontSave" xml:space="preserve"><value>Don't save</value></data>

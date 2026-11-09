@@ -1,3 +1,4 @@
+using Chrono.Resources.Strings;
 using Chrono.ViewModels;
 
 namespace Chrono.Views;
@@ -10,6 +11,8 @@ public partial class SettingsPage : ContentPage
     public SettingsPage(SettingsViewModel viewModel)
     {
         this.InitializeComponent();
+        // Порядок сегментов — индексы SettingsViewModel.ScheduleCalendarIndex: 0 — неделя, 1 — месяц.
+        this.ScheduleCalendar.Items = [AppResources.ScheduleCalendarWeek, AppResources.ScheduleCalendarMonth];
         this.viewModel = viewModel;
         this.BindingContext = viewModel;
     }

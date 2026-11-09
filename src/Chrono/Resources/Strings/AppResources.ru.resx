@@ -798,6 +798,15 @@
   <data name="AccentGreen" xml:space="preserve">
     <value>Зелёный</value>
   </data>
+  <data name="ScheduleCalendarWeek" xml:space="preserve">
+    <value>Неделя</value>
+  </data>
+  <data name="ScheduleCalendarMonth" xml:space="preserve">
+    <value>Месяц</value>
+  </data>
+  <data name="ScheduleCalendarFooter" xml:space="preserve">
+    <value>Календарь над списком дня на экране «Распорядок»: одна неделя или весь месяц</value>
+  </data>
   <data name="SheetCancel" xml:space="preserve">
     <value>Отменить</value>
   </data>

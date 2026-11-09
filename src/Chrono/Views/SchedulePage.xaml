@@ -43,18 +43,24 @@
                          с теми же командами, что у свайпов. Размер 1 × 1, без текста и заливки, под шапкой (она выше по ZIndex) — зрячий вид экрана
                          не меняется, а в дереве доступности кнопки есть и идут перед днями. -->
                     <Button Style="{StaticResource PlainButton}" WidthRequest="1" HeightRequest="1" Padding="0" HorizontalOptions="Start" VerticalOptions="End"
-                            SemanticProperties.Description="{x:Static res:AppResources.PrevWeek}" Command="{Binding PrevWeekCommand}" />
+                            SemanticProperties.Description="{Binding PreviousDescription}" Command="{Binding PreviousCommand}" />
                     <Button Style="{StaticResource PlainButton}" WidthRequest="1" HeightRequest="1" Padding="0" HorizontalOptions="Start" VerticalOptions="End"
-                            Margin="3,0,0,0" SemanticProperties.Description="{x:Static res:AppResources.NextWeek}" Command="{Binding NextWeekCommand}" />
+                            Margin="3,0,0,0" SemanticProperties.Description="{Binding NextDescription}" Command="{Binding NextCommand}" />
                 </Grid>
 
-                <!-- Неделя с понедельника: семь колонок поровну. Касание выбирает день; свайп — на каждой колонке:
+                <!-- Заголовок сетки месяца: без него после свайпа не видно, какой месяц открыт. У недели дату показывает шапка. -->
+                <Label Text="{Binding MonthTitle}" Style="{StaticResource TextBodyEmphasized}" TextColor="{DynamicResource Label}"
+                       Margin="20,8,20,0" IsVisible="{Binding IsMonth}" SemanticProperties.HeadingLevel="Level2" />
+
+                <!-- Неделя или весь месяц (настройка «Распорядок»), с понедельника: семь колонок поровну, у месяца 4–6 строк недель
+                     (лишние строки пусты и высоты не занимают). Касание выбирает день; свайп — на каждой ячейке:
                      распознаватель на родителе перекрывался бы нажатием дочерних. -->
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Margin="8,8,8,0"
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" Margin="8,8,8,0"
                       BindableLayout.ItemsSource="{Binding Days}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="vm:DayCell">
-                            <VerticalStackLayout Grid.Column="{Binding Column}" Spacing="2"
+                            <VerticalStackLayout Grid.Column="{Binding Column}" Grid.Row="{Binding Row}" Spacing="2"
+                                                 Margin="{Binding Margin}"
                                                  SemanticProperties.Description="{Binding AccessibleText}">
                                 <VerticalStackLayout.Resources>
                                     <!-- Круг 40: выбранный день — Label, выбранное «сегодня» — Tint. Базовые значения — в стиле, не локально:
@@ -102,19 +108,19 @@
                                         Command="{Binding SelectDayCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}"
                                         CommandParameter="{Binding Date}" />
                                     <SwipeGestureRecognizer Direction="Left"
-                                        Command="{Binding NextWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
+                                        Command="{Binding NextCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
                                     <SwipeGestureRecognizer Direction="Right"
-                                        Command="{Binding PrevWeekCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
+                                        Command="{Binding PreviousCommand, Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, x:DataType=vm:ScheduleViewModel}" />
                                 </VerticalStackLayout.GestureRecognizers>
-                                <Label Text="{Binding Label}" Style="{StaticResource WeekdayName}" />
-                                <Border Style="{StaticResource DayCircle}">
+                                <Label Text="{Binding Label}" Style="{StaticResource WeekdayName}" IsVisible="{Binding ShowLabel}" />
+                                <Border Style="{StaticResource DayCircle}" Opacity="{Binding Opacity}">
                                     <Grid>
                                         <Label Text="{Binding Number}" Style="{StaticResource DayNumber}" IsVisible="{Binding IsNotToday}" />
                                         <Label Text="{Binding Number}" Style="{StaticResource DayNumberToday}" IsVisible="{Binding IsToday}" />
                                     </Grid>
                                 </Border>
                                 <!-- Точки: не больше трёх по числу записей дня. -->
-                                <HorizontalStackLayout HeightRequest="6" Spacing="4" HorizontalOptions="Center"
+                                <HorizontalStackLayout HeightRequest="6" Spacing="4" HorizontalOptions="Center" Opacity="{Binding Opacity}"
                                                        BindableLayout.ItemsSource="{Binding Dots}">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="x:Int32">

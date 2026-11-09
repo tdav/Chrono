@@ -44,7 +44,16 @@ public sealed partial class SettingsViewModel : ObservableObject
         this.smartWakeEnabled = smartWake.IsSupported && SmartWakeSettings.Enabled;
         this.mathChallengeEnabled = DismissSettings.MathChallenge;
         this.theme = ThemeSettings.Theme;
+        this.scheduleCalendarIndex = ScheduleSettings.MonthCalendar ? 1 : 0;
     }
+
+    // Календарь «Распорядка»: 0 — неделя, 1 — месяц (порядок сегментов в SettingsPage). Поле: начальное значение
+    // не должно вызывать OnScheduleCalendarIndexChanged.
+    [ObservableProperty]
+    private int scheduleCalendarIndex;
+
+    // Экран «Распорядок» читает настройку при каждом показе.
+    partial void OnScheduleCalendarIndexChanged(int value) => ScheduleSettings.MonthCalendar = value == 1;
 
     public bool IsSmartWakeSupported => this.smartWake.IsSupported;
 

@@ -39,4 +39,15 @@ public static class DayPlan
         var monday = day.AddDays(-(((int)day.DayOfWeek + 6) % 7));
         return Enumerable.Range(0, 7).Select(monday.AddDays).ToList();
     }
+
+    /// <summary>
+    /// Сетка месяца, содержащего day: целые недели с понедельника — от недели с 1-м числом до недели с последним (4–6 недель).
+    /// Дни соседних месяцев в первой и последней неделе входят в сетку.
+    /// </summary>
+    public static IReadOnlyList<DateOnly> Month(DateOnly day)
+    {
+        var first = Week(new DateOnly(day.Year, day.Month, 1))[0];
+        var last = Week(new DateOnly(day.Year, day.Month, DateTime.DaysInMonth(day.Year, day.Month)))[6];
+        return Enumerable.Range(0, last.DayNumber - first.DayNumber + 1).Select(first.AddDays).ToList();
+    }
 }

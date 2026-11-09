@@ -8,9 +8,21 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Chrono.ViewModels;
 
-/// <summary>Ячейка недели. Запись, чтобы ленту можно было сравнивать по значению и не пересобирать без нужды.</summary>
-public sealed record DayCell(DateOnly Date, int DotCount, bool IsSelected, bool IsToday)
+/// <summary>
+/// Ячейка календаря «Распорядка» — недели или сетки месяца. Запись, чтобы ленту можно было сравнивать по значению и не пересобирать без нужды.
+/// Row — строка сетки (у недели всегда 0); IsOutside — день соседнего месяца в сетке месяца.
+/// </summary>
+public sealed record DayCell(DateOnly Date, int DotCount, bool IsSelected, bool IsToday, int Row = 0, bool IsOutside = false)
 {
+    /// <summary>Название дня недели стоит только над первой строкой: в сетке месяца оно служит заголовком колонки.</summary>
+    public bool ShowLabel => this.Row == 0;
+
+    /// <summary>Просвет между неделями сетки месяца.</summary>
+    public Thickness Margin => this.Row == 0 ? Thickness.Zero : new Thickness(0, 8, 0, 0);
+
+    /// <summary>Дни соседних месяцев бледные: число и точки, но не название дня недели над первой строкой.</summary>
+    public double Opacity => this.IsOutside ? 0.35 : 1;
+
     /// <summary>Сокращение дня недели с заглавной буквы (в ru платформа отдаёт строчные).</summary>
     public string Label
     {
@@ -95,6 +107,21 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
     [ObservableProperty]
     public partial string Subtitle { get; set; } = "";
 
+    /// <summary>Календарь показывает весь месяц (ScheduleSettings.MonthCalendar), а не неделю: свайп листает месяц.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviousDescription))]
+    [NotifyPropertyChangedFor(nameof(NextDescription))]
+    public partial bool IsMonth { get; set; }
+
+    /// <summary>Заголовок сетки месяца: «Ноябрь 2026».</summary>
+    [ObservableProperty]
+    public partial string MonthTitle { get; set; } = "";
+
+    // Подписи кнопок листания для экранного диктора.
+    public string PreviousDescription => this.IsMonth ? AppResources.PrevMonth : AppResources.PrevWeek;
+
+    public string NextDescription => this.IsMonth ? AppResources.NextMonth : AppResources.NextWeek;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasEntries))]
     public partial bool IsEmpty { get; set; }
@@ -131,9 +158,24 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
         this.Subtitle = CultureInfo.CurrentUICulture.TextInfo.ToUpper(date[0]) + date[1..];
         this.IsAddEnabled = selected >= today;
 
-        // Не больше трёх точек под числом (DESIGN.md §4.9).
-        var days = DayPlan.Week(selected)
-            .Select(d => new DayCell(d, Math.Min(DayPlan.For(alarms, done, d, now).Count, 3), d == selected, d == today))
+        // Настройка читается при каждом обновлении: её меняют на вкладке «Настройки», а возврат сюда вызывает Refresh.
+        var month = ScheduleSettings.MonthCalendar;
+        if (month != this.IsMonth)
+        {
+            // Смена режима приходит, пока экран скрыт (настройку меняют на другой вкладке). Замена ячейки на месте в скрытом экране
+            // оставляла бывшему выбранному дню цвет текста выбранного — число сливалось с фоном. Сетка собирается заново.
+            this.Days.Clear();
+        }
+
+        this.IsMonth = month;
+        var title = selected.ToString("MMMM yyyy", CultureInfo.CurrentUICulture);
+        this.MonthTitle = CultureInfo.CurrentUICulture.TextInfo.ToUpper(title[0]) + title[1..];
+
+        // Не больше трёх точек под числом (DESIGN.md §4.9). Для точек хватает числа записей: в сетке месяца до 42 дней,
+        // и полный план дня (DayPlan.For с сортировкой) на каждый был бы лишним.
+        var days = (month ? DayPlan.Month(selected) : DayPlan.Week(selected))
+            .Select((d, index) => new DayCell(
+                d, Math.Min(alarms.Count(a => a.OccursOn(d)), 3), d == selected, d == today, index / 7, d.Month != selected.Month && month))
             .ToList();
 
         var items = DayPlan.For(alarms, done, selected, now)
@@ -202,11 +244,12 @@ public sealed partial class ScheduleViewModel : ObservableObject, IQueryAttribut
     [RelayCommand]
     private void Today() => this.SelectedDay = DateOnly.FromDateTime(this.timeProvider.GetLocalNow().DateTime);
 
+    // Листание календаря свайпом: на неделю или на месяц (то же число, а если его нет — последний день месяца).
     [RelayCommand]
-    private void NextWeek() => this.SelectedDay = this.SelectedDay.AddDays(7);
+    private void Next() => this.SelectedDay = this.IsMonth ? this.SelectedDay.AddMonths(1) : this.SelectedDay.AddDays(7);
 
     [RelayCommand]
-    private void PrevWeek() => this.SelectedDay = this.SelectedDay.AddDays(-7);
+    private void Previous() => this.SelectedDay = this.IsMonth ? this.SelectedDay.AddMonths(-1) : this.SelectedDay.AddDays(-7);
 
     [RelayCommand]
     private void ToggleDone(DayEntryItem item)
