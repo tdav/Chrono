@@ -56,6 +56,7 @@ public sealed partial class CalendarSheetModel : ObservableObject
     private bool allowPast;
     private int year;
     private int month;
+    private DateOnly? earliest;
 
     public CalendarSheetModel()
     {
@@ -95,6 +96,31 @@ public sealed partial class CalendarSheetModel : ObservableObject
     /// <summary>«Очистить» (= «Ближайшее») не имеет смысла для ежегодного будильника: дата в нём обязательна.</summary>
     [ObservableProperty]
     public partial bool IsClearVisible { get; set; } = true;
+
+    /// <summary>
+    /// Самый ранний доступный день (кроме правила о прошедших): у «Окончания» — день первого срабатывания записи,
+    /// иначе выбранное окончание оказалось бы раньше начала и запись не сохранилась бы. null — ограничения нет.
+    /// </summary>
+    public DateOnly? Earliest
+    {
+        get => this.earliest;
+        set
+        {
+            if (this.earliest != value)
+            {
+                this.earliest = value;
+
+                // Пока день не выбран, календарь открыт на месяце первого доступного дня, а не на «сегодня»,
+                // где все дни недоступны.
+                if (this.Selected is null && value is { } first && first > this.today)
+                {
+                    (this.year, this.month) = (first.Year, first.Month);
+                }
+
+                this.Rebuild();
+            }
+        }
+    }
 
     public void Load(DateOnly? selected, DateOnly today, bool allowPast)
     {
@@ -140,9 +166,11 @@ public sealed partial class CalendarSheetModel : ObservableObject
     [RelayCommand]
     private void Today()
     {
-        this.Selected = this.today;
-        this.year = this.today.Year;
-        this.month = this.today.Month;
+        // «Сегодня» раньше самого раннего доступного дня выбрать нельзя: берётся он.
+        var day = this.earliest is { } first && first > this.today ? first : this.today;
+        this.Selected = day;
+        this.year = day.Year;
+        this.month = day.Month;
         this.Rebuild();
     }
 
@@ -161,8 +189,9 @@ public sealed partial class CalendarSheetModel : ObservableObject
     {
         this.Cells.Clear();
         var index = 0;
-        foreach (var cell in AlarmSchedule.Month(this.year, this.month, this.today, this.allowPast))
+        foreach (var day in AlarmSchedule.Month(this.year, this.month, this.today, this.allowPast))
         {
+            var cell = day.Date is { } date && this.earliest is { } first && date < first ? day with { IsEnabled = false } : day;
             this.Cells.Add(new CalendarDayItem(cell, index++) { IsSelected = cell.Date is not null && cell.Date == this.Selected });
         }
 

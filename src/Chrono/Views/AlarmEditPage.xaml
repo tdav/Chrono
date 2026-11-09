@@ -48,6 +48,10 @@
                                         </Grid>
                                     </Border>
                                     <Label Text="{Binding TimeSheet.Footnote}" Style="{StaticResource SectionFooter}" MinimumHeightRequest="36" />
+                                    <!-- Причина отказа в сохранении — здесь, под барабаном: ниже её закрывал раскрытый календарь,
+                                         и ✓ выглядела как «ничего не произошло». -->
+                                    <Label Text="{Binding ErrorText}" Style="{StaticResource ErrorText}" Margin="16,0,16,6" IsVisible="{Binding HasError}"
+                                           SemanticProperties.Description="{Binding ErrorText}" />
                                 </VerticalStackLayout>
 
                                 <!-- Повтор, дата, окончание, название, иконка. Ошибки и подсказка — сноской под секцией. -->
@@ -103,7 +107,6 @@
                                     </Border>
                                     <Label Text="{x:Static res:AppResources.EndsPickHint}" Style="{StaticResource SectionFooter}" IsVisible="{Binding IsEndsMissing}" />
                                     <Label Text="{x:Static res:AppResources.RepeatPickDay}" Style="{StaticResource ErrorText}" IsVisible="{Binding IsDaysMissing}" />
-                                    <Label Text="{Binding ErrorText}" Style="{StaticResource ErrorText}" IsVisible="{Binding HasError}" />
                                 </VerticalStackLayout>
 
                                 <!-- Сигнал: оповещение, звук (меню) и вибрация — только у звонящей записи, длительность. -->

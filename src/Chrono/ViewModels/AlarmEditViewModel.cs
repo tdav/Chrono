@@ -43,6 +43,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
             if (e.PropertyName is nameof(TimeSheetModel.Hour) or nameof(TimeSheetModel.Minute))
             {
                 this.MarkDirty();
+                this.LimitEnds();
             }
         };
 
@@ -464,6 +465,7 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
 
         // Окончание обязательно: «Очистить» (вернуть «не выбрано») недоступна.
         this.EndsSheet.IsClearVisible = false;
+        this.LimitEnds();
         this.RepeatSheet.Load(this.Repeat, this.Days);
         this.AlertSheet.Load(this.Alert.ToString());
         this.IconSheet.Load(this.Icon);
@@ -523,10 +525,16 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         }
     }
 
+    // Пять вызывающих (загрузка формы и смена времени, даты, повтора, дней): окончание нельзя выбрать раньше первого
+    // срабатывания — иначе запись не прозвенит ни разу, и сохранение её отклоняет («Дата окончания раньше начала»).
+    private void LimitEnds() =>
+        this.EndsSheet.Earliest = this.IsOneShot ? null : DateOnly.FromDateTime(this.Target(this.TimeSheet.Value));
+
     partial void OnDateChanged(DateOnly? value)
     {
         this.MarkDirty();
         this.TimeSheet.RefreshFootnote();
+        this.LimitEnds();
     }
 
     partial void OnEndsOnChanged(DateOnly? value) => this.MarkDirty();
@@ -536,12 +544,14 @@ public sealed partial class AlarmEditViewModel : ObservableObject, IQueryAttribu
         this.MarkDirty();
         this.TimeSheet.RefreshFootnote();
         this.LoadDateCalendar();
+        this.LimitEnds();
     }
 
     partial void OnDaysChanged(WeekDays value)
     {
         this.MarkDirty();
         this.TimeSheet.RefreshFootnote();
+        this.LimitEnds();
     }
 
     partial void OnLabelChanged(string value) => this.MarkDirty();

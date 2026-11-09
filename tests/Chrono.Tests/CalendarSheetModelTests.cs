@@ -17,6 +17,37 @@ public sealed class CalendarSheetModelTests
 
     private static CalendarDayItem Day(CalendarSheetModel sheet, int day) => sheet.Cells.Single(c => c.Cell.Date?.Day == day);
 
+    /// <summary>«Окончание» нельзя выбрать раньше первого срабатывания записи: такие дни недоступны, нажатие их не выбирает.</summary>
+    [Fact]
+    public void Earliest_DisablesDaysBeforeIt()
+    {
+        var sheet = Loaded();
+        sheet.Earliest = new DateOnly(2026, 10, 31);
+
+        Assert.True(Day(sheet, 30).IsDisabled);
+        Assert.False(Day(sheet, 31).IsDisabled);
+
+        sheet.PickCommand.Execute(Day(sheet, 30));
+        Assert.Null(sheet.Selected);
+
+        sheet.PickCommand.Execute(Day(sheet, 31));
+        Assert.Equal(new DateOnly(2026, 10, 31), sheet.Selected);
+    }
+
+    /// <summary>«Сегодня» раньше самого раннего дня не выбирается: берётся самый ранний, и календарь открывает его месяц.</summary>
+    [Fact]
+    public void Today_BeforeEarliest_PicksEarliest()
+    {
+        var sheet = Loaded();
+        sheet.Earliest = new DateOnly(2027, 1, 19);
+
+        sheet.TodayCommand.Execute(null);
+
+        Assert.Equal(new DateOnly(2027, 1, 19), sheet.Selected);
+        Assert.True(Day(sheet, 19).IsSelected);
+        Assert.True(Day(sheet, 18).IsDisabled);
+    }
+
     [Fact]
     public void Load_PlacesCellsInWeekGridFromMonday()
     {
