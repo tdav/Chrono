@@ -144,9 +144,10 @@ public sealed class SplashDrawable : IDrawable
 
     public SplashDrawable()
     {
-        // Акцент тёмного вида: системный Material You (тон 60 — тот же @android:color/system_accent1_400, что у значка системной
-        // заставки), без него — оранжевый Tint тёмной темы из DESIGN.json (#FF9230, как в splash.svg).
-        this.accent = SystemAccessibility.Accent(Appearance.Dark) ?? Color.FromArgb(ChronoColors.All.First(token => token.Key == "Tint").Dark);
+        // Акцент тёмного вида: цвет из настроек, иначе системный Material You (тон 60 — тот же @android:color/system_accent1_400,
+        // что у значка системной заставки), без него — оранжевый Tint тёмной темы из DESIGN.json (#FF9230, как в splash.svg).
+        this.accent = ThemeService.Accent(AccentPalette.Normalize(Chrono.Services.ThemeSettings.Accent), Appearance.Dark)?.Fill
+            ?? Color.FromArgb(ChronoColors.All.First(token => token.Key == "Tint").Dark);
         for (var i = 0; i <= Steps; i++)
         {
             var amount = (float)i / Steps;

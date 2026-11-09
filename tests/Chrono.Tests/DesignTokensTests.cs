@@ -256,6 +256,51 @@ public sealed class DesignTokensTests
         }
     }
 
+    /// <summary>Акцент из настроек: каждый цвет палитры — роль DESIGN.json, и все они различимы в каждом виде.</summary>
+    [Fact]
+    public void AccentPalette_UsesDistinctDesignColors()
+    {
+        var keys = ChronoColors.All.Select(t => t.Key).ToHashSet();
+
+        Assert.All(AccentPalette.Keys, key => Assert.Contains(key, keys));
+        Assert.Contains(AccentPalette.Fallback, AccentPalette.Keys);
+        // Без выбора и без системного акцента Tint — тот же цвет, что кружок Fallback: он и показан выбранным.
+        foreach (var appearance in AllAppearances)
+        {
+            Assert.Equal(Token("Tint", appearance), AccentPalette.Hex(AccentPalette.Fallback, appearance));
+            Assert.Equal(AccentPalette.Keys.Count, AccentPalette.Keys.Select(key => AccentPalette.Hex(key, appearance)).Distinct().Count());
+        }
+    }
+
+    [Theory]
+    [InlineData("Blue", "Blue")]
+    [InlineData(null, null)]
+    [InlineData("", null)]
+    [InlineData("Chartreuse", null)]
+    public void AccentPalette_UnknownChoiceMeansNoChoice(string? saved, string? expected) =>
+        Assert.Equal(expected, AccentPalette.Normalize(saved));
+
+    /// <summary>Символ на акценте (кнопка «+», ✓, текст заполненной кнопки) читаем: 3:1 в обычных видах, 4.5:1 в «контрасте».</summary>
+    [Fact]
+    public void AccentPalette_GlyphOnAccentIsReadable()
+    {
+        foreach (var key in AccentPalette.Keys)
+        {
+            foreach (var appearance in AllAppearances)
+            {
+                var accent = AccentPalette.Hex(key, appearance);
+                var contrast = Contrast(AccentPalette.OnHex(accent, appearance), accent);
+                var required = appearance is Appearance.LightHighContrast or Appearance.DarkHighContrast ? 4.5 : 3;
+                Assert.True(contrast >= required, $"{key} ({appearance}): {contrast:F2}:1");
+            }
+        }
+    }
+
+    /// <summary>Оранжевый без выбора не меняется: символ на нём чёрный, как OnTint в DESIGN.json (белый дал бы 2.31:1).</summary>
+    [Fact]
+    public void AccentPalette_OrangeKeepsBlackGlyph() =>
+        Assert.Equal(Token("OnTint", Appearance.Light), AccentPalette.OnHex(AccentPalette.Hex("Orange", Appearance.Light), Appearance.Light));
+
     /// <summary>
     /// Цвет дела на циферблате и в ленте берётся по ключу Cat1…Cat6 из DialLayout.CategoryKey: у каждой категории должен быть свой цвет
     /// в каждом из четырёх видов, и лишних цветов-категорий без дел нет.

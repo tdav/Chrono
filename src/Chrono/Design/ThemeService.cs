@@ -1,3 +1,5 @@
+using Chrono.Services;
+
 namespace Chrono.Design;
 
 /// <summary>
@@ -16,6 +18,39 @@ public sealed class ThemeService
 
     /// <summary>Текущий вид.</summary>
     public Appearance Current { get; private set; }
+
+    /// <summary>Акцент из настроек: ключ AccentPalette или null — системный (а где его нет — Tint из DESIGN.json).</summary>
+    public string? AccentKey { get; private set; }
+
+    /// <summary>Системный акцент есть (Android 12+): в настройках показывается кружок «Системный».</summary>
+    public bool HasSystemAccent => SystemAccessibility.Accent(this.Current) is not null;
+
+    /// <summary>
+    /// Заливка акцентом и цвет символа на ней для выбора из настроек: ключ AccentPalette или null — системный акцент.
+    /// null в ответе — системного акцента нет, действуют Tint и OnTint из DESIGN.json.
+    /// </summary>
+    public static (Color Fill, Color On)? Accent(string? key, Appearance appearance)
+    {
+        if (key is not null)
+        {
+            var hex = AccentPalette.Hex(key, appearance);
+            return (Color.FromArgb(hex), Color.FromArgb(AccentPalette.OnHex(hex, appearance)));
+        }
+
+        // OnTint в DESIGN.json — чёрный: он рассчитан на запасной оранжевый. Тона Material You для Light, Dark и LightHighContrast
+        // (40, 60, 30) тёмные, и чёрный на них нечитаем, поэтому символ и текст на акценте — белые; тон 80 у DarkHighContrast
+        // светлый — там чёрный.
+        return SystemAccessibility.Accent(appearance) is { } system
+            ? (system, appearance == Appearance.DarkHighContrast ? Colors.Black : Colors.White)
+            : null;
+    }
+
+    /// <summary>Выбор акцента в настройках: сохраняется и применяется сразу. null — системный.</summary>
+    public void SetAccent(string? key)
+    {
+        ThemeSettings.Accent = AccentPalette.Normalize(key);
+        this.Refresh();
+    }
 
     /// <summary>«Уменьшение движения» / «Отключить анимацию»: шторки растворяются, пружин и волн сигнала нет.</summary>
     public bool ReduceMotion { get; private set; }
@@ -49,10 +84,12 @@ public sealed class ThemeService
         var appearance = Appearances.From(this.app.RequestedTheme == AppTheme.Dark, SystemAccessibility.IsHighContrast());
         var reduceMotion = SystemAccessibility.IsReduceMotion();
         var reduceTransparency = SystemAccessibility.IsReduceTransparency();
-        // Акцент сравнивается тоже: сменив обои, телефон меняет цвета Material You, и при возврате их надо перечитать.
-        var accent = SystemAccessibility.Accent(appearance);
+        // Акцент сравнивается тоже: сменив обои, телефон меняет цвета Material You, и при возврате их надо перечитать;
+        // выбор цвета в настройках (SetAccent) приходит сюда же.
+        var accentKey = AccentPalette.Normalize(ThemeSettings.Accent);
+        var accent = Accent(accentKey, appearance);
         if (this.applied && appearance == this.Current && reduceMotion == this.ReduceMotion && reduceTransparency == this.ReduceTransparency
-            && Equals(accent, this.accent))
+            && accentKey == this.AccentKey && Equals(accent?.Fill, this.accent))
         {
             return;
         }
@@ -61,7 +98,8 @@ public sealed class ThemeService
         this.Current = appearance;
         this.ReduceMotion = reduceMotion;
         this.ReduceTransparency = reduceTransparency;
-        this.accent = accent;
+        this.AccentKey = accentKey;
+        this.accent = accent?.Fill;
 
         var colors = new Dictionary<string, Color>(ChronoColors.All.Count);
         foreach (var token in ChronoColors.All)
@@ -69,18 +107,16 @@ public sealed class ThemeService
             colors[token.Key] = Color.FromArgb(token.For(appearance));
         }
 
-        // Системный акцент (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %, Success — сам акцент
-        // (тумблер «вкл», ✓ статуса: зелёного в приложении нет, решение пользователя) — как в DESIGN.json.
-        // OnTint в DESIGN.json — чёрный: он рассчитан на запасной оранжевый (белый на нём 2.31:1, чёрный 9.09:1). Тона Material You
-        // для Light, Dark и LightHighContrast (40, 60, 30) тёмные, и чёрный на них нечитаем, поэтому символ и текст на акценте — белые;
-        // тон 80 у DarkHighContrast светлый — там остаётся чёрный из DESIGN.json. OnWarning и OnColor акцент не трогает:
-        // Warning остаётся оранжевым, а OnColor лежит на заливках, которые от акцента не зависят.
-        if (accent is not null)
+        // Акцент из настроек или системный (Android 12+) вместо Tint из DESIGN.json; TintFill — тот же цвет на 16 %,
+        // Success — сам акцент (тумблер «вкл», ✓ статуса: зелёного в приложении нет, решение пользователя) — как в DESIGN.json.
+        // OnTint — цвет символа на акценте (см. Accent). OnWarning и OnColor акцент не трогает: Warning остаётся оранжевым,
+        // а OnColor лежит на заливках, которые от акцента не зависят.
+        if (accent is var (fill, on))
         {
-            colors["Tint"] = accent;
-            colors["TintFill"] = accent.WithAlpha(0.16f);
-            colors["Success"] = accent;
-            colors["OnTint"] = appearance == Appearance.DarkHighContrast ? Colors.Black : Colors.White;
+            colors["Tint"] = fill;
+            colors["TintFill"] = fill.WithAlpha(0.16f);
+            colors["Success"] = fill;
+            colors["OnTint"] = on;
         }
 
         // Крупное стекло (шторка, меню, алерт) непрозрачно всегда: размытия фона в MAUI нет, и сквозь 14 % заливки

@@ -223,6 +223,14 @@
   <data name="ThemeSystem" xml:space="preserve"><value>System</value></data>
   <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
   <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="AccentGroup" xml:space="preserve"><value>Accent color</value></data>
+  <data name="AccentSystem" xml:space="preserve"><value>System</value></data>
+  <data name="AccentOrange" xml:space="preserve"><value>Orange</value></data>
+  <data name="AccentPink" xml:space="preserve"><value>Pink</value></data>
+  <data name="AccentPurple" xml:space="preserve"><value>Purple</value></data>
+  <data name="AccentIndigo" xml:space="preserve"><value>Indigo</value></data>
+  <data name="AccentBlue" xml:space="preserve"><value>Blue</value></data>
+  <data name="AccentGreen" xml:space="preserve"><value>Green</value></data>
   <data name="SheetCancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="SheetDone" xml:space="preserve"><value>Done</value></data>
   <data name="DontSave" xml:space="preserve"><value>Don't save</value></data>

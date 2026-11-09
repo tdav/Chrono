@@ -17,6 +17,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly SyncLauncher syncLauncher;
     private readonly IMemoryCache cache;
     private readonly IReliabilityChecks reliability;
+    private readonly ThemeService themes;
 
     public SettingsViewModel(
         ISmartWake smartWake,
@@ -26,8 +27,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         SyncStore syncStore,
         SyncLauncher syncLauncher,
         IMemoryCache cache,
-        IReliabilityChecks reliability)
+        IReliabilityChecks reliability,
+        ThemeService themes)
     {
+        this.themes = themes;
+        this.Accents = this.CreateAccents();
+        this.ShowAccents();
         this.smartWake = smartWake;
         this.alarmService = alarmService;
         this.auth = auth;
@@ -63,6 +68,52 @@ public sealed partial class SettingsViewModel : ObservableObject
     public bool IsThemeLight => this.Theme == AppTheme.Light;
 
     public bool IsThemeDark => this.Theme == AppTheme.Dark;
+
+    /// <summary>Кружки акцентного цвета: «Системный» (где системный акцент есть) и цвета AccentPalette.</summary>
+    public IReadOnlyList<AccentOption> Accents { get; }
+
+    private List<AccentOption> CreateAccents()
+    {
+        var accents = new List<AccentOption>();
+        if (this.themes.HasSystemAccent)
+        {
+            accents.Add(new AccentOption(null, AppResources.AccentSystem, new RelayCommand(() => this.SetAccent(null))));
+        }
+
+        foreach (var key in AccentPalette.Keys)
+        {
+            var name = AppResources.ResourceManager.GetString("Accent" + key, AppResources.Culture) ?? key;
+            accents.Add(new AccentOption(key, name, new RelayCommand(() => this.SetAccent(key))));
+        }
+
+        return accents;
+    }
+
+    // Выбор сохраняется и применяется сразу: ThemeService перекладывает Tint, TintFill, Success и OnTint.
+    private void SetAccent(string? key)
+    {
+        this.themes.SetAccent(key);
+        this.ShowAccents();
+    }
+
+    // Цвета кружков зависят от вида (тема, контраст, обои для «Системного»), отметка — от выбора. Без выбора и без системного
+    // акцента действует Tint из DESIGN.json — отмечен тот же цвет палитры (AccentPalette.Fallback).
+    private void ShowAccents()
+    {
+        var selected = this.themes.AccentKey ?? (this.themes.HasSystemAccent ? null : AccentPalette.Fallback);
+        foreach (var option in this.Accents)
+        {
+            if (ThemeService.Accent(option.Key, this.themes.Current) is var (fill, glyph))
+            {
+                option.Fill = fill;
+                option.Glyph = glyph;
+            }
+
+            option.IsSelected = option.Key == selected;
+        }
+    }
+
+    private void OnThemeServiceChanged(object? sender, EventArgs e) => this.ShowAccents();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccessText))]
@@ -127,9 +178,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         this.syncLauncher.StatusChanged -= this.OnSyncStatusChanged;
         this.syncLauncher.StatusChanged += this.OnSyncStatusChanged;
+        // Смена темы или обоев перекрашивает кружки акцента; сервис темы тоже живёт дольше страницы.
+        this.themes.Changed -= this.OnThemeServiceChanged;
+        this.themes.Changed += this.OnThemeServiceChanged;
+        this.ShowAccents();
     }
 
-    public void Detach() => this.syncLauncher.StatusChanged -= this.OnSyncStatusChanged;
+    public void Detach()
+    {
+        this.syncLauncher.StatusChanged -= this.OnSyncStatusChanged;
+        this.themes.Changed -= this.OnThemeServiceChanged;
+    }
 
     // StatusChanged приходит и с потока таймера, а свойства привязаны к интерфейсу.
     private void OnSyncStatusChanged(object? sender, EventArgs e) =>

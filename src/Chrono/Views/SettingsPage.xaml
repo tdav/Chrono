@@ -45,6 +45,7 @@
                         <Label Text="{x:Static res:AppResources.ThemeGroup}" Style="{StaticResource SectionHeader}"
                                SemanticProperties.HeadingLevel="Level2" />
                         <Border Style="{StaticResource Section}">
+                          <VerticalStackLayout Spacing="0">
                             <Grid Style="{StaticResource Row}" Padding="16,4">
                                 <Grid ColumnDefinitions="*,*,*" HeightRequest="{StaticResource SizeHit}">
                                     <Border Grid.ColumnSpan="3" HeightRequest="{StaticResource SizeSegment}" VerticalOptions="Center"
@@ -99,6 +100,31 @@
                                     </ContentView>
                                 </Grid>
                             </Grid>
+
+                            <!-- Акцентный цвет: кружки 28 в один ряд, выбранный — с галочкой; нажатие — по столбцу 40×44.
+                                 «Системный» (цвет обоев, Android 12+) стоит первым, где он есть. Цвет меняется сразу. -->
+                            <BoxView Style="{StaticResource RowSeparator}" />
+                            <FlexLayout Margin="16,4" HeightRequest="{StaticResource SizeHit}" JustifyContent="SpaceBetween" AlignItems="Center"
+                                        BindableLayout.ItemsSource="{Binding Accents}"
+                                        SemanticProperties.Description="{x:Static res:AppResources.AccentGroup}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:AccentOption">
+                                        <Grid WidthRequest="40" HeightRequest="{StaticResource SizeHit}" BackgroundColor="Transparent"
+                                              SemanticProperties.Description="{Binding Name}">
+                                            <Grid.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding SelectCommand}" />
+                                            </Grid.GestureRecognizers>
+                                            <Border WidthRequest="28" HeightRequest="28" HorizontalOptions="Center" VerticalOptions="Center"
+                                                    BackgroundColor="{Binding Fill}" StrokeThickness="0" StrokeShape="RoundRectangle 14"
+                                                    InputTransparent="True" />
+                                            <Image Source="icon_check.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"
+                                                   InputTransparent="True" IsVisible="{Binding IsSelected}"
+                                                   design:IconTint.Color="{Binding Glyph}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                          </VerticalStackLayout>
                         </Border>
                     </VerticalStackLayout>
 

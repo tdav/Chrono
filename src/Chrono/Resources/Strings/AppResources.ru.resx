@@ -774,6 +774,30 @@
   <data name="ThemeDark" xml:space="preserve">
     <value>Тёмная</value>
   </data>
+  <data name="AccentGroup" xml:space="preserve">
+    <value>Акцентный цвет</value>
+  </data>
+  <data name="AccentSystem" xml:space="preserve">
+    <value>Системный</value>
+  </data>
+  <data name="AccentOrange" xml:space="preserve">
+    <value>Оранжевый</value>
+  </data>
+  <data name="AccentPink" xml:space="preserve">
+    <value>Розовый</value>
+  </data>
+  <data name="AccentPurple" xml:space="preserve">
+    <value>Фиолетовый</value>
+  </data>
+  <data name="AccentIndigo" xml:space="preserve">
+    <value>Индиго</value>
+  </data>
+  <data name="AccentBlue" xml:space="preserve">
+    <value>Синий</value>
+  </data>
+  <data name="AccentGreen" xml:space="preserve">
+    <value>Зелёный</value>
+  </data>
   <data name="SheetCancel" xml:space="preserve">
     <value>Отменить</value>
   </data>
