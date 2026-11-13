@@ -45,6 +45,9 @@ public static class MauiProgram
         });
 
         // Цвета тумблера по токенам текущего вида — в Design/NativeControls (Platforms/Android/Design).
+
+        // Вкладки переключаются без анимации перехода (см. TabShellItemHandler).
+        builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<ShellItem, TabShellItemHandler>());
 #endif
 
         builder.Services.AddSingleton(TimeProvider.System);
