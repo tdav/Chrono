@@ -106,6 +106,15 @@ public class MainActivity : MauiAppCompatActivity
         base.OnResume();
     }
 
+    protected override void OnPostResume()
+    {
+        base.OnPostResume();
+        // Сигнал, пришедший при остановленной активити, ждёт в RingLauncher.PendingId. Показываем его отдельным
+        // сообщением главного цикла — после onPostResume, где MAUI выполняет отложенные транзакции фрагментов Shell (D1).
+        // Dispatch, а не MainThread.BeginInvokeOnMainThread: тот на главном потоке выполняет действие сразу, внутри onPostResume.
+        Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(async () => await AppShell.ShowPendingAsync());
+    }
+
     protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
     {
         base.OnActivityResult(requestCode, resultCode, data);
