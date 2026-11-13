@@ -1,0 +1,8 @@
+E BluetoothPowerStatsCollector: Caused by: java.lang.RuntimeException: error: 9
+E AndroidRuntime: FATAL EXCEPTION: main
+E AndroidRuntime: java.lang.RuntimeException: Unable to resume activity {com.chrono.alarm/crc64fd681c359b5f5c68.MainActivity}: java.lang.IllegalStateException: FragmentManager is already executing transactions
+E AndroidRuntime: Caused by: java.lang.IllegalStateException: FragmentManager is already executing transactions
+E AndroidRuntime: 	at crc6452ffdc5b34af3a0f.FragmentManagerExtensions_CallBacks.n_onFragmentResumed(Native Method)
+E AndroidRuntime: 	at crc6452ffdc5b34af3a0f.FragmentManagerExtensions_CallBacks.onFragmentResumed(FragmentManagerExtensions_CallBacks.java:36)
+E AndroidRuntime: 	at androidx.fragment.app.FragmentLifecycleCallbacksDispatcher.dispatchOnFragmentResumed(FragmentLifecycleCallbacksDispatcher.kt:203)
+E AndroidRuntime: 	at androidx.fragment.app.FragmentManager.dispatchResume(FragmentManager.java:3225)
