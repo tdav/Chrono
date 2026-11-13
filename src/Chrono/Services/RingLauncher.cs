@@ -14,11 +14,16 @@ public static class RingLauncher
     // Переход на RingPage уже идёт: повторный повод не должен открыть второй экран сигнала.
     private static bool navigating;
 
+    // Число переходов на RingPage для текущего запроса (сбрасывается новым запросом).
+    private static int attempts;
+
     public static Guid? PendingId { get; private set; }
 
     public static void Request(Guid alarmId)
     {
         PendingId = alarmId;
+        attempts = 0;
+        Log($"запрос {alarmId}");
         MainThread.BeginInvokeOnMainThread(async () => await ShowPendingAsync());
     }
 
@@ -36,7 +41,7 @@ public static class RingLauncher
         if (Microsoft.Maui.ApplicationModel.Platform.CurrentActivity is AndroidX.Lifecycle.ILifecycleOwner owner
             && !owner.Lifecycle.CurrentState.IsAtLeast(AndroidX.Lifecycle.Lifecycle.State.Resumed!))
         {
-            global::Android.Util.Log.Info("Chrono", $"ring: ждём возобновления активити, состояние {owner.Lifecycle.CurrentState}");
+            Log($"ждём возобновления активити, состояние {owner.Lifecycle.CurrentState}");
             return;
         }
 #endif
@@ -46,6 +51,16 @@ public static class RingLauncher
         {
             PendingId = null;
             ring.Load(alarmId);
+            Log($"показан (замена) {alarmId}");
+            return;
+        }
+
+        // Страховка от цикла «переход → Navigated → снова переход», если RingPage почему-то не становится текущей:
+        // не больше трёх переходов на один запрос. Дальше запрос снимается.
+        if (++attempts > 3)
+        {
+            PendingId = null;
+            Log($"три перехода без RingPage, запрос снят {alarmId}");
             return;
         }
 
@@ -57,9 +72,7 @@ public static class RingLauncher
         catch (Exception ex)
         {
             // Запрос остаётся в ожидании: следующий повод повторит переход.
-#if ANDROID
-            global::Android.Util.Log.Error("Chrono", $"ring: переход не выполнен: {ex}");
-#endif
+            Log($"переход не выполнен: {ex.GetType().Name}: {ex.Message}");
         }
         finally
         {
@@ -70,10 +83,19 @@ public static class RingLauncher
         if (shell.CurrentPage is RingPage && PendingId == alarmId)
         {
             PendingId = null;
+            Log($"показан {alarmId}");
         }
+        else
+        {
+            Log($"после перехода на экране {shell.CurrentPage?.GetType().Name ?? "null"}, в ожидании {PendingId?.ToString() ?? "ничего"}");
+        }
+    }
 
+    // Журнал в logcat (тег Chrono): по нему видно, дошёл ли сигнал до экрана (диагностика D2).
+    private static void Log(string message)
+    {
 #if ANDROID
-        global::Android.Util.Log.Info("Chrono", $"ring: после перехода на экране {shell.CurrentPage?.GetType().Name}, в ожидании {PendingId?.ToString() ?? "ничего"}");
+        global::Android.Util.Log.Info("Chrono", $"ring: {message}");
 #endif
     }
 }
