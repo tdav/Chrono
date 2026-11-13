@@ -46,10 +46,69 @@ public partial class LargeTitleHeader : ContentView
             }
         });
 
+    // Высоты шапки, измеренные на любой из вкладок: только с Large Title и с подстрокой под ним. Шапки всех вкладок одинаковы
+    // по устройству, а высота из SizeChanged приходит лишь после первой раскладки: без запаса отступ на первом кадре новой
+    // вкладки был 0, содержимое уходило под шапку и прыгало вниз.
+    private static double titleOnlyHeight;
+    private static double withSubtitleHeight;
+
+    private bool measured;
+
     public LargeTitleHeader()
     {
         this.InitializeComponent();
-        this.SizeChanged += (_, _) => this.SetValue(HeaderHeightPropertyKey, this.Height);
+        this.SizeChanged += (_, _) => this.OnSizeChanged();
+        this.SubtitleLabel.SizeChanged += (_, _) => this.RememberHeights();
+        this.PresetHeight();
+    }
+
+    private void OnSizeChanged()
+    {
+        if (this.Height <= 0)
+        {
+            return;
+        }
+
+        this.measured = true;
+        this.SetValue(HeaderHeightPropertyKey, this.Height);
+        this.RememberHeights();
+    }
+
+    // Шапка с подстрокой даёт обе высоты: без подстроки — за вычетом её строки. SizeChanged шапки приходит раньше, чем у подстроки
+    // (её Height ещё -1), поэтому разность считается и по SizeChanged подстроки.
+    private void RememberHeights()
+    {
+        if (!this.measured)
+        {
+            return;
+        }
+
+        if (!this.SubtitleLabel.IsVisible)
+        {
+            titleOnlyHeight = this.Height;
+            return;
+        }
+
+        withSubtitleHeight = this.Height;
+        if (this.SubtitleLabel.Height > 0)
+        {
+            titleOnlyHeight = this.Height - this.SubtitleLabel.Height;
+        }
+    }
+
+    // Отступ до первой раскладки — по уже известной высоте шапки того же вида; после раскладки его задаёт SizeChanged.
+    private void PresetHeight()
+    {
+        if (this.measured)
+        {
+            return;
+        }
+
+        var height = this.SubtitleLabel.IsVisible ? withSubtitleHeight : titleOnlyHeight;
+        if (height > 0)
+        {
+            this.SetValue(HeaderHeightPropertyKey, height);
+        }
     }
 
     /// <summary>Полная высота шапки: отступ, который страница оставляет сверху прокручиваемого содержимого.</summary>
@@ -117,6 +176,7 @@ public partial class LargeTitleHeader : ContentView
         var has = !string.IsNullOrEmpty(this.Subtitle);
         this.SubtitleLabel.IsVisible = has && !this.SubtitleInBar;
         this.BarSubtitle.IsVisible = has && this.SubtitleInBar;
+        this.PresetHeight();
     }
 
     private void OnScrolled(object? sender, ScrolledEventArgs e) => this.UpdateScroll(e.ScrollY);

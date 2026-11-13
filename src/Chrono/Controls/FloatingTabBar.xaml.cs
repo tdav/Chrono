@@ -189,11 +189,43 @@ public partial class FloatingTabBar : ContentView
             return;
         }
 
+        this.PresetSystemInsets();
         this.page.Appearing += this.OnPageAppearing;
         this.page.Disappearing += this.OnPageDisappearing;
         // Первый показ страницы Shell приходит раньше, чем у капсулы появляется обработчик (Appearing — до ToHandler),
         // и повторного Appearing не будет: подписка на Resumed и бейдж — здесь же, как при показе.
         this.OnPageAppearing(this, EventArgs.Empty);
+    }
+
+#if ANDROID
+    // Отступы системных панелей (px), которые MAUI дал корневому Grid вкладки с SafeAreaEdges="Container".
+    private static (int Left, int Top, int Right, int Bottom)? knownInsets;
+#endif
+
+    // Shell создаёт страницу вкладки только при первом переходе на неё, а отступы системных панелей MAUI выставляет корневому
+    // Grid на кадр-два позже первой раскладки: страница появлялась без них и прыгала на место. Отступы первой вкладки
+    // запоминаются, и корневой Grid новой вкладки получает их сразу, до первой раскладки; MAUI потом ставит те же значения.
+    private void PresetSystemInsets()
+    {
+#if ANDROID
+        if (this.Parent is not View { Handler.PlatformView: Android.Views.View root })
+        {
+            return;
+        }
+
+        if (knownInsets is var (left, top, right, bottom))
+        {
+            root.SetPadding(left, top, right, bottom);
+        }
+
+        root.LayoutChange += (_, _) =>
+        {
+            if (root.PaddingTop > 0 || root.PaddingBottom > 0)
+            {
+                knownInsets = (root.PaddingLeft, root.PaddingTop, root.PaddingRight, root.PaddingBottom);
+            }
+        };
+#endif
     }
 
     private void OnPageAppearing(object? sender, EventArgs e)
