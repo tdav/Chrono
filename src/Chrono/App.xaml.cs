@@ -35,7 +35,7 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        // Запуск по сигналу — без splash, сразу Shell; RingPage откроет AlarmListPage через RingLauncher.
+        // Запуск по сигналу — без splash, сразу Shell; RingPage откроет RingLauncher после возобновления активити.
         StartTrace.Mark("App: CreateWindow, начало");
         Page first = RingLauncher.PendingId is null
             ? new SplashPage(this.services)
